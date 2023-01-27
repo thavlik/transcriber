@@ -1,2 +1,7 @@
 .git
+*.exe
 kindest.yaml
+cmd/cmd
+cmd/transcriber
+scripts/
+test.wav
