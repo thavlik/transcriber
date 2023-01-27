@@ -5,3 +5,4 @@ cmd/cmd
 cmd/transcriber
 scripts/
 test.wav
+secrets/

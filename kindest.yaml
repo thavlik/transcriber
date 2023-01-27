@@ -1,2 +1,24 @@
 build:
   name: thavlik/transcriber
+env:
+  kubernetes:
+    resources:
+      - secrets/
+    charts:
+      transcriber:
+        name: chart
+        releaseName: ts
+        namespace: ts
+        values:
+          aws:
+            region: us-east-1
+            accessKeyId:
+              valueFrom:
+                secretKeyRef:
+                  name: aws-cred
+                  key: accesskeyid
+            secretAccessKey:
+              valueFrom:
+                secretKeyRef:
+                  name: aws-cred
+                  key: secretaccesskey

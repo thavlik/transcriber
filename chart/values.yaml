@@ -1,0 +1,18 @@
+imagePullSecrets: []
+
+prometheus:
+  enabled: false
+
+aws:
+  region: us-east-1
+  accessKeyId:
+    value: ""
+  secretAccessKey:
+    value: ""
+
+transcriber:
+  image: thavlik/transcriber:latest
+  imagePullPolicy: Always
+  replicas: 1
+  logLevel: debug
+  resources: {}
