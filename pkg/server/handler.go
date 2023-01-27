@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 
+	"github.com/izern/go-fdkaac/fdkaac"
 	"github.com/pkg/errors"
 	flvtag "github.com/yutopp/go-flv/tag"
 	"github.com/yutopp/go-rtmp"
@@ -17,6 +18,7 @@ var _ rtmp.Handler = (*Handler)(nil)
 // Handler An RTMP connection handler
 type Handler struct {
 	rtmp.DefaultHandler
+	dec *fdkaac.AacDecoder
 	log *zap.Logger
 }
 
@@ -35,14 +37,13 @@ func (h *Handler) OnCreateStream(timestamp uint32, cmd *rtmpmsg.NetConnectionCre
 
 func (h *Handler) OnPublish(_ *rtmp.StreamContext, timestamp uint32, cmd *rtmpmsg.NetStreamPublish) error {
 	log.Printf("OnPublish: %#v", cmd)
-
-	// (example) Reject a connection when PublishingName is empty
+	// cmd.PublishingName is the stream secret key in OBS
+	// use this value to determine which clients should
+	// receive the transcription over websocket
 	if cmd.PublishingName == "" {
 		return errors.New("PublishingName is empty")
 	}
-
 	// TODO: Create a new stream context and start transcoding
-
 	return nil
 }
 
@@ -60,7 +61,6 @@ func (h *Handler) OnAudio(timestamp uint32, payload io.Reader) error {
 	if _, err := io.Copy(flvBody, audio.Data); err != nil {
 		return err
 	}
-	audio.Data = flvBody
 
 	log.Printf("FLV Audio Data: Timestamp = %d, SoundFormat = %+v, SoundRate = %+v, SoundSize = %+v, SoundType = %+v, AACPacketType = %+v, Data length = %+v",
 		timestamp,
@@ -72,7 +72,14 @@ func (h *Handler) OnAudio(timestamp uint32, payload io.Reader) error {
 		len(flvBody.Bytes()),
 	)
 
-	// TODO: transcribe the audio chunk
+	pcm, err := h.dec.Decode(flvBody.Bytes())
+	if err != nil {
+		return errors.Wrap(err, "failed to decode aac audio")
+	} else if pcm == nil {
+		return nil
+	}
+
+	// TODO: write pcm to transcription stream
 
 	return nil
 }
@@ -82,5 +89,5 @@ func (h *Handler) OnVideo(timestamp uint32, payload io.Reader) error {
 }
 
 func (h *Handler) OnClose() {
-	log.Printf("OnClose")
+	h.log.Debug("OnClose")
 }
