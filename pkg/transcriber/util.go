@@ -9,8 +9,10 @@ import (
 
 func AWSConfigFromEnv() *aws.Config {
 	config := aws.NewConfig()
-	if v, ok := os.LookupEnv("S3_ENDPOINT"); ok {
-		config.Endpoint = aws.String(v)
+	if v, ok := os.LookupEnv("AWS_REGION"); ok {
+		config.Region = aws.String(v)
+	} else {
+		config.Region = aws.String("us-east-1")
 	}
 	return config
 }

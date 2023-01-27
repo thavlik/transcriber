@@ -18,7 +18,8 @@ func readTranscription(
 		}
 		if e, ok := ev.(*transcribestreamingservice.TranscriptEvent); ok {
 			for _, result := range e.Transcript.Results {
-				for _, alt := range result.Alternatives {
+				for i, alt := range result.Alternatives {
+					fmt.Printf("%d: ", i)
 					for _, item := range alt.Items {
 						if aws.StringValue(item.Type) == "punctuation" {
 							continue

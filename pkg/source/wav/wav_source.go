@@ -1,4 +1,4 @@
-package file
+package wav
 
 import (
 	"io"
@@ -6,7 +6,7 @@ import (
 	"github.com/go-audio/audio"
 	"github.com/go-audio/wav"
 	"github.com/pkg/errors"
-	"github.com/thavlik/transcriber/pkg/transcriber/source"
+	"github.com/thavlik/transcriber/pkg/source"
 )
 
 type wavSource struct {
@@ -56,15 +56,14 @@ func (s *wavSource) ReadAudioChunk(
 		return 0, errors.Wrap(err, "dec.PCMBuffer")
 	} else if n == 0 {
 		return 0, io.EOF
-	} else if s.buf.SourceBitDepth != 16 {
-		return 0, errors.Errorf("unsupported bit depth %d", s.buf.SourceBitDepth)
 	}
 	// Convert to PCM signed 16 bit little endian as per:
 	// https://docs.aws.amazon.com/transcribe/latest/dg/how-input.html
 	// wav file PCM data is already little endian
 	for i := 0; i < n; i++ {
-		buf[2*i] = byte(s.buf.Data[i] & 0xff)
-		buf[2*i+1] = byte((s.buf.Data[i] >> 8) & 0xff)
+		v := s.buf.Data[i]
+		buf[2*i] = byte(v & 0xff)
+		buf[2*i+1] = byte((v >> 8) & 0xff)
 	}
 	return n * 2, nil
 }

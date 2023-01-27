@@ -5,7 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/transcribestreamingservice"
 	"github.com/pkg/errors"
-	"github.com/thavlik/transcriber/pkg/transcriber/source"
+	"github.com/thavlik/transcriber/pkg/source"
 )
 
 func writeAudioStream(

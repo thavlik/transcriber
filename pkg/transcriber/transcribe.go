@@ -2,11 +2,12 @@ package transcriber
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/transcribestreamingservice"
 	"github.com/pkg/errors"
-	"github.com/thavlik/transcriber/pkg/transcriber/source"
+	"github.com/thavlik/transcriber/pkg/source"
 )
 
 func Transcribe(
@@ -22,6 +23,8 @@ func Transcribe(
 	if err != nil {
 		return errors.Wrap(err, "source.Encoding")
 	}
+	fmt.Printf("sampleRate: %d\n", sampleRate)
+	fmt.Printf("encoding: %s\n", encoding)
 
 	// start the transcription stream
 	svc := transcribestreamingservice.New(AWSSession())
@@ -29,10 +32,8 @@ func Transcribe(
 		ctx,
 		&transcribestreamingservice.StartStreamTranscriptionInput{
 			LanguageCode:         aws.String("en-US"),
-			PreferredLanguage:    aws.String("en-US"),
 			MediaEncoding:        aws.String(encoding),
 			MediaSampleRateHertz: aws.Int64(sampleRate),
-			NumberOfChannels:     aws.Int64(1),
 		})
 	if err != nil {
 		return errors.Wrap(err, "StartStreamTranscriptionWithContext")
