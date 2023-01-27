@@ -10,6 +10,16 @@ env:
         releaseName: ts
         namespace: ts
         values:
+          transcriber:
+            streamKey:
+              valueFrom:
+                secretKeyRef:
+                  name: rtmp-cred
+                  key: streamkey
+            resources:
+              requests:
+                cpu: 500m
+                memory: 256Mi
           aws:
             region: us-east-1
             accessKeyId:

@@ -11,6 +11,8 @@ aws:
     value: ""
 
 transcriber:
+  streamKey:
+    value: ""
   image: thavlik/transcriber:latest
   imagePullPolicy: Always
   replicas: 1

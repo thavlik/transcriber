@@ -6,3 +6,6 @@ cmd/transcriber
 scripts/
 test.wav
 secrets/
+fdk-aac-*
+Dockerfile
+.dockerignore

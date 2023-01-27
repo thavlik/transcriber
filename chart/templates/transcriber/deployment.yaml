@@ -17,7 +17,7 @@ spec:
 {{ toYaml .Values.imagePullSecrets | indent 10 }}
     {{- end }}
       containers:
-      - name: transcriber
+      - name: server
         imagePullPolicy: {{ .Values.transcriber.imagePullPolicy }}
         image: {{ .Values.transcriber.image }}
     {{- if .Values.transcriber.resources }}
@@ -44,6 +44,8 @@ spec:
         env:
         - name: LOG_LEVEL
           value: {{ .Values.transcriber.logLevel }}
+        - name: STREAM_KEY
+{{ tpl (toYaml .Values.transcriber.streamKey) . | indent 10 }}
         - name: AWS_REGION
           value: {{ .Values.aws.region }}
         - name: AWS_ACCESS_KEY_ID

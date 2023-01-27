@@ -2,3 +2,4 @@ cmd/cmd
 cmd/transcriber
 *.exe
 secrets/
+fdk-aac-*

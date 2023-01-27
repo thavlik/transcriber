@@ -2,38 +2,52 @@ package transcriber
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/transcribestreamingservice"
+	"github.com/hashicorp/go-multierror"
 	"github.com/pkg/errors"
 	"github.com/thavlik/transcriber/pkg/source"
+	"go.uber.org/zap"
 )
 
 func Transcribe(
 	ctx context.Context,
 	source source.Source,
+	transcripts chan<- *transcribestreamingservice.Transcript,
+	log *zap.Logger,
 ) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	// read stream details
 	sampleRate, err := source.SampleRate()
 	if err != nil {
 		return errors.Wrap(err, "source.SampleRate")
 	}
-	encoding, err := source.Encoding()
+	stereo, err := source.IsStereo()
 	if err != nil {
-		return errors.Wrap(err, "source.Encoding")
+		return errors.Wrap(err, "source.IsStereo")
 	}
-	fmt.Printf("sampleRate: %d\n", sampleRate)
-	fmt.Printf("encoding: %s\n", encoding)
-
+	log.Debug("starting transcription",
+		zap.Int64("sampleRate", sampleRate))
 	// start the transcription stream
+	var enableChannelIdentification *bool
+	if stereo {
+		enableChannelIdentification = aws.Bool(true)
+	}
+	var numberOfChannels *int64
+	if stereo {
+		numberOfChannels = aws.Int64(2)
+	}
 	svc := transcribestreamingservice.New(AWSSession())
 	resp, err := svc.StartStreamTranscriptionWithContext(
 		ctx,
 		&transcribestreamingservice.StartStreamTranscriptionInput{
-			LanguageCode:         aws.String("en-US"),
-			MediaEncoding:        aws.String(encoding),
-			MediaSampleRateHertz: aws.Int64(sampleRate),
+			LanguageCode:                aws.String("en-US"),
+			MediaEncoding:               aws.String("pcm"),
+			MediaSampleRateHertz:        aws.Int64(sampleRate),
+			NumberOfChannels:            numberOfChannels,
+			EnableChannelIdentification: enableChannelIdentification,
 		})
 	if err != nil {
 		return errors.Wrap(err, "StartStreamTranscriptionWithContext")
@@ -41,27 +55,43 @@ func Transcribe(
 	stream := resp.GetStream()
 
 	// spin up a goroutine for sending the audio stream
-	stopped := make(chan error)
-	childCtx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	writeAudioErr := make(chan error)
 	go func() {
-		stopped <- writeAudioStream(
-			childCtx,
+		writeAudioErr <- writeAudioStream(
+			ctx,
 			source,
 			stream,
+			log,
 		)
 	}()
 
 	// read the transcription event stream
-	if err := readTranscription(ctx, stream.Events()); err != nil {
-		return errors.Wrap(err, "readTranscription")
-	}
+	readTranscriptionErr := make(chan error)
+	go func() {
+		readTranscriptionErr <- readTranscription(
+			ctx,
+			stream.Events(),
+			transcripts,
+			log,
+		)
+	}()
 
-	// wait for the audio stream to finish
-	cancel()
-	if err := <-stopped; err != nil {
-		return errors.Wrap(err, "writeAudioStream")
+	var multi error
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case err := <-writeAudioErr:
+		cancel()
+		multi = multierror.Append(multi, errors.Wrap(err, "writeAudioStream"))
+		if err := <-readTranscriptionErr; err != nil {
+			multi = multierror.Append(multi, errors.Wrap(err, "readTranscription"))
+		}
+	case err := <-readTranscriptionErr:
+		cancel()
+		multi = multierror.Append(multi, errors.Wrap(err, "readTranscription"))
+		if err := <-writeAudioErr; err != nil {
+			multi = multierror.Append(multi, errors.Wrap(err, "writeAudioStream"))
+		}
 	}
-
-	return nil
+	return multi
 }

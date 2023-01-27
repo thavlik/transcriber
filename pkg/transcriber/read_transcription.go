@@ -4,37 +4,42 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/transcribestreamingservice"
+	"go.uber.org/zap"
 )
 
 func readTranscription(
 	ctx context.Context,
 	events <-chan transcribestreamingservice.TranscriptResultStreamEvent,
+	transcripts chan<- *transcribestreamingservice.Transcript,
+	log *zap.Logger,
 ) error {
-	for ev := range events {
-		if ev == nil {
-			continue
-		}
-		if e, ok := ev.(*transcribestreamingservice.TranscriptEvent); ok {
-			for _, result := range e.Transcript.Results {
-				for i, alt := range result.Alternatives {
-					fmt.Printf("%d: ", i)
-					for _, item := range alt.Items {
-						if aws.StringValue(item.Type) == "punctuation" {
-							continue
-						}
-						if item.Content == nil {
-							continue
-						}
-						fmt.Printf("%s ", *item.Content)
-					}
-					fmt.Printf("\n")
-				}
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case ev := <-events:
+			if ev == nil {
+				continue
 			}
-		} else {
-			fmt.Printf("unrecognized event: %T\n", ev)
+			if e, ok := ev.(*transcribestreamingservice.TranscriptEvent); ok {
+				log.Debug(
+					"transcript event",
+					zap.String("text", string(ConvertTranscript(e.Transcript))))
+				//select {
+				//case <-ctx.Done():
+				//	return ctx.Err()
+				//case transcripts <- e.Transcript:
+				//	continue
+				//default:
+				//	log.Warn("transcript channel full, discarding event")
+				//}
+			} else {
+				log.Warn(
+					"unrecognized event",
+					zap.String("type", fmt.Sprintf("%T", ev)),
+				)
+			}
 		}
 	}
-	return nil
 }

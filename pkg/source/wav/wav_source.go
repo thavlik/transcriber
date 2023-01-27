@@ -1,6 +1,7 @@
 package wav
 
 import (
+	"context"
 	"io"
 
 	"github.com/go-audio/audio"
@@ -39,13 +40,23 @@ func NewWavSource(
 	}, nil
 }
 
-func (s *wavSource) SampleRate() (int64, error) {
-	return int64(s.dec.SampleRate), nil
+func (s *wavSource) IsStereo() (bool, error) {
+	switch s.dec.NumChans {
+	case 1:
+		return false, nil
+	case 2:
+		return true, nil
+	default:
+		return false, errors.Errorf("unsupported number of channels %d", s.dec.NumChans)
+	}
 }
 
-func (s *wavSource) Encoding() (string, error) {
-	// all wav files are PCM
-	return "pcm", nil
+func (s *wavSource) Context() context.Context {
+	return context.Background()
+}
+
+func (s *wavSource) SampleRate() (int64, error) {
+	return int64(s.dec.SampleRate), nil
 }
 
 func (s *wavSource) ReadAudioChunk(

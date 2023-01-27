@@ -2,34 +2,26 @@ package server
 
 import (
 	"fmt"
-	"io"
-	"net"
 	"net/http"
+	"sync"
 	"time"
 
-	"github.com/yutopp/go-rtmp"
+	"github.com/gorilla/websocket"
+	"github.com/thavlik/transcriber/pkg/source"
+	"github.com/thavlik/transcriber/pkg/transcriber"
 
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
-func Entry(
-	httpPort int,
-	rtmpPort int,
-	metricsPort int,
-	log *zap.Logger,
-) error {
-	go runMetrics(metricsPort, log)
-	return (&server{
-		log,
-	}).ListenAndServe(
-		httpPort,
-		rtmpPort,
-	)
-}
-
 type server struct {
-	log *zap.Logger
+	newSource chan source.Source
+	job       *transcriber.TranscriptionJob
+	l         chan struct{}
+	conns     map[*websocket.Conn]struct{}
+	connsL    sync.Mutex
+	streamKey string
+	log       *zap.Logger
 }
 
 func (s *server) ListenAndServe(
@@ -39,6 +31,7 @@ func (s *server) ListenAndServe(
 	mux := http.NewServeMux()
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {})
 	mux.HandleFunc("/readyz", func(w http.ResponseWriter, r *http.Request) {})
+	mux.HandleFunc("/ws", s.handleWebSock())
 	httpDone := make(chan error)
 	go func() {
 		s.log.Info("http server listening forever", zap.Int("port", httpPort))
@@ -59,32 +52,4 @@ func (s *server) ListenAndServe(
 	case err := <-rtmpDone:
 		return errors.Wrap(err, "rtmp server failed")
 	}
-}
-
-func (s *server) listenRTMP(port int) error {
-	tcpAddr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf(":%d", port))
-	if err != nil {
-		return errors.Wrap(err, "resolve failed")
-	}
-	listener, err := net.ListenTCP("tcp", tcpAddr)
-	if err != nil {
-		return errors.Wrap(err, "listen failed")
-	}
-	srv := rtmp.NewServer(&rtmp.ServerConfig{
-		OnConnect: func(conn net.Conn) (io.ReadWriteCloser, *rtmp.ConnConfig) {
-			return conn, &rtmp.ConnConfig{
-				Handler: &Handler{
-					log: s.log,
-				},
-				ControlState: rtmp.StreamControlStateConfig{
-					DefaultBandwidthWindowSize: 6 * 1024 * 1024 / 8,
-				},
-			}
-		},
-	})
-	s.log.Info("rtmp server listening forever", zap.Int("port", port))
-	if err := srv.Serve(listener); err != nil {
-		return errors.Wrap(err, "failed to serve")
-	}
-	return nil
 }

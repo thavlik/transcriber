@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/aws/aws-sdk-go/service/transcribestreamingservice"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/thavlik/transcriber/pkg/source"
@@ -32,9 +33,14 @@ var testCmd = &cobra.Command{
 		default:
 			return errors.New("unsupported file type")
 		}
+		ctx := context.Background()
+		transcripts := make(chan *transcribestreamingservice.Transcript, 16)
+		go transcriber.PrintTranscripts(ctx, transcripts)
 		return transcriber.Transcribe(
-			context.Background(),
+			ctx,
 			src,
+			transcripts,
+			DefaultLog,
 		)
 	},
 }

@@ -6,12 +6,14 @@ import (
 	"github.com/aws/aws-sdk-go/service/transcribestreamingservice"
 	"github.com/pkg/errors"
 	"github.com/thavlik/transcriber/pkg/source"
+	"go.uber.org/zap"
 )
 
 func writeAudioStream(
 	ctx context.Context,
 	source source.Source,
 	stream *transcribestreamingservice.StartStreamTranscriptionEventStream,
+	log *zap.Logger,
 ) error {
 	buf := make([]byte, 32000) // Amazon has a 32kb max
 	for {
@@ -22,7 +24,12 @@ func writeAudioStream(
 			n, err := source.ReadAudioChunk(buf)
 			if err != nil {
 				return errors.Wrap(err, "source.ReadAudioChunk")
+			} else if n == 0 {
+				// no audio data available
+				log.Warn("source returned no audio data")
+				continue
 			}
+			//log.Debug("read pcm audio chunk", zap.Int("bytes", n))
 			if err := stream.Send(
 				ctx,
 				&transcribestreamingservice.AudioEvent{
@@ -34,6 +41,7 @@ func writeAudioStream(
 			); err != nil {
 				return errors.Wrap(err, "stream.Send")
 			}
+			//log.Debug("sent pcm audio chunk", zap.Int("bytes", n))
 		}
 	}
 }
