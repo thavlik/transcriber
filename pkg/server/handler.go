@@ -43,11 +43,16 @@ func (h *Handler) OnPublish(_ *rtmp.StreamContext, timestamp uint32, cmd *rtmpms
 	if cmd.PublishingName == "" {
 		return errors.New("PublishingName is empty")
 	}
+	if h.dec != nil {
+		return errors.New("decoder already exists, did the client publish twice?")
+	}
+	h.dec = fdkaac.NewAacDecoder()
 	// TODO: Create a new stream context and start transcoding
 	return nil
 }
 
 func (h *Handler) OnSetDataFrame(timestamp uint32, data *rtmpmsg.NetStreamSetDataFrame) error {
+	log.Printf("OnSetDataFrame: %#v", data)
 	return nil
 }
 
@@ -79,7 +84,7 @@ func (h *Handler) OnAudio(timestamp uint32, payload io.Reader) error {
 		return nil
 	}
 
-	// TODO: write pcm to transcription stream
+	// TODO: write the pcm data to the stream source
 
 	return nil
 }
@@ -90,4 +95,6 @@ func (h *Handler) OnVideo(timestamp uint32, payload io.Reader) error {
 
 func (h *Handler) OnClose() {
 	h.log.Debug("OnClose")
+	_ = h.dec.Close()
+	h.dec = nil
 }
