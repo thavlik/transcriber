@@ -21,6 +21,7 @@ class ReferenceMaterial {
 class MyModel extends Model {
   bool _isConnected = false;
   WebSocketChannel? _channel;
+  String? _transcript = "";
   final List<ReferenceMaterial> _referenceMaterials = [];
   /*
     ReferenceMaterial("vertebral arch", [
@@ -47,6 +48,7 @@ class MyModel extends Model {
   */
 
   bool get isConnected => _isConnected;
+  String? get transcript => _transcript;
   List<ReferenceMaterial> get referenceMaterials => _referenceMaterials;
 
   MyModel() {
@@ -93,6 +95,10 @@ class MyModel extends Model {
       case 'ping':
         _channel!.sink.add(jsonEncode({'type': 'pong'}));
         break;
+      case 'transcript':
+        // received transcript
+        displayTranscript(obj['payload']['text'] as String);
+        break;
       case 'ref':
         // received reference material
         displayReference(ReferenceMaterial.fromJson(obj['payload']));
@@ -100,6 +106,11 @@ class MyModel extends Model {
       default:
         break;
     }
+  }
+
+  void displayTranscript(String transcript) {
+    _transcript = transcript;
+    notifyListeners();
   }
 
   void displayReference(ReferenceMaterial ref) {

@@ -109,26 +109,47 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                   ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SingleChildScrollView(
-                      child: SizedBox(
-                        width: 1000,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: model.referenceMaterials
-                              .map((ref) => ReferenceMaterialWidget(
-                                    ref,
-                                    onImageTap: (ref, img) =>
-                                        onImageTap(context, ref, img),
-                                  ))
-                              .toList(),
-                        ),
+                Column(children: [
+                  if (model.transcript != null)
+                    Container(
+                      constraints: const BoxConstraints(maxWidth: 1200),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Flexible(
+                            child: Text(model.transcript!,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge!
+                                    .copyWith(
+                                      color:
+                                          Colors.deepOrange.withOpacity(0.75),
+                                    )),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SingleChildScrollView(
+                        child: Container(
+                          constraints: const BoxConstraints(maxWidth: 1000),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: model.referenceMaterials
+                                .map((ref) => ReferenceMaterialWidget(
+                                      ref,
+                                      onImageTap: (ref, img) =>
+                                          onImageTap(context, ref, img),
+                                    ))
+                                .toList(),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ]),
                 if (_viewImage != null)
                   Positioned.fill(
                     child: GestureDetector(
