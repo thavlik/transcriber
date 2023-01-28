@@ -134,7 +134,7 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       SingleChildScrollView(
                         child: Container(
-                          constraints: const BoxConstraints(maxWidth: 1000),
+                          constraints: const BoxConstraints(maxWidth: 768),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: model.referenceMaterials.reversed
