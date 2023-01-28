@@ -75,13 +75,14 @@ class MyModel extends Model {
       (message) => handleWebSockMessage(message),
       onError: (err) async {
         print('websock error: $err');
+        displayTranscript('websocket error: $err');
         onDisconnect();
-        await Future.delayed(const Duration(seconds: 3));
+        await Future.delayed(const Duration(seconds: 2));
         connectWebSock();
       },
       onDone: () async {
         onDisconnect();
-        await Future.delayed(const Duration(seconds: 3));
+        await Future.delayed(const Duration(seconds: 2));
         connectWebSock();
       },
     );
