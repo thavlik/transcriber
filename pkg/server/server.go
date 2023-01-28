@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/thavlik/transcriber/pkg/refmat"
 	"github.com/thavlik/transcriber/pkg/source"
 	"github.com/thavlik/transcriber/pkg/transcriber"
 
@@ -21,6 +22,9 @@ type server struct {
 	conns     map[*websocket.Conn]struct{}
 	connsL    sync.Mutex
 	streamKey string
+	refs      refmat.ReferenceMap
+	usedRefsL sync.Mutex
+	usedRefs  map[*refmat.ReferenceMaterial]struct{}
 	log       *zap.Logger
 }
 

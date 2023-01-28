@@ -10,8 +10,8 @@ import (
 
 func readTranscription(
 	ctx context.Context,
-	events <-chan transcribestreamingservice.TranscriptResultStreamEvent,
-	transcripts chan<- *transcribestreamingservice.Transcript,
+	events <-chan transcribestreamingservice.MedicalTranscriptResultStreamEvent,
+	transcripts chan<- *transcribestreamingservice.MedicalTranscript,
 	log *zap.Logger,
 ) error {
 	for {
@@ -22,18 +22,21 @@ func readTranscription(
 			if ev == nil {
 				continue
 			}
-			if e, ok := ev.(*transcribestreamingservice.TranscriptEvent); ok {
-				log.Debug(
-					"transcript event",
-					zap.String("text", string(ConvertTranscript(e.Transcript))))
-				//select {
-				//case <-ctx.Done():
-				//	return ctx.Err()
-				//case transcripts <- e.Transcript:
-				//	continue
-				//default:
-				//	log.Warn("transcript channel full, discarding event")
-				//}
+			if e, ok := ev.(*transcribestreamingservice.MedicalTranscriptEvent); ok {
+				if e.Transcript == nil || len(e.Transcript.Results) == 0 {
+					continue
+				}
+				//log.Debug(
+				//	"transcript event",
+				//	zap.String("text", string(ConvertTranscript(e.Transcript))))
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case transcripts <- e.Transcript:
+					continue
+				default:
+					log.Warn("transcript channel full, discarding event")
+				}
 			} else {
 				log.Warn(
 					"unrecognized event",

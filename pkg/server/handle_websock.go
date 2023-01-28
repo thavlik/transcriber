@@ -43,18 +43,17 @@ func (s *server) getSubs() []*websocket.Conn {
 	return conns
 }
 
-func (s *server) broadcast(msg []byte) {
-	s.log.Debug("broadcasting", zap.String("msg", string(msg)))
-	//subs := s.getSubs()
-	//for _, sub := range subs {
-	//	if err := sub.WriteMessage(
-	//		websocket.TextMessage,
-	//		msg,
-	//	); err != nil {
-	//		s.log.Warn("failed to write message to websocket, closing connection", zap.Error(err))
-	//		_ = sub.Close()
-	//	}
-	//}
+func (s *server) broadcast(body []byte) {
+	subs := s.getSubs()
+	for _, sub := range subs {
+		if err := sub.WriteMessage(
+			websocket.TextMessage,
+			body,
+		); err != nil {
+			s.log.Warn("failed to write message to websocket, closing connection", zap.Error(err))
+			_ = sub.Close()
+		}
+	}
 }
 
 func (s *server) handleWebSock() http.HandlerFunc {

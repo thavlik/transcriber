@@ -12,7 +12,7 @@ import (
 func writeAudioStream(
 	ctx context.Context,
 	source source.Source,
-	stream *transcribestreamingservice.StartStreamTranscriptionEventStream,
+	stream *transcribestreamingservice.StartMedicalStreamTranscriptionEventStream,
 	log *zap.Logger,
 ) error {
 	buf := make([]byte, 32000) // Amazon has a 32kb max

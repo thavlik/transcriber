@@ -12,14 +12,14 @@ type TranscriptionJob struct {
 	ctx         context.Context
 	cancel      context.CancelFunc
 	source      source.Source
-	transcripts chan<- *transcribestreamingservice.Transcript
+	transcripts chan<- *transcribestreamingservice.MedicalTranscript
 	log         *zap.Logger
 }
 
 func NewTranscriptionJob(
 	ctx context.Context,
 	source source.Source,
-	transcripts chan<- *transcribestreamingservice.Transcript,
+	transcripts chan<- *transcribestreamingservice.MedicalTranscript,
 	log *zap.Logger,
 ) *TranscriptionJob {
 	childCtx, cancel := context.WithCancel(ctx)

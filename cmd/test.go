@@ -34,7 +34,7 @@ var testCmd = &cobra.Command{
 			return errors.New("unsupported file type")
 		}
 		ctx := context.Background()
-		transcripts := make(chan *transcribestreamingservice.Transcript, 16)
+		transcripts := make(chan *transcribestreamingservice.MedicalTranscript, 16)
 		go transcriber.PrintTranscripts(ctx, transcripts)
 		return transcriber.Transcribe(
 			ctx,

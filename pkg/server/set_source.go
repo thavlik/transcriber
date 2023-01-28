@@ -26,7 +26,7 @@ func (s *server) setSource(
 		// start a new job, use the source's context
 		// so the transcription is cancelled when the
 		// source is closed
-		transcripts := make(chan *transcribestreamingservice.Transcript, 16)
+		transcripts := make(chan *transcribestreamingservice.MedicalTranscript, 16)
 		s.job = transcriber.NewTranscriptionJob(
 			src.Context(),
 			src,
@@ -34,11 +34,15 @@ func (s *server) setSource(
 			s.log,
 		)
 		go func() {
-			select {
-			case <-s.job.Context().Done():
-				return
-			case transcript := <-transcripts:
-				s.broadcast(transcriber.ConvertTranscript(transcript))
+			for {
+				select {
+				case <-s.job.Context().Done():
+					return
+				case transcript := <-transcripts:
+					if err := s.handleTranscript(transcript); err != nil {
+						s.log.Error("handle transcript error", zap.Error(err))
+					}
+				}
 			}
 		}()
 		go func() {

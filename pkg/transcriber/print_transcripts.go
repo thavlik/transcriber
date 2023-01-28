@@ -10,7 +10,7 @@ import (
 
 func PrintTranscripts(
 	ctx context.Context,
-	transcripts <-chan *transcribestreamingservice.Transcript,
+	transcripts <-chan *transcribestreamingservice.MedicalTranscript,
 ) {
 	for {
 		select {

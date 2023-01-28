@@ -14,7 +14,7 @@ import (
 func Transcribe(
 	ctx context.Context,
 	source source.Source,
-	transcripts chan<- *transcribestreamingservice.Transcript,
+	transcripts chan<- *transcribestreamingservice.MedicalTranscript,
 	log *zap.Logger,
 ) error {
 	ctx, cancel := context.WithCancel(ctx)
@@ -40,24 +40,38 @@ func Transcribe(
 		numberOfChannels = aws.Int64(2)
 	}
 	svc := transcribestreamingservice.New(AWSSession())
-	resp, err := svc.StartStreamTranscriptionWithContext(
+	//resp, err := svc.StartStreamTranscriptionWithContext(
+	//	ctx,
+	//	&transcribestreamingservice.StartStreamTranscriptionInput{
+	//		LanguageCode:                aws.String("en-US"),
+	//		MediaEncoding:               aws.String("pcm"),
+	//		MediaSampleRateHertz:        aws.Int64(sampleRate),
+	//		NumberOfChannels:            numberOfChannels,
+	//		EnableChannelIdentification: enableChannelIdentification,
+	//	})
+	//if err != nil {
+	//	return errors.Wrap(err, "StartStreamTranscriptionWithContext")
+	//}
+	resp, err := svc.StartMedicalStreamTranscriptionWithContext(
 		ctx,
-		&transcribestreamingservice.StartStreamTranscriptionInput{
+		&transcribestreamingservice.StartMedicalStreamTranscriptionInput{
 			LanguageCode:                aws.String("en-US"),
 			MediaEncoding:               aws.String("pcm"),
 			MediaSampleRateHertz:        aws.Int64(sampleRate),
 			NumberOfChannels:            numberOfChannels,
 			EnableChannelIdentification: enableChannelIdentification,
+			Specialty:                   aws.String("NEUROLOGY"),    // PRIMARYCARE | CARDIOLOGY | NEUROLOGY | ONCOLOGY | RADIOLOGY | UROLOGY
+			Type:                        aws.String("CONVERSATION"), // CONVERSATION | DICTATION
 		})
 	if err != nil {
-		return errors.Wrap(err, "StartStreamTranscriptionWithContext")
+		return errors.Wrap(err, "StartMedicalStreamTranscriptionWithContext")
 	}
 	stream := resp.GetStream()
 
 	// spin up a goroutine for sending the audio stream
-	writeAudioErr := make(chan error)
+	writeAudioStreamErr := make(chan error)
 	go func() {
-		writeAudioErr <- writeAudioStream(
+		writeAudioStreamErr <- writeAudioStream(
 			ctx,
 			source,
 			stream,
@@ -80,7 +94,7 @@ func Transcribe(
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
-	case err := <-writeAudioErr:
+	case err := <-writeAudioStreamErr:
 		cancel()
 		multi = multierror.Append(multi, errors.Wrap(err, "writeAudioStream"))
 		if err := <-readTranscriptionErr; err != nil {
@@ -89,7 +103,7 @@ func Transcribe(
 	case err := <-readTranscriptionErr:
 		cancel()
 		multi = multierror.Append(multi, errors.Wrap(err, "readTranscription"))
-		if err := <-writeAudioErr; err != nil {
+		if err := <-writeAudioStreamErr; err != nil {
 			multi = multierror.Append(multi, errors.Wrap(err, "writeAudioStream"))
 		}
 	}
