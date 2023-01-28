@@ -36,6 +36,10 @@ func (s *server) ListenAndServe(
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {})
 	mux.HandleFunc("/readyz", func(w http.ResponseWriter, r *http.Request) {})
 	mux.HandleFunc("/ws", s.handleWebSock())
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+		s.log.Warn("404", zap.String("r.RequestURI", r.RequestURI))
+	})
 	httpDone := make(chan error)
 	go func() {
 		s.log.Info("http server listening forever", zap.Int("port", httpPort))

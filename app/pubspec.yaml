@@ -38,7 +38,7 @@ dependencies:
   url_launcher: 6.1.7
   scoped_model: 2.0.0
   http: 0.13.5
-  web_socket_channel: ^2.2.0
+  web_socket_channel: ^2.3.0
 
 dev_dependencies:
   flutter_test:

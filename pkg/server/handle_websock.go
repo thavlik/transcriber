@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -56,6 +57,11 @@ func (s *server) broadcast(body []byte) {
 	}
 }
 
+type wsMessage struct {
+	Type    string      `json:"type"`
+	Payload interface{} `json:"payload"`
+}
+
 func (s *server) handleWebSock() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		retCode := http.StatusInternalServerError
@@ -72,7 +78,11 @@ func (s *server) handleWebSock() http.HandlerFunc {
 				return fmt.Errorf("method not allowed")
 			}
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-			upgrader := websocket.Upgrader{}
+			upgrader := websocket.Upgrader{
+				CheckOrigin: func(r *http.Request) bool {
+					return true
+				},
+			}
 			c, err := upgrader.Upgrade(w, r, nil)
 			if err != nil {
 				return fmt.Errorf("upgrade: %v", err)
@@ -84,14 +94,21 @@ func (s *server) handleWebSock() http.HandlerFunc {
 			defer c.Close()
 			s.sub(c)
 			defer s.unsub(c)
+			ping, _ := json.Marshal(&wsMessage{Type: "ping"})
+			if err := c.WriteMessage(
+				websocket.TextMessage,
+				ping,
+			); err != nil {
+				return fmt.Errorf("ping: %v", err)
+			}
 			for {
 				select {
 				case <-r.Context().Done():
 					return r.Context().Err()
 				case <-time.After(10 * time.Second):
 					if err := c.WriteMessage(
-						websocket.PingMessage,
-						nil,
+						websocket.TextMessage,
+						ping,
 					); err != nil {
 						return fmt.Errorf("ping: %v", err)
 					}

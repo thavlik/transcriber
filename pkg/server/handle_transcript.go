@@ -51,7 +51,10 @@ func (s *server) handleTranscript(
 					s.log.Debug("found reference material",
 						zap.String("matched", matched),
 						zap.Strings("terms", ref.Terms))
-					body, err := json.Marshal(ref)
+					body, err := json.Marshal(&wsMessage{
+						Type:    "ref",
+						Payload: ref,
+					})
 					if err != nil {
 						panic(err)
 					}
