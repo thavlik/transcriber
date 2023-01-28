@@ -1,3 +1,5 @@
+dependencies:
+- app
 build:
   name: thavlik/transcriber
 env:

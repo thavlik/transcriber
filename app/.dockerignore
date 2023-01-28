@@ -1,0 +1,48 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.vscode
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+Dockerfile
+kindest.yaml
+README.md
+/android/
+/integration_tests/
+/ios/
+ephemeral
+/macos/
+/scripts/
+/test/
+/test_driver/
+/windows/
+/screenshots/
+
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/

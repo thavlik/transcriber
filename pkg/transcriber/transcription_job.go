@@ -31,6 +31,7 @@ func NewTranscriptionJob(
 		log:         log,
 	}
 }
+
 func (j *TranscriptionJob) Context() context.Context {
 	return j.ctx
 }

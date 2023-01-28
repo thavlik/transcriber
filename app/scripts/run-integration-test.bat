@@ -1,0 +1,1 @@
+flutter drive -d windows --driver=test_driver/integration_test.dart --target=integration_test/e2e_test.dart

@@ -1,0 +1,47 @@
+{{- if .Values.app.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-app
+spec:
+  replicas: {{ .Values.app.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-app
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-app
+    spec:
+    {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 10 }}
+    {{- end }}
+      volumes:
+      - name: config
+        configMap:
+          name: {{ .Release.Name }}-app
+      containers:
+      - name: app
+        volumeMounts:
+        - name: config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        imagePullPolicy: {{ .Values.app.imagePullPolicy }}
+        image: {{ .Values.app.image }}
+    {{- if .Values.app.resources }}
+        resources:
+{{ toYaml .Values.app.resources | indent 10 }}
+    {{- end }}
+        ports:
+        - containerPort: 80
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+{{- end }}

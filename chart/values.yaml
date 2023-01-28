@@ -18,3 +18,9 @@ transcriber:
   replicas: 1
   logLevel: debug
   resources: {}
+
+app:
+  image: thavlik/transcriber-app:latest
+  imagePullPolicy: Always
+  replicas: 1
+  resources: {}

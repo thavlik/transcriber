@@ -1,4 +1,6 @@
+.DS_Store
 .git
+.vscode
 *.exe
 kindest.yaml
 cmd/cmd
