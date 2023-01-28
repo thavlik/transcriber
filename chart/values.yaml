@@ -20,6 +20,7 @@ transcriber:
   resources: {}
 
 app:
+  enabled: true
   image: thavlik/transcriber-app:latest
   imagePullPolicy: Always
   replicas: 1

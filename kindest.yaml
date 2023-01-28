@@ -12,6 +12,8 @@ env:
         releaseName: ts
         namespace: ts
         values:
+          app:
+            enabled: true
           transcriber:
             streamKey:
               valueFrom:
