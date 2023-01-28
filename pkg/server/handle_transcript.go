@@ -51,13 +51,12 @@ func (s *server) handleTranscript(
 					s.log.Debug("found reference material",
 						zap.String("matched", matched),
 						zap.Strings("terms", ref.Terms))
-					// broadcast the reference materials
 					body, err := json.Marshal(ref)
 					if err != nil {
 						panic(err)
 					}
-					s.broadcast(body)
-					s.useRef(ref)
+					s.broadcast(body) // broadcast the reference material to all websockets
+					s.useRef(ref)     // mark the reference material as used
 				}
 			}
 		}
