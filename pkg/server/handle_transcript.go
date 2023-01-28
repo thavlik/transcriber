@@ -38,7 +38,7 @@ func (s *server) handleTranscript(
 				matched := term
 				ref := s.checkTerm(term)
 				if ref == nil && lastTerm != "" || (ref != nil && s.isRefUsed(ref)) {
-					// see if a compound word will match a new reference material
+					// see if a compound word will match a reference material
 					matched = fmt.Sprintf("%s %s", lastTerm, term)
 					ref = s.checkTerm(matched)
 					//if ref == nil {

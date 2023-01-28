@@ -1,12 +1,23 @@
 package refmat
 
+// ReferenceMaterial is a reference material that can be used to explain a term
+// that was found in a transcript.
 type ReferenceMaterial struct {
-	Terms  []string `json:"terms"`
+	// Terms is a list of terms that can be used to find this reference material.
+	// For example, if the reference material is about the ligamentum flavum,
+	// then the terms could be "ligamentum flavum", "ligamentum", and "flavum".
+	// The maximum number of words in a term is 2. Terms are not case sensitive.
+	Terms []string `json:"terms"`
+
+	// List of image URLs that can be used to display the reference material.
+	// The first image in the list is the primary image.
 	Images []string `json:"images"`
 }
 
+// ReferenceMap is a map of all terms to their reference materials.
 type ReferenceMap map[string]*ReferenceMaterial
 
+// BuildReferenceMap builds a map of all terms to their reference materials.
 func BuildReferenceMap(refs []*ReferenceMaterial) ReferenceMap {
 	m := make(map[string]*ReferenceMaterial)
 	for _, ref := range refs {
@@ -17,6 +28,9 @@ func BuildReferenceMap(refs []*ReferenceMaterial) ReferenceMap {
 	return m
 }
 
+// TestReferenceMaterials is a list of reference materials that can be used for
+// testing. This list is not exhaustive. It is meant to be used for testing
+// purposes only. This is a good test video: https://youtu.be/gd4-FV_lwSE
 var TestReferenceMaterials = []*ReferenceMaterial{{
 	Terms: []string{
 		"vertebral arch",
@@ -38,7 +52,6 @@ var TestReferenceMaterials = []*ReferenceMaterial{{
 }, {
 	Terms: []string{
 		"facet joint",
-		"facet",
 	},
 	Images: []string{
 		"https://refmat.nyc3.digitaloceanspaces.com/facet_joints_related_spine_structures_shutterstock_157672247.jpg",
