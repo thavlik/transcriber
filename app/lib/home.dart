@@ -13,10 +13,13 @@ class ReferenceMaterialWidget extends StatelessWidget {
   final ReferenceMaterial model;
   final Function(ReferenceMaterial, String) onImageTap;
 
-  Widget _buildTerm(String term) {
+  Widget _buildTerm(BuildContext context, String term) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Text(term),
+      child: Text(
+        term,
+        style: Theme.of(context).textTheme.headlineSmall,
+      ),
     );
   }
 
@@ -37,13 +40,7 @@ class ReferenceMaterialWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildTerm(model.matched),
-                //Column(
-                //  crossAxisAlignment: CrossAxisAlignment.start,
-                //  children: [
-                //    ...model.terms.map((e) => _buildTerm(e)).toList(),
-                //  ],
-                //),
+                _buildTerm(context, model.matched),
                 Row(
                   children: model.images
                       .map((e) => Padding(
@@ -102,6 +99,16 @@ class _HomePageState extends State<HomePage> {
             constraints: const BoxConstraints.expand(),
             child: Stack(
               children: [
+                if (model.referenceMaterials.isEmpty)
+                  Center(
+                    child: Opacity(
+                      opacity: 0.5,
+                      child: Text(
+                        'No reference materials yet',
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+                    ),
+                  ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

@@ -21,7 +21,8 @@ class ReferenceMaterial {
 class MyModel extends Model {
   bool _isConnected = false;
   WebSocketChannel? _channel;
-  final List<ReferenceMaterial> _referenceMaterials = [
+  final List<ReferenceMaterial> _referenceMaterials = [];
+  /*
     ReferenceMaterial("vertebral arch", [
       "vertebral arch",
     ], [
@@ -43,6 +44,7 @@ class MyModel extends Model {
       "https://refmat.nyc3.digitaloceanspaces.com/Thoracic-Facet-Syndrome.jpg",
     ]),
   ];
+  */
 
   bool get isConnected => _isConnected;
   List<ReferenceMaterial> get referenceMaterials => _referenceMaterials;
