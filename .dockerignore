@@ -2,12 +2,15 @@
 .git
 .vscode
 *.exe
+app/
+chart/
+scripts/
+secrets/
 kindest.yaml
 cmd/cmd
 cmd/transcriber
 scripts/
 test.wav
-secrets/
 fdk-aac-*
 Dockerfile
 .dockerignore
