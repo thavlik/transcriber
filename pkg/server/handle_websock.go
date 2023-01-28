@@ -64,7 +64,6 @@ type wsMessage struct {
 
 func (s *server) handleWebSock() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		retCode := http.StatusInternalServerError
 		if err := func() error {
 			w.Header().Set("Access-Control-Allow-Origin", "*")
 			switch r.Method {
@@ -74,7 +73,7 @@ func (s *server) handleWebSock() http.HandlerFunc {
 			case http.MethodGet:
 				break
 			default:
-				retCode = http.StatusMethodNotAllowed
+				w.WriteHeader(http.StatusMethodNotAllowed)
 				return fmt.Errorf("method not allowed")
 			}
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
@@ -116,8 +115,6 @@ func (s *server) handleWebSock() http.HandlerFunc {
 			}
 		}(); err != nil {
 			s.log.Error(r.RequestURI, zap.Error(err))
-			w.WriteHeader(retCode)
-			w.Write([]byte(err.Error()))
 		}
 	}
 }

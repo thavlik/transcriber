@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/transcribestreamingservice"
 	"github.com/thavlik/transcriber/pkg/refmat"
+	"github.com/thavlik/transcriber/pkg/transcriber"
 
 	"go.uber.org/zap"
 )
@@ -25,6 +26,18 @@ func (s *server) handleTranscript(
 	transcript *transcribestreamingservice.MedicalTranscript,
 ) error {
 	var lastTerm string
+	text := transcriber.ConvertTranscript(transcript)
+	body, err := json.Marshal(&wsMessage{
+		Type: "transcript",
+		Payload: map[string]interface{}{
+			"text": text,
+		},
+	})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(text)
+	s.broadcast(body)
 	for _, result := range transcript.Results {
 		for _, alt := range result.Alternatives {
 			for _, item := range alt.Items {
@@ -52,8 +65,12 @@ func (s *server) handleTranscript(
 						zap.String("matched", matched),
 						zap.Strings("terms", ref.Terms))
 					body, err := json.Marshal(&wsMessage{
-						Type:    "ref",
-						Payload: ref,
+						Type: "ref",
+						Payload: map[string]interface{}{
+							"matched": matched,
+							"terms":   ref.Terms,
+							"images":  ref.Images,
+						},
 					})
 					if err != nil {
 						panic(err)

@@ -9,8 +9,8 @@ import (
 
 // ConvertTranscript crudely converts a transcript object into a byte slice
 func ConvertTranscript(
-	transcript *transcribestreamingservice.Transcript,
-) []byte {
+	transcript *transcribestreamingservice.MedicalTranscript,
+) string {
 	s := ""
 	for _, result := range transcript.Results {
 		for _, alt := range result.Alternatives {
@@ -26,5 +26,5 @@ func ConvertTranscript(
 			s += "\n"
 		}
 	}
-	return []byte(s)
+	return s
 }
