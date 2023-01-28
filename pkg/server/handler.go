@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"github.com/pkg/errors"
+	"github.com/thavlik/transcriber/pkg/source"
 	"github.com/thavlik/transcriber/pkg/source/aac"
 	flvtag "github.com/yutopp/go-flv/tag"
 	"github.com/yutopp/go-rtmp"
@@ -24,16 +25,14 @@ type Handler struct {
 	source         *aac.AACSource
 	ctx            context.Context
 	cancel         context.CancelFunc
-	newSource      chan<- *aac.AACSource
-	processAudio   chan<- []byte
+	newSource      chan<- source.Source
 	checkStreamKey CheckStreamKey
 	log            *zap.Logger
 }
 
 func NewHandler(
 	ctx context.Context,
-	newSource chan<- *aac.AACSource,
-	processAudio chan<- []byte,
+	newSource chan<- source.Source,
 	checkStreamKey CheckStreamKey,
 	log *zap.Logger,
 ) *Handler {
@@ -42,7 +41,6 @@ func NewHandler(
 		ctx:            ctx,
 		cancel:         cancel,
 		newSource:      newSource,
-		processAudio:   processAudio,
 		checkStreamKey: checkStreamKey,
 		log:            log,
 	}

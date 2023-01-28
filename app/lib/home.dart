@@ -137,7 +137,7 @@ class _HomePageState extends State<HomePage> {
                           constraints: const BoxConstraints(maxWidth: 1000),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: model.referenceMaterials
+                            children: model.referenceMaterials.reversed
                                 .map((ref) => ReferenceMaterialWidget(
                                       ref,
                                       onImageTap: (ref, img) =>

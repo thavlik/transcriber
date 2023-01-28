@@ -6,7 +6,7 @@ import (
 	"io"
 	"net"
 
-	"github.com/thavlik/transcriber/pkg/source/aac"
+	"github.com/thavlik/transcriber/pkg/source"
 	"github.com/yutopp/go-rtmp"
 
 	"github.com/pkg/errors"
@@ -24,43 +24,25 @@ func (s *server) listenRTMP(port int) error {
 	}
 	srv := rtmp.NewServer(&rtmp.ServerConfig{
 		OnConnect: func(conn net.Conn) (io.ReadWriteCloser, *rtmp.ConnConfig) {
-			processAudio := make(chan []byte, 16)
-			newSource := make(chan *aac.AACSource, 1)
+			newSource := make(chan source.Source, 1)
 			h := NewHandler(
 				context.Background(),
 				newSource,
-				processAudio,
 				func(key string) bool {
 					return key == s.streamKey
 				},
 				s.log,
 			)
 			go func() {
-				var audioSource *aac.AACSource
 				select {
 				case <-h.ctx.Done():
 					return
-				case audioSource = <-newSource:
+				case audioSource := <-newSource:
 					select {
 					case <-h.ctx.Done():
 						return
 					case s.newSource <- audioSource:
 						break
-					}
-				}
-				for {
-					select {
-					case <-h.ctx.Done():
-						return
-					case audio, ok := <-processAudio:
-						if !ok {
-							return
-						}
-						if n, err := audioSource.Write(audio); err != nil {
-							s.log.Error("failed to write audio bytes", zap.Error(err))
-						} else if n != len(audio) {
-							s.log.Error("failed to write all audio bytes", zap.Int("n", n), zap.Int("len", len(audio)))
-						}
 					}
 				}
 			}()

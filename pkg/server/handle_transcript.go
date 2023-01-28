@@ -13,11 +13,11 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *server) checkTerm(term string) *refmat.ReferenceMaterial {
+func (s *server) checkTerm(term string) []*refmat.ReferenceMaterial {
 	term = strings.ToLower(term)
-	ref, ok := s.refs[term]
+	refs, ok := s.refs[term]
 	if ok {
-		return ref
+		return refs
 	}
 	return nil
 }
@@ -49,19 +49,24 @@ func (s *server) handleTranscript(
 					continue
 				}
 				matched := term
-				ref := s.checkTerm(term)
-				if ref == nil && lastTerm != "" || (ref != nil && s.isRefUsed(ref)) {
-					// see if a compound word will match a reference material
-					matched = fmt.Sprintf("%s %s", lastTerm, term)
-					ref = s.checkTerm(matched)
-					//if ref == nil {
-					//	s.log.Debug("no reference material found",
-					//		zap.String("search", matched))
-					//}
+				refs := s.checkTerm(term)
+				if lastTerm != "" {
+					if refs == nil || s.areRefsUsed(refs) {
+						// see if a compound word will match a reference material
+						matched = fmt.Sprintf("%s %s", lastTerm, term)
+						refs = s.checkTerm(matched)
+						//if ref == nil {
+						//	s.log.Debug("no reference material found",
+						//		zap.String("search", matched))
+						//}
+					}
 				}
 				lastTerm = term
-				if ref != nil && !s.isRefUsed(ref) {
-					s.log.Debug("found reference material",
+				for _, ref := range refs {
+					if s.isRefUsed(ref) {
+						continue
+					}
+					s.log.Debug("detected reference material",
 						zap.String("matched", matched),
 						zap.Strings("terms", ref.Terms))
 					body, err := json.Marshal(&wsMessage{

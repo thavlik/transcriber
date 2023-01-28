@@ -34,42 +34,13 @@ func NewAACSource(
 	log *zap.Logger,
 ) (*AACSource, error) {
 	ctx, cancel := context.WithCancel(ctx)
-	//var sr SampleRateIndex
-	//switch sampleRate {
-	//case 44100:
-	//	sr = SampleRateIndex44kHz
-	//default:
-	//	return nil, errors.New("unsupported sample rate")
-	//}
-	//var channels Channels
-	//if stereo {
-	//	channels = ChannelStereo
-	//} else {
-	//	channels = ChannelMono
-	//}
-	//cfg := &AudioSpecificConfig{
-	//	Object:     ObjectTypeLC,
-	//	SampleRate: sr,
-	//	Channels:   channels,
-	//}
-	//asc, err := cfg.MarshalBinary()
-	//if err != nil {
-	//	return nil, errors.Errorf("failed to marshal audio specific config %#v: %v", cfg, err)
-	//}
-	dec := fdkaac.NewAacDecoder()
-	//if err := dec.InitRaw(asc); err != nil {
-	//	return nil, errors.Errorf("failed to initialize raw asc %#v: %v", cfg, err)
-	//}
-	//if err := dec.InitAdts(); err != nil {
-	//	return nil, errors.Wrap(err, "failed to initialize adts decoder")
-	//}
 	r, w := io.Pipe()
 	return &AACSource{
 		ctx:        ctx,
 		cancel:     cancel,
 		r:          r,
-		w:          w, //bufio.NewWriterSize(w, 64000),
-		dec:        dec,
+		w:          w,
+		dec:        fdkaac.NewAacDecoder(),
 		sampleRate: sampleRate,
 		stereo:     stereo,
 		log:        log,

@@ -65,6 +65,18 @@ func (s *server) isRefUsed(ref *refmat.ReferenceMaterial) bool {
 	return ok
 }
 
+func (s *server) areRefsUsed(refs []*refmat.ReferenceMaterial) bool {
+	s.usedRefsL.Lock()
+	defer s.usedRefsL.Unlock()
+	for _, ref := range refs {
+		_, ok := s.usedRefs[ref]
+		if !ok {
+			return false
+		}
+	}
+	return true
+}
+
 func (s *server) useRef(ref *refmat.ReferenceMaterial) {
 	s.usedRefsL.Lock()
 	defer s.usedRefsL.Unlock()

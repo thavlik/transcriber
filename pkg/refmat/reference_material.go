@@ -15,14 +15,14 @@ type ReferenceMaterial struct {
 }
 
 // ReferenceMap is a map of all terms to their reference materials.
-type ReferenceMap map[string]*ReferenceMaterial
+type ReferenceMap map[string][]*ReferenceMaterial
 
 // BuildReferenceMap builds a map of all terms to their reference materials.
 func BuildReferenceMap(refs []*ReferenceMaterial) ReferenceMap {
-	m := make(map[string]*ReferenceMaterial)
+	m := make(map[string][]*ReferenceMaterial)
 	for _, ref := range refs {
 		for _, term := range ref.Terms {
-			m[term] = ref
+			m[term] = append(m[term], ref)
 		}
 	}
 	return m
