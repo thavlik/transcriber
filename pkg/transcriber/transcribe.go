@@ -60,8 +60,8 @@ func Transcribe(
 			MediaSampleRateHertz:        aws.Int64(sampleRate),
 			NumberOfChannels:            numberOfChannels,
 			EnableChannelIdentification: enableChannelIdentification,
-			Specialty:                   aws.String("NEUROLOGY"),    // PRIMARYCARE | CARDIOLOGY | NEUROLOGY | ONCOLOGY | RADIOLOGY | UROLOGY
-			Type:                        aws.String("CONVERSATION"), // CONVERSATION | DICTATION
+			Specialty:                   aws.String("RADIOLOGY"), // PRIMARYCARE | CARDIOLOGY | NEUROLOGY | ONCOLOGY | RADIOLOGY | UROLOGY
+			Type:                        aws.String("DICTATION"), // CONVERSATION | DICTATION
 		})
 	if err != nil {
 		return errors.Wrap(err, "StartMedicalStreamTranscriptionWithContext")

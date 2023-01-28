@@ -18,7 +18,10 @@ var TestReferenceMaterials = []*ReferenceMaterial{{
 		"https://refmat.nyc3.digitaloceanspaces.com/Ligament-Injuries-1.jpg",
 	},
 }, {
-	Terms: []string{"spinous process"},
+	Terms: []string{
+		"spinous process",
+		"spinous processes",
+	},
 	Images: []string{
 		"https://refmat.nyc3.digitaloceanspaces.com/ok29q1av3b.jpg",
 	},
