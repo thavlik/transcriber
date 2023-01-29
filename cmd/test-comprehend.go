@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/thavlik/transcriber/pkg/comprehend"
@@ -11,12 +12,16 @@ import (
 )
 
 var testComprehendCmd = &cobra.Command{
-	Use:  "comprehend",
-	Args: cobra.NoArgs,
+	Use:   "comprehend",
+	Short: "test Amazon Comprehend with a text string",
+	Args:  cobra.ArbitraryArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		text, ok := os.LookupEnv("TEXT")
 		if !ok {
-			return errors.New("TEXT environment variable not set")
+			if len(args) == 0 {
+				return errors.New("no text provided")
+			}
+			text = strings.Join(args, " ")
 		}
 		DefaultLog.Info("testing comprehend", zap.String("text", text))
 		entities, err := comprehend.Comprehend(

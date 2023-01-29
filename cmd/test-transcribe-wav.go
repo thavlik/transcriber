@@ -14,8 +14,9 @@ import (
 )
 
 var testTranscribeWavCmd = &cobra.Command{
-	Use:  "transcribe-wav",
-	Args: cobra.ExactArgs(1),
+	Use:   "transcribe-wav",
+	Short: "test Amazon Transcribe with a WAV file",
+	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		input := args[0]
 		f, err := os.Open(input)
