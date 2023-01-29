@@ -1,4 +1,4 @@
-package transcriber
+package util
 
 import (
 	"os"
@@ -21,7 +21,7 @@ func AWSSession() *session.Session {
 	return session.Must(session.NewSession(AWSConfigFromEnv()))
 }
 
-func duplicate(buf []byte) []byte {
+func Duplicate(buf []byte) []byte {
 	dup := make([]byte, len(buf))
 	copy(dup, buf)
 	return dup

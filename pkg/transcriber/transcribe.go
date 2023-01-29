@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/pkg/errors"
 	"github.com/thavlik/transcriber/pkg/source"
+	"github.com/thavlik/transcriber/pkg/util"
 	"go.uber.org/zap"
 )
 
@@ -39,19 +40,7 @@ func Transcribe(
 	if stereo {
 		numberOfChannels = aws.Int64(2)
 	}
-	svc := transcribestreamingservice.New(AWSSession())
-	//resp, err := svc.StartStreamTranscriptionWithContext(
-	//	ctx,
-	//	&transcribestreamingservice.StartStreamTranscriptionInput{
-	//		LanguageCode:                aws.String("en-US"),
-	//		MediaEncoding:               aws.String("pcm"),
-	//		MediaSampleRateHertz:        aws.Int64(sampleRate),
-	//		NumberOfChannels:            numberOfChannels,
-	//		EnableChannelIdentification: enableChannelIdentification,
-	//	})
-	//if err != nil {
-	//	return errors.Wrap(err, "StartStreamTranscriptionWithContext")
-	//}
+	svc := transcribestreamingservice.New(util.AWSSession())
 	resp, err := svc.StartMedicalStreamTranscriptionWithContext(
 		ctx,
 		&transcribestreamingservice.StartMedicalStreamTranscriptionInput{
