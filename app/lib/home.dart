@@ -208,7 +208,7 @@ class _HomePageState extends State<HomePage> {
                               flex: 1,
                               child: model.keyTerms != null
                                   ? _buildKeyTerms(context, model.keyTerms!)
-                                  : Text('No key terms'),
+                                  : Container(),
                             ),
                             Flexible(
                               flex: 1,
