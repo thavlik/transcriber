@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/comprehend"
+	"github.com/aws/aws-sdk-go/service/comprehendmedical"
 	"github.com/pkg/errors"
 	"github.com/thavlik/transcriber/pkg/util"
 	"go.uber.org/zap"
@@ -22,13 +22,11 @@ func Comprehend(
 	filter []string,
 	log *zap.Logger,
 ) ([]*Entity, error) {
-	svc := comprehend.New(util.AWSSession())
-	resp, err := svc.DetectEntitiesWithContext(
+	svc := comprehendmedical.New(util.AWSSession())
+	resp, err := svc.DetectEntitiesV2WithContext(
 		ctx,
-		&comprehend.DetectEntitiesInput{
-			LanguageCode: aws.String("en"),
-			Text:         aws.String(text),
-			//EndpointArn: ,
+		&comprehendmedical.DetectEntitiesV2Input{
+			Text: aws.String(text),
 		})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to detect entities")

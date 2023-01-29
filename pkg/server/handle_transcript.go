@@ -38,7 +38,8 @@ func (s *server) handleTranscript(
 		entities, err := comprehend.Comprehend(
 			ctx,
 			text,
-			[]string{"OTHER"},
+			//[]string{"OTHER"},
+			nil,
 			s.log,
 		)
 		if err != nil {

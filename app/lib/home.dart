@@ -96,13 +96,13 @@ class _HomePageState extends State<HomePage> {
               style: Theme.of(context).textTheme.bodyLarge,
             ),
           ),
-          //Padding(
-          //  padding: const EdgeInsets.all(8.0),
-          //  child: Text(
-          //    ' (${entity.type})',
-          //    style: Theme.of(context).textTheme.bodyLarge,
-          //  ),
-          //),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              ' (${entity.type})',
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
@@ -121,57 +121,99 @@ class _HomePageState extends State<HomePage> {
         ),
       );
 
+  Widget _columnHeader(BuildContext context, String name) => Flexible(
+        flex: 1,
+        child: Text(name, style: Theme.of(context).textTheme.headlineSmall),
+      );
+
   @override
   Widget build(BuildContext context) {
     return ScopedModelDescendant<MyModel>(
       builder: (context, child, model) {
         return Scaffold(
           appBar: AppBar(
-            title: Text(model.isConnected ? 'Connected' : 'Not Connected'),
+            title: Text(
+              model.isConnected ? 'Connected' : 'Not Connected',
+            ),
           ),
           body: Container(
             constraints: const BoxConstraints.expand(),
             child: Stack(
               children: [
-                SingleChildScrollView(
-                  child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        if (model.transcript != null)
-                          Container(
-                            constraints: const BoxConstraints(maxWidth: 1200),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Flexible(
-                                  child: Text(model.transcript!,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyLarge!
-                                          .copyWith(
-                                            color: Colors.deepOrange
-                                                .withOpacity(0.75),
-                                          )),
-                                ),
-                              ],
-                            ),
-                          ),
-                        if (model.keyTerms != null)
-                          _buildKeyTerms(context, model.keyTerms!),
-                        Container(
-                          constraints: const BoxConstraints(maxWidth: 768),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: model.referenceMaterials.reversed
-                                .map((ref) => ReferenceMaterialWidget(
-                                      ref,
-                                      onImageTap: (ref, img) =>
-                                          onImageTap(context, ref, img),
-                                    ))
-                                .toList(),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: Theme.of(context).dividerColor,
+                            width: 1,
                           ),
                         ),
-                      ]),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 8.0,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _columnHeader(context, 'Transcript'),
+                            _columnHeader(context, 'Key Terms'),
+                            _columnHeader(context, 'Reference Materials'),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SingleChildScrollView(
+                      child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Flexible(
+                              flex: 1,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Flexible(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(model.transcript ?? '',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyLarge!
+                                              .copyWith(
+                                                color: Colors.deepOrange
+                                                    .withOpacity(0.75),
+                                              )),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Flexible(
+                              flex: 1,
+                              child: model.keyTerms != null
+                                  ? _buildKeyTerms(context, model.keyTerms!)
+                                  : Text('No key terms'),
+                            ),
+                            Flexible(
+                              flex: 1,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: model.referenceMaterials.reversed
+                                    .map((ref) => ReferenceMaterialWidget(
+                                          ref,
+                                          onImageTap: (ref, img) =>
+                                              onImageTap(context, ref, img),
+                                        ))
+                                    .toList(),
+                              ),
+                            ),
+                          ]),
+                    ),
+                  ],
                 ),
                 if (_viewImage != null)
                   Positioned.fill(
