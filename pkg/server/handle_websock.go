@@ -93,6 +93,7 @@ func (s *server) handleWebSock() http.HandlerFunc {
 			defer c.Close()
 			s.sub(c)
 			defer s.unsub(c)
+			s.clearUsedRefs() // clear used refs for demo
 			ping, _ := json.Marshal(&wsMessage{Type: "ping"})
 			if err := c.WriteMessage(
 				websocket.TextMessage,
