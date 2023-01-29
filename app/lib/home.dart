@@ -14,12 +14,24 @@ class ReferenceMaterialWidget extends StatelessWidget {
   final Function(ReferenceMaterial, String) onImageTap;
 
   Widget _buildTerm(BuildContext context, String term) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Text(
-        term,
-        style: Theme.of(context).textTheme.headlineSmall,
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            term,
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            '(${model.terms[0]})',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ),
+      ],
     );
   }
 
