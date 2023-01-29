@@ -51,7 +51,7 @@ func (s *server) broadcast(body []byte) {
 			websocket.TextMessage,
 			body,
 		); err != nil {
-			s.log.Warn("failed to write message to websocket, closing connection", zap.Error(err))
+			//s.log.Warn("failed to write message to websocket, closing connection", zap.Error(err))
 			_ = sub.Close()
 		}
 	}
