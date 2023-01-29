@@ -23,7 +23,7 @@ type server struct {
 	streamKey string
 	refs      refmat.ReferenceMap
 	usedRefsL sync.Mutex
-	usedRefs  map[*refmat.ReferenceMaterial]struct{}
+	usedRefs  map[*refmat.ReferenceMaterial]time.Time
 	log       *zap.Logger
 }
 

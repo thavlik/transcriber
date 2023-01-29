@@ -109,7 +109,7 @@ func (s *server) handleTranscript(
 						ctx,
 						"ref",
 						map[string]interface{}{
-							"matched": matched,
+							"matched": ref.Terms[0],
 							"terms":   ref.Terms,
 							"images":  ref.Images,
 						})

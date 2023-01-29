@@ -160,6 +160,10 @@ class MyModel extends Model {
   void displayReference(ReferenceMaterial ref) {
     // display reference material
     _referenceMaterials.add(ref);
+    while (_referenceMaterials.length > 15) {
+      // limit the number of reference material displayed
+      _referenceMaterials.removeAt(0);
+    }
     notifyListeners();
   }
 

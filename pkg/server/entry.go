@@ -2,12 +2,15 @@ package server
 
 import (
 	"context"
+	"time"
 
 	"github.com/thavlik/transcriber/pkg/refmat"
 	"github.com/thavlik/transcriber/pkg/source"
 
 	"go.uber.org/zap"
 )
+
+var useTimeout = 2 * time.Minute
 
 func Entry(
 	httpPort int,
@@ -23,7 +26,7 @@ func Entry(
 		conns:     make(map[*wsClient]struct{}),
 		streamKey: streamKey,
 		refs:      refmat.BuildReferenceMap(refmat.TestReferenceMaterials),
-		usedRefs:  make(map[*refmat.ReferenceMaterial]struct{}),
+		usedRefs:  make(map[*refmat.ReferenceMaterial]time.Time),
 		log:       log,
 	}
 	ctx, cancel := context.WithCancel(context.Background())
@@ -54,22 +57,22 @@ func Entry(
 func (s *server) clearUsedRefs() {
 	s.usedRefsL.Lock()
 	defer s.usedRefsL.Unlock()
-	s.usedRefs = make(map[*refmat.ReferenceMaterial]struct{})
+	s.usedRefs = make(map[*refmat.ReferenceMaterial]time.Time)
 }
 
 func (s *server) isRefUsed(ref *refmat.ReferenceMaterial) bool {
 	s.usedRefsL.Lock()
-	defer s.usedRefsL.Unlock()
-	_, ok := s.usedRefs[ref]
-	return ok
+	lastUsed, ok := s.usedRefs[ref]
+	s.usedRefsL.Unlock()
+	return ok && time.Since(lastUsed) < useTimeout
 }
 
 func (s *server) areRefsUsed(refs []*refmat.ReferenceMaterial) bool {
 	s.usedRefsL.Lock()
 	defer s.usedRefsL.Unlock()
 	for _, ref := range refs {
-		_, ok := s.usedRefs[ref]
-		if !ok {
+		lastUsed, ok := s.usedRefs[ref]
+		if !ok || time.Since(lastUsed) > useTimeout {
 			return false
 		}
 	}
@@ -79,5 +82,5 @@ func (s *server) areRefsUsed(refs []*refmat.ReferenceMaterial) bool {
 func (s *server) useRef(ref *refmat.ReferenceMaterial) {
 	s.usedRefsL.Lock()
 	defer s.usedRefsL.Unlock()
-	s.usedRefs[ref] = struct{}{}
+	s.usedRefs[ref] = time.Now()
 }

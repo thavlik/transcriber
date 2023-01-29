@@ -63,9 +63,9 @@ var TestReferenceMaterials = []*ReferenceMaterial{{
 	},
 }, {
 	Terms: []string{
+		"ligamentum flavum",
 		"ligamentum",
 		"ligamenta",
-		"ligamentum flavum",
 		"ligamenta flavum",
 		"flavum",
 	},

@@ -140,35 +140,35 @@ class _HomePageState extends State<HomePage> {
             constraints: const BoxConstraints.expand(),
             child: Stack(
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: Theme.of(context).dividerColor,
-                            width: 1,
+                SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Theme.of(context).dividerColor,
+                              width: 1,
+                            ),
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                            vertical: 8.0,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              _columnHeader(context, 'Transcript'),
+                              _columnHeader(context, 'Key Terms'),
+                              _columnHeader(context, 'Reference Materials'),
+                            ],
                           ),
                         ),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                          vertical: 8.0,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            _columnHeader(context, 'Transcript'),
-                            _columnHeader(context, 'Key Terms'),
-                            _columnHeader(context, 'Reference Materials'),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SingleChildScrollView(
-                      child: Row(
+                      Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Flexible(
@@ -212,8 +212,8 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                           ]),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 if (_viewImage != null)
                   Positioned.fill(
