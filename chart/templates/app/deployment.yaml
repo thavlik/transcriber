@@ -22,7 +22,7 @@ spec:
         configMap:
           name: {{ .Release.Name }}-app
       containers:
-      - name: app
+      - name: nginx
         volumeMounts:
         - name: config
           mountPath: /etc/nginx/nginx.conf
