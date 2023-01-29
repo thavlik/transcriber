@@ -6,7 +6,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gorilla/websocket"
 	"github.com/thavlik/transcriber/pkg/refmat"
 	"github.com/thavlik/transcriber/pkg/source"
 	"github.com/thavlik/transcriber/pkg/transcriber"
@@ -19,7 +18,7 @@ type server struct {
 	newSource chan source.Source
 	job       *transcriber.TranscriptionJob
 	l         chan struct{}
-	conns     map[*websocket.Conn]struct{}
+	conns     map[*wsClient]struct{}
 	connsL    sync.Mutex
 	streamKey string
 	refs      refmat.ReferenceMap

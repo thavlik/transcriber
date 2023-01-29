@@ -11,6 +11,10 @@ import (
 	"go.uber.org/zap"
 )
 
+var testComprehendArgs struct {
+	filter string
+}
+
 var testComprehendCmd = &cobra.Command{
 	Use:   "comprehend",
 	Short: "test Amazon Comprehend with a text string",
@@ -27,6 +31,7 @@ var testComprehendCmd = &cobra.Command{
 		entities, err := comprehend.Comprehend(
 			context.Background(),
 			text,
+			strings.Split(testComprehendArgs.filter, ","),
 			DefaultLog,
 		)
 		if err != nil {
@@ -46,4 +51,5 @@ var testComprehendCmd = &cobra.Command{
 
 func init() {
 	testCmd.AddCommand(testComprehendCmd)
+	serverCmd.Flags().StringVarP(&testComprehendArgs.filter, "filter", "f", "", "entity type filter (comma-separated list)")
 }

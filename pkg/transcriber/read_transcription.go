@@ -26,9 +26,6 @@ func readTranscription(
 				if e.Transcript == nil || len(e.Transcript.Results) == 0 {
 					continue
 				}
-				//log.Debug(
-				//	"transcript event",
-				//	zap.String("text", string(ConvertTranscript(e.Transcript))))
 				select {
 				case <-ctx.Done():
 					return ctx.Err()

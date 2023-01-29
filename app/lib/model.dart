@@ -2,6 +2,42 @@ import 'dart:convert';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:scoped_model/scoped_model.dart';
 
+class Entity {
+  final String text;
+  final String type;
+  final double score;
+
+  Entity({
+    required this.text,
+    required this.type,
+    required this.score,
+  });
+
+  factory Entity.fromJson(Map<String, dynamic> json) {
+    return Entity(
+      text: json['text'] as String,
+      type: json['type'] as String,
+      score: json['score'] as double,
+    );
+  }
+}
+
+class KeyTerms {
+  final List<Entity> entities;
+
+  KeyTerms({
+    required this.entities,
+  });
+
+  factory KeyTerms.fromJson(Map<String, dynamic> json) {
+    return KeyTerms(
+      entities: (json['entities'] as List<dynamic>)
+          .map((e) => Entity.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
 class ReferenceMaterial {
   final String matched;
   final List<String> terms;
@@ -23,6 +59,8 @@ class MyModel extends Model {
   WebSocketChannel? _channel;
   String? _transcript = "";
   final List<ReferenceMaterial> _referenceMaterials = [];
+  KeyTerms? _keyTerms;
+
   /*
     ReferenceMaterial("vertebral arch", [
       "vertebral arch",
@@ -50,6 +88,7 @@ class MyModel extends Model {
   bool get isConnected => _isConnected;
   String? get transcript => _transcript;
   List<ReferenceMaterial> get referenceMaterials => _referenceMaterials;
+  KeyTerms? get keyTerms => _keyTerms;
 
   MyModel() {
     connectWebSock();
@@ -104,6 +143,10 @@ class MyModel extends Model {
         // received reference material
         displayReference(ReferenceMaterial.fromJson(obj['payload']));
         break;
+      case 'keyterms':
+        // received key terms
+        displayKeyTerms(KeyTerms.fromJson(obj['payload']));
+        break;
       default:
         break;
     }
@@ -117,6 +160,11 @@ class MyModel extends Model {
   void displayReference(ReferenceMaterial ref) {
     // display reference material
     _referenceMaterials.add(ref);
+    notifyListeners();
+  }
+
+  void displayKeyTerms(KeyTerms keyTerms) {
+    _keyTerms = keyTerms;
     notifyListeners();
   }
 }

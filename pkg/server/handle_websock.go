@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -22,44 +23,121 @@ func addPreflightHeaders(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (s *server) sub(c *websocket.Conn) {
+func (s *server) sub(cl *wsClient) {
 	s.connsL.Lock()
 	defer s.connsL.Unlock()
-	s.conns[c] = struct{}{}
+	s.conns[cl] = struct{}{}
 }
 
-func (s *server) unsub(c *websocket.Conn) {
+func (s *server) unsub(cl *wsClient) {
 	s.connsL.Lock()
 	defer s.connsL.Unlock()
-	delete(s.conns, c)
+	delete(s.conns, cl)
 }
 
-func (s *server) getSubs() []*websocket.Conn {
-	s.connsL.Lock()
-	defer s.connsL.Unlock()
-	conns := make([]*websocket.Conn, 0, len(s.conns))
+func (cl *wsClient) sendBytes(
+	ctx context.Context,
+	body []byte,
+) error {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case cl.send <- body:
+		return nil
+	}
+}
+
+func (cl *wsClient) sendMessage(
+	ctx context.Context,
+	ty string,
+	payload interface{},
+) error {
+	body, err := json.Marshal(&wsMessage{
+		Type:    ty,
+		Payload: payload,
+	})
+	if err != nil {
+		return err
+	}
+	return cl.sendBytes(ctx, body)
+}
+
+func (s *server) getSubs(lock bool) []*wsClient {
+	if lock {
+		s.connsL.Lock()
+		defer s.connsL.Unlock()
+	}
+	conns := make([]*wsClient, 0, len(s.conns))
 	for c := range s.conns {
 		conns = append(conns, c)
 	}
 	return conns
 }
 
-func (s *server) broadcast(body []byte) {
-	subs := s.getSubs()
-	for _, sub := range subs {
-		if err := sub.WriteMessage(
-			websocket.TextMessage,
-			body,
-		); err != nil {
-			//s.log.Warn("failed to write message to websocket, closing connection", zap.Error(err))
-			_ = sub.Close()
-		}
+func (s *server) broadcastMessage(
+	ctx context.Context,
+	ty string,
+	payload interface{},
+) {
+	body, err := json.Marshal(&wsMessage{
+		Type:    ty,
+		Payload: payload,
+	})
+	if err != nil {
+		panic(err)
+	}
+	s.broadcast(ctx, body)
+}
+
+func (s *server) broadcast(
+	ctx context.Context,
+	body []byte,
+) {
+	s.connsL.Lock()
+	defer s.connsL.Unlock()
+	subs := s.getSubs(false)
+	for _, cl := range subs {
+		go func(cl *wsClient) {
+			if err := cl.sendBytes(
+				ctx,
+				body,
+			); err != nil {
+				_ = cl.c.Close()
+			}
+		}(cl)
 	}
 }
 
 type wsMessage struct {
 	Type    string      `json:"type"`
-	Payload interface{} `json:"payload"`
+	Payload interface{} `json:"payload,omitempty"`
+}
+
+type wsClient struct {
+	connID string
+	ctx    context.Context
+	c      *websocket.Conn
+	log    *zap.Logger
+	send   chan []byte
+}
+
+func (cl *wsClient) writePump() {
+	for {
+		select {
+		case <-cl.ctx.Done():
+			return
+		case msg, ok := <-cl.send:
+			if !ok {
+				return
+			}
+			if err := cl.c.WriteMessage(
+				websocket.TextMessage,
+				msg,
+			); err != nil {
+				return
+			}
+		}
+	}
 }
 
 func (s *server) handleWebSock() http.HandlerFunc {
@@ -90,14 +168,23 @@ func (s *server) handleWebSock() http.HandlerFunc {
 			reqLog := s.log.With(zap.String("connID", connID))
 			reqLog.Debug("upgraded websocket connection")
 			defer reqLog.Debug("closed websocket connection")
+			send := make(chan []byte, 256)
+			cl := &wsClient{
+				connID: connID,
+				ctx:    r.Context(),
+				c:      c,
+				send:   send,
+				log:    reqLog,
+			}
+			go cl.writePump()
 			defer c.Close()
-			s.sub(c)
-			defer s.unsub(c)
+			s.sub(cl)
+			defer s.unsub(cl)
 			s.clearUsedRefs() // clear used refs for demo
-			ping, _ := json.Marshal(&wsMessage{Type: "ping"})
-			if err := c.WriteMessage(
-				websocket.TextMessage,
-				ping,
+			if err := cl.sendMessage(
+				r.Context(),
+				"ping",
+				nil,
 			); err != nil {
 				return fmt.Errorf("ping: %v", err)
 			}
@@ -106,9 +193,10 @@ func (s *server) handleWebSock() http.HandlerFunc {
 				case <-r.Context().Done():
 					return r.Context().Err()
 				case <-time.After(10 * time.Second):
-					if err := c.WriteMessage(
-						websocket.TextMessage,
-						ping,
+					if err := cl.sendMessage(
+						r.Context(),
+						"ping",
+						nil,
 					); err != nil {
 						return fmt.Errorf("ping: %v", err)
 					}

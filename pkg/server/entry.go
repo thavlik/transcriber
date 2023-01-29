@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 
-	"github.com/gorilla/websocket"
 	"github.com/thavlik/transcriber/pkg/refmat"
 	"github.com/thavlik/transcriber/pkg/source"
 
@@ -21,7 +20,7 @@ func Entry(
 	s := &server{
 		newSource: make(chan source.Source, 16),
 		l:         make(chan struct{}, 1),
-		conns:     make(map[*websocket.Conn]struct{}),
+		conns:     make(map[*wsClient]struct{}),
 		streamKey: streamKey,
 		refs:      refmat.BuildReferenceMap(refmat.TestReferenceMaterials),
 		usedRefs:  make(map[*refmat.ReferenceMaterial]struct{}),

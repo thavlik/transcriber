@@ -87,6 +87,40 @@ class _HomePageState extends State<HomePage> {
   ) =>
       setState(() => _viewImage = imageUrl);
 
+  Widget _buildEntity(BuildContext context, Entity entity) => Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              entity.text,
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ),
+          //Padding(
+          //  padding: const EdgeInsets.all(8.0),
+          //  child: Text(
+          //    ' (${entity.type})',
+          //    style: Theme.of(context).textTheme.bodyLarge,
+          //  ),
+          //),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              ' (${entity.score})',
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ),
+        ],
+      );
+
+  Widget _buildKeyTerms(BuildContext context, KeyTerms keyTerms) => Container(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children:
+              keyTerms.entities.map((e) => _buildEntity(context, e)).toList(),
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     return ScopedModelDescendant<MyModel>(
@@ -99,41 +133,32 @@ class _HomePageState extends State<HomePage> {
             constraints: const BoxConstraints.expand(),
             child: Stack(
               children: [
-                if (model.referenceMaterials.isEmpty)
-                  Center(
-                    child: Opacity(
-                      opacity: 0.5,
-                      child: Text(
-                        'No reference materials yet',
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
-                    ),
-                  ),
-                Column(children: [
-                  if (model.transcript != null)
-                    Container(
-                      constraints: const BoxConstraints(maxWidth: 1200),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Flexible(
-                            child: Text(model.transcript!,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyLarge!
-                                    .copyWith(
-                                      color:
-                                          Colors.deepOrange.withOpacity(0.75),
-                                    )),
+                SingleChildScrollView(
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        if (model.transcript != null)
+                          Container(
+                            constraints: const BoxConstraints(maxWidth: 1200),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Flexible(
+                                  child: Text(model.transcript!,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge!
+                                          .copyWith(
+                                            color: Colors.deepOrange
+                                                .withOpacity(0.75),
+                                          )),
+                                ),
+                              ],
+                            ),
                           ),
-                        ],
-                      ),
-                    ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SingleChildScrollView(
-                        child: Container(
+                        if (model.keyTerms != null)
+                          _buildKeyTerms(context, model.keyTerms!),
+                        Container(
                           constraints: const BoxConstraints(maxWidth: 768),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,10 +171,8 @@ class _HomePageState extends State<HomePage> {
                                 .toList(),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ]),
+                      ]),
+                ),
                 if (_viewImage != null)
                   Positioned.fill(
                     child: GestureDetector(

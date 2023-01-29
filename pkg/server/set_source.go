@@ -39,7 +39,10 @@ func (s *server) setSource(
 				case <-s.job.Context().Done():
 					return
 				case transcript := <-transcripts:
-					if err := s.handleTranscript(transcript); err != nil {
+					if err := s.handleTranscript(
+						ctx,
+						transcript,
+					); err != nil {
 						s.log.Error("handle transcript error", zap.Error(err))
 					}
 				}

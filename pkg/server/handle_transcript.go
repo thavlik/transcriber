@@ -1,12 +1,13 @@
 package server
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/transcribestreamingservice"
+	"github.com/thavlik/transcriber/pkg/comprehend"
 	"github.com/thavlik/transcriber/pkg/refmat"
 	"github.com/thavlik/transcriber/pkg/transcriber"
 
@@ -23,21 +24,54 @@ func (s *server) checkTerm(term string) []*refmat.ReferenceMaterial {
 }
 
 func (s *server) handleTranscript(
+	ctx context.Context,
 	transcript *transcribestreamingservice.MedicalTranscript,
 ) error {
-	var lastTerm string
 	text := transcriber.ConvertTranscript(transcript)
-	body, err := json.Marshal(&wsMessage{
-		Type: "transcript",
-		Payload: map[string]interface{}{
+	go s.broadcastMessage(
+		ctx,
+		"transcript",
+		map[string]interface{}{
 			"text": text,
-		},
-	})
-	if err != nil {
-		panic(err)
-	}
+		})
+	go func() {
+		entities, err := comprehend.Comprehend(
+			ctx,
+			text,
+			[]string{"OTHER"},
+			s.log,
+		)
+		if err != nil {
+			s.log.Error("comprehend error", zap.Error(err))
+			return
+		}
+		if len(entities) == 0 {
+			return
+		}
+		s.broadcastMessage(
+			ctx,
+			"keyterms",
+			map[string]interface{}{
+				"entities": entities,
+			})
+		first := entities[0]
+		top := first
+		for _, entity := range entities[1:] {
+			if entity.Score > top.Score {
+				top = entity
+			}
+		}
+		s.log.Debug("comprehended entities",
+			zap.Int("count", len(entities)),
+			zap.String("first.Text", first.Text),
+			zap.Float64("first.Score", first.Score),
+			zap.String("top.Text", top.Text),
+			zap.Float64("top.Score", top.Score),
+		)
+	}()
+
+	var lastTerm string
 	fmt.Println(text)
-	s.broadcast(body)
 	for _, result := range transcript.Results {
 		for _, alt := range result.Alternatives {
 			for _, item := range alt.Items {
@@ -69,19 +103,16 @@ func (s *server) handleTranscript(
 					s.log.Debug("detected reference material",
 						zap.String("matched", matched),
 						zap.Strings("terms", ref.Terms))
-					body, err := json.Marshal(&wsMessage{
-						Type: "ref",
-						Payload: map[string]interface{}{
+					// broadcast the reference material to all websockets
+					s.broadcastMessage(
+						ctx,
+						"ref",
+						map[string]interface{}{
 							"matched": matched,
 							"terms":   ref.Terms,
 							"images":  ref.Images,
-						},
-					})
-					if err != nil {
-						panic(err)
-					}
-					s.broadcast(body) // broadcast the reference material to all websockets
-					s.useRef(ref)     // mark the reference material as used
+						})
+					s.useRef(ref) // mark the reference material as used
 				}
 			}
 		}
