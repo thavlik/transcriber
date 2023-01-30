@@ -9,17 +9,20 @@ import (
 )
 
 type server struct {
-	apiKey string
-	log    *zap.Logger
+	apiKey   string
+	endpoint string
+	log      *zap.Logger
 }
 
 func newServer(
 	apiKey string,
+	endpoint string,
 	log *zap.Logger,
 ) *server {
 	return &server{
-		apiKey: apiKey,
-		log:    log,
+		apiKey:   apiKey,
+		endpoint: endpoint,
+		log:      log,
 	}
 }
 

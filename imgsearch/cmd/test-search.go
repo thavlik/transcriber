@@ -36,6 +36,7 @@ var testSearchCmd = &cobra.Command{
 			return errors.New("no search terms provided")
 		}
 		_, err := search.Search(
+			cmd.Context(),
 			testSearchArgs.input,
 			testSearchArgs.endpoint,
 			testSearchArgs.apiKey,
@@ -57,14 +58,14 @@ func init() {
 	)
 	testSearchCmd.Flags().StringVarP(
 		&testSearchArgs.endpoint,
-		"endpoint",
+		"bing-endpoint",
 		"e",
-		"https://api.bing.microsoft.com/",
-		"endpoint",
+		defaultBingEndpoint,
+		"bing search endpoint",
 	)
 	testSearchCmd.Flags().StringVarP(
 		&testSearchArgs.apiKey,
-		"api-key",
+		"bing-api-key",
 		"k",
 		"",
 		"bing api key",

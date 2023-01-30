@@ -1,11 +1,14 @@
 package search
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+
+	"github.com/pkg/errors"
 )
 
 type Image struct {
@@ -15,6 +18,7 @@ type Image struct {
 }
 
 func Search(
+	ctx context.Context,
 	input string,
 	endpoint string,
 	subscriptionKey string,
@@ -37,6 +41,7 @@ func Search(
 	if err != nil {
 		return nil, err
 	}
+	req = req.WithContext(ctx)
 	req.Header.Set("Ocp-Apim-Subscription-Key", subscriptionKey)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -49,7 +54,7 @@ func Search(
 	}
 	result := &searchResult{}
 	if err := json.NewDecoder(resp.Body).Decode(result); err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to decode response body")
 	}
 	return convert(result), nil
 }
