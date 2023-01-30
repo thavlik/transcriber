@@ -48,9 +48,12 @@ var testSearchCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		body, err := json.Marshal(images)
+		body, err := json.MarshalIndent(images, "", "  ")
+		if err != nil {
+			return err
+		}
 		fmt.Println(string(body))
-		return err
+		return nil
 	},
 }
 
