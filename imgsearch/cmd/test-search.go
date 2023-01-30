@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"os"
+	"fmt"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -49,7 +49,7 @@ var testSearchCmd = &cobra.Command{
 			return err
 		}
 		body, err := json.Marshal(images)
-		os.WriteFile("out.json", body, 0644)
+		fmt.Println(string(body))
 		return err
 	},
 }
