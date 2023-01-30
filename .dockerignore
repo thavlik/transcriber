@@ -8,7 +8,8 @@ scripts/
 secrets/
 kindest.yaml
 cmd/cmd
-cmd/transcriber
+/transcriber/cmd/transcriber
+/imgsearch/cmd/imgsearch
 scripts/
 test.wav
 fdk-aac-*

@@ -1,0 +1,17 @@
+{{- if .Values.imgsearch.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-imgsearch
+  labels:
+    app: {{ .Release.Name }}-imgsearch
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Release.Name }}-imgsearch
+  ports:
+  - name: http
+    port: 80
+  - name: rtmp
+    port: 1935
+{{- end }}

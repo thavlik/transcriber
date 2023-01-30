@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/thavlik/transcriber/pkg/refmat"
-	"github.com/thavlik/transcriber/pkg/source"
+	"github.com/thavlik/transcriber/transcriber/pkg/refmat"
+	"github.com/thavlik/transcriber/transcriber/pkg/source"
 
 	"go.uber.org/zap"
 )

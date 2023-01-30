@@ -1,0 +1,60 @@
+{{- if .Values.imgsearch.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-imgsearch
+spec:
+  replicas: {{ .Values.imgsearch.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-imgsearch
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-imgsearch
+    spec:
+    {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 10 }}
+    {{- end }}
+      containers:
+      - name: server
+        imagePullPolicy: {{ .Values.imgsearch.imagePullPolicy }}
+        image: {{ .Values.imgsearch.image }}
+    {{- if .Values.imgsearch.resources }}
+        resources:
+{{ toYaml .Values.imgsearch.resources | indent 10 }}
+    {{- end }}
+        command:
+          - imgsearch
+          - server
+        {{- if .Values.prometheus.enabled }}
+          - --metrics-port
+          - "2112"
+        {{- end }}
+        ports:
+        - containerPort: 80
+          name: http
+      {{- if .Values.prometheus.enabled }}
+        - containerPort: 2112
+          protocol: TCP
+          name: metrics
+      {{- end }}
+        env:
+        - name: LOG_LEVEL
+          value: {{ .Values.imgsearch.logLevel }}
+        - name: BING_API_KEY
+{{ tpl (toYaml .Values.imgsearch.bing.apiKey) . | indent 10 }}
+        - name: BING_LOCATION
+{{ tpl (toYaml .Values.imgsearch.bing.location) . | indent 10 }}
+        - name: BING_ENDPOINT
+{{ tpl (toYaml .Values.imgsearch.bing.endpoint) . | indent 10 }}
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 80
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
+{{- end }}

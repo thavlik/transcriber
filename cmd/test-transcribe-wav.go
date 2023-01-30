@@ -8,9 +8,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/transcribestreamingservice"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"github.com/thavlik/transcriber/pkg/source"
-	"github.com/thavlik/transcriber/pkg/source/wav"
-	"github.com/thavlik/transcriber/pkg/transcriber"
+	"github.com/thavlik/transcriber/transcriber/pkg/source"
+	"github.com/thavlik/transcriber/transcriber/pkg/source/wav"
+	"github.com/thavlik/transcriber/transcriber/pkg/transcriber"
 )
 
 var testTranscribeWavCmd = &cobra.Command{

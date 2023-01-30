@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/thavlik/transcriber/pkg/comprehend"
+	"github.com/thavlik/transcriber/transcriber/pkg/comprehend"
 	"go.uber.org/zap"
 )
 

@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/thavlik/transcriber/pkg/server"
+	"github.com/thavlik/transcriber/transcriber/pkg/server"
 )
 
 var serverArgs struct {

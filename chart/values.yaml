@@ -15,13 +15,26 @@ transcriber:
     value: ""
   image: thavlik/transcriber:latest
   imagePullPolicy: Always
-  replicas: 1
   logLevel: debug
   resources: {}
 
 app:
   enabled: true
   image: thavlik/transcriber-app:latest
+  imagePullPolicy: Always
+  replicas: 1
+  resources: {}
+
+imgsearch:
+  enabled: true
+  bing:
+    location:
+      value: global
+    endpoint:
+      value: https://api.bing.microsoft.com/
+    apiKey:
+      value: ""
+  image: thavlik/imgsearch:latest
   imagePullPolicy: Always
   replicas: 1
   resources: {}

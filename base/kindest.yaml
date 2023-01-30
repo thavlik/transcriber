@@ -1,0 +1,3 @@
+build:
+  name: thavlik/transcriber-base
+  context: ../

@@ -1,6 +1,8 @@
 ARG FDK_AAC_VERSION=2.0.0
-
-FROM golang:1.19.4 AS builder
+ARG KINDEST_REPOSITORY=""
+ARG KINDEST_TAG="latest"
+ARG RUNTIME_BASE_IMAGE="debian:bullseye-slim"
+FROM ${KINDEST_REPOSITORY}thavlik/transcriber-base:${KINDEST_TAG} AS builder
 
 RUN apt-get update \
     && apt-get install -y \
@@ -35,7 +37,7 @@ ENV CGO_CPPFLAGS="-I/usr/local/fdk-aac-${FDK_AAC_VERSION}/include/fdk-aac"
 ENV CGO_LDFLAGS="-L/usr/local/fdk-aac-${FDK_AAC_VERSION}/lib"
 RUN cd cmd && go build -o transcriber
 
-FROM debian:bullseye-slim
+FROM ${RUNTIME_BASE_IMAGE}
 RUN apt-get update \
     && apt-get install -y \
         ca-certificates \
