@@ -187,8 +187,15 @@ class _HomePageState extends State<HomePage> {
   ) =>
       setState(() => _viewImage = imageUrl);
 
-  void _onEntitySelected(BuildContext context, Entity entity) =>
-      ScopedModel.of<MyModel>(context).selectedEntity = entity;
+  void _onEntitySelected(BuildContext context, Entity entity) {
+    final model = ScopedModel.of<MyModel>(context);
+    if (model.selectedEntity == entity) {
+      // deselect entity
+      model.selectedEntity = null;
+      return;
+    }
+    model.selectedEntity = entity;
+  }
 
   Widget _buildEntity(BuildContext context, Entity entity) => InkWell(
         onTap: () => _onEntitySelected(context, entity),
