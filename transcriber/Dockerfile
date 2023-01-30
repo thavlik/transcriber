@@ -26,16 +26,11 @@ RUN mkdir -p /tmp/fdk-aac \
     && cd / \
     && rm -rf /tmp/fdk-aac
 
-ENV GO111MODULE=on
-WORKDIR /go/src/github.com/thavlik/transcriber
-COPY go.mod .
-COPY go.sum .
-RUN go mod download
-
-COPY . .
+COPY base/pkg base/pkg
+COPY transcriber transcriber
 ENV CGO_CPPFLAGS="-I/usr/local/fdk-aac-${FDK_AAC_VERSION}/include/fdk-aac"
 ENV CGO_LDFLAGS="-L/usr/local/fdk-aac-${FDK_AAC_VERSION}/lib"
-RUN cd cmd && go build -o transcriber
+RUN cd transcriber/cmd && go build -o transcriber
 
 FROM ${RUNTIME_BASE_IMAGE}
 RUN apt-get update \
@@ -46,6 +41,6 @@ ARG FDK_AAC_VERSION
 COPY --from=builder /usr/local/fdk-aac-${FDK_AAC_VERSION}/lib/libfdk-aac.so /usr/local/lib
 COPY --from=builder /usr/local/fdk-aac-${FDK_AAC_VERSION}/lib/libfdk-aac.so.2 /usr/local/lib
 COPY --from=builder /usr/local/fdk-aac-${FDK_AAC_VERSION}/lib/libfdk-aac.so.2.0.0 /usr/local/lib
-COPY --from=builder /go/src/github.com/thavlik/transcriber/cmd/transcriber /usr/local/bin
+COPY --from=builder /go/src/github.com/thavlik/transcriber/transcriber/cmd/transcriber /usr/local/bin
 ENV LD_LIBRARY_PATH=/usr/local/lib
 CMD ["/usr/local/bin/transcriber"]

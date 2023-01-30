@@ -2,9 +2,10 @@ package server
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"net/http"
 
+	"github.com/thavlik/transcriber/base/pkg/base"
 	"github.com/thavlik/transcriber/imgsearch/pkg/search"
 
 	"go.uber.org/zap"
@@ -14,9 +15,16 @@ func (s *server) handleSearch() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		retCode := http.StatusInternalServerError
 		if err := func() error {
-			if r.Method != http.MethodGet {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			switch r.Method {
+			case http.MethodOptions:
+				base.AddPreflightHeaders(w)
+				return nil
+			case http.MethodGet:
+				break
+			default:
 				retCode = http.StatusMethodNotAllowed
-				return errors.New("method not allowed")
+				return fmt.Errorf("method not allowed")
 			}
 			images, err := search.Search(
 				r.Context(),

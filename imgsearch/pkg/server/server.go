@@ -30,11 +30,7 @@ func (s *server) listenAndServe(port int) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {})
 	mux.HandleFunc("/readyz", func(w http.ResponseWriter, r *http.Request) {})
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusNotFound)
-		s.log.Warn("404", zap.String("r.RequestURI", r.RequestURI))
-	})
-	mux.HandleFunc("/search", s.handleSearch())
+	mux.HandleFunc("/", s.handleSearch())
 	s.log.Info("listening forever", zap.Int("port", port))
 	return (&http.Server{
 		Handler:      mux,

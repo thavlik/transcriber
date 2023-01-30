@@ -1,7 +1,96 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 import 'model.dart';
+
+final kTransparentImageBytes = Uint8List.fromList(<int>[
+  0x89,
+  0x50,
+  0x4E,
+  0x47,
+  0x0D,
+  0x0A,
+  0x1A,
+  0x0A,
+  0x00,
+  0x00,
+  0x00,
+  0x0D,
+  0x49,
+  0x48,
+  0x44,
+  0x52,
+  0x00,
+  0x00,
+  0x00,
+  0x01,
+  0x00,
+  0x00,
+  0x00,
+  0x01,
+  0x08,
+  0x06,
+  0x00,
+  0x00,
+  0x00,
+  0x1F,
+  0x15,
+  0xC4,
+  0x89,
+  0x00,
+  0x00,
+  0x00,
+  0x0A,
+  0x49,
+  0x44,
+  0x41,
+  0x54,
+  0x78,
+  0x9C,
+  0x63,
+  0x00,
+  0x01,
+  0x00,
+  0x00,
+  0x05,
+  0x00,
+  0x01,
+  0x0D,
+  0x0A,
+  0x2D,
+  0xB4,
+  0x87,
+  0x9C,
+  0x00,
+  0x00,
+  0x00,
+  0x00,
+  0x49,
+  0x45,
+  0x4E,
+  0x44,
+  0xAE,
+]);
+final kTransparentImage = Image.memory(kTransparentImageBytes);
+
+extension HexColor on Color {
+  /// String is in the format "aabbcc" or "ffaabbcc" with an optional leading "#".
+  static Color fromHex(String hexString) {
+    final buffer = StringBuffer();
+    if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
+    buffer.write(hexString.replaceFirst('#', ''));
+    return Color(int.parse(buffer.toString(), radix: 16));
+  }
+
+  /// Prefixes a hash sign if [leadingHashSign] is set to `true` (default is `true`).
+  String toHex({bool leadingHashSign = true}) => '${leadingHashSign ? '#' : ''}'
+      '${alpha.toRadixString(16).padLeft(2, '0')}'
+      '${red.toRadixString(16).padLeft(2, '0')}'
+      '${green.toRadixString(16).padLeft(2, '0')}'
+      '${blue.toRadixString(16).padLeft(2, '0')}';
+}
 
 class ReferenceMaterialWidget extends StatelessWidget {
   const ReferenceMaterialWidget(
@@ -94,48 +183,99 @@ class _HomePageState extends State<HomePage> {
 
   void onImageTap(
     BuildContext context,
-    ReferenceMaterial ref,
     String imageUrl,
   ) =>
       setState(() => _viewImage = imageUrl);
 
-  Widget _buildEntity(BuildContext context, Entity entity) => Row(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              entity.text,
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              ' (${entity.type})',
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              ' (${entity.score})',
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-          ),
-        ],
-      );
+  void _onEntitySelected(BuildContext context, Entity entity) =>
+      ScopedModel.of<MyModel>(context).selectedEntity = entity;
 
-  Widget _buildKeyTerms(BuildContext context, KeyTerms keyTerms) => Container(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children:
-              keyTerms.entities.map((e) => _buildEntity(context, e)).toList(),
+  Widget _buildEntity(BuildContext context, Entity entity) => InkWell(
+        onTap: () => _onEntitySelected(context, entity),
+        child: Container(
+          decoration: BoxDecoration(
+            color: ScopedModel.of<MyModel>(context).selectedEntity == entity
+                ? Theme.of(context).highlightColor
+                : null,
+            border: Border(
+              bottom: BorderSide(
+                color: Theme.of(context).dividerColor,
+                width: 1,
+              ),
+            ),
+          ),
+          child: Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  entity.text,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  ' (${entity.type})',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  ' (${entity.score})',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+              ),
+            ],
+          ),
         ),
       );
+
+  Widget _buildKeyTerms(
+    BuildContext context,
+    KeyTerms keyTerms,
+    Entity? selectedEntity,
+  ) =>
+      Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
+        if (selectedEntity != null) _buildEntity(context, selectedEntity),
+        ...keyTerms.entities
+            .where((e) => e.text != selectedEntity?.text)
+            .map((e) => _buildEntity(context, e))
+            .toList(),
+      ]);
 
   Widget _columnHeader(BuildContext context, String name) => Flexible(
         flex: 1,
         child: Text(name, style: Theme.of(context).textTheme.headlineSmall),
+      );
+
+  Widget _buildSearchImage(BuildContext context, SearchImage img) => Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: SizedBox(
+          width: 100,
+          height: 100,
+          child: AspectRatio(
+            aspectRatio: img.width / img.height,
+            child: InkWell(
+              onTap: () => onImageTap(context, img.contentUrl),
+              child: Container(
+                  decoration: BoxDecoration(
+                    color: HexColor.fromHex(img.accentColor),
+                  ),
+                  child: FadeInImage(
+                    placeholder: MemoryImage(kTransparentImageBytes),
+                    image: NetworkImage(img.thumbnailUrl),
+                    fit: BoxFit.cover,
+                    imageErrorBuilder: (context, error, stackTrace) {
+                      return kTransparentImage;
+                      //return Image.asset('assets/images/error.jpg',
+                      //    fit: BoxFit.fitWidth);
+                    },
+                  )),
+            ),
+          ),
+        ),
       );
 
   @override
@@ -207,20 +347,31 @@ class _HomePageState extends State<HomePage> {
                             Flexible(
                               flex: 1,
                               child: model.keyTerms != null
-                                  ? _buildKeyTerms(context, model.keyTerms!)
+                                  ? _buildKeyTerms(
+                                      context,
+                                      model.keyTerms!,
+                                      model.selectedEntity,
+                                    )
                                   : Container(),
                             ),
                             Flexible(
                               flex: 1,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                children: model.referenceMaterials.reversed
-                                    .map((ref) => ReferenceMaterialWidget(
-                                          ref,
-                                          onImageTap: (ref, img) =>
-                                              onImageTap(context, ref, img),
-                                        ))
-                                    .toList(),
+                                children: [
+                                  if (model.searchImages != null)
+                                    ...model.searchImages!
+                                        .map((e) =>
+                                            _buildSearchImage(context, e))
+                                        .toList(),
+                                  ...model.referenceMaterials.reversed
+                                      .map((ref) => ReferenceMaterialWidget(
+                                            ref,
+                                            onImageTap: (ref, img) =>
+                                                onImageTap(context, img),
+                                          ))
+                                      .toList()
+                                ],
                               ),
                             ),
                           ]),
@@ -234,15 +385,15 @@ class _HomePageState extends State<HomePage> {
                       child: Container(
                         color: Colors.black.withOpacity(0.5),
                         child: Center(
-                          child: Container(
-                            width: 800,
-                            height: 600,
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                image: NetworkImage(_viewImage!),
-                                fit: BoxFit.contain,
-                              ),
-                            ),
+                          child: FadeInImage(
+                            placeholder: MemoryImage(kTransparentImageBytes),
+                            image: NetworkImage(_viewImage!),
+                            fit: BoxFit.cover,
+                            imageErrorBuilder: (context, error, stackTrace) {
+                              return kTransparentImage;
+                              //return Image.asset('assets/images/error.jpg',
+                              //    fit: BoxFit.fitWidth);
+                            },
                           ),
                         ),
                       ),
