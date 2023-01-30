@@ -15,3 +15,4 @@ test.wav
 fdk-aac-*
 Dockerfile
 .dockerignore
+out.json

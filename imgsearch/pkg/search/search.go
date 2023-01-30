@@ -12,9 +12,14 @@ import (
 )
 
 type Image struct {
-	URL    string `json:"url"`
-	Width  int    `json:"width"`
-	Height int    `json:"height"`
+	ContentURL     string `json:"contentURL"`
+	ContentSize    string `json:"contentSize"`
+	ThumbnailURL   string `json:"thumbnailURL"`
+	HostPageURL    string `json:"hostPageURL"`
+	EncodingFormat string `json:"encodingFormat"`
+	Width          int    `json:"width"`
+	Height         int    `json:"height"`
+	AccentColor    string `json:"accentColor"`
 }
 
 func Search(

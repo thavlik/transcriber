@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -35,7 +37,7 @@ var testSearchCmd = &cobra.Command{
 		} else if testSearchArgs.input == "" {
 			return errors.New("no search terms provided")
 		}
-		_, err := search.Search(
+		images, err := search.Search(
 			cmd.Context(),
 			testSearchArgs.input,
 			testSearchArgs.endpoint,
@@ -43,6 +45,11 @@ var testSearchCmd = &cobra.Command{
 			testSearchArgs.count,
 			testSearchArgs.offset,
 		)
+		if err != nil {
+			return err
+		}
+		body, err := json.Marshal(images)
+		os.WriteFile("out.json", body, 0644)
 		return err
 	},
 }
