@@ -11,17 +11,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-type Image struct {
-	ContentURL     string `json:"contentURL"`
-	ContentSize    string `json:"contentSize"`
-	ThumbnailURL   string `json:"thumbnailURL"`
-	HostPageURL    string `json:"hostPageURL"`
-	EncodingFormat string `json:"encodingFormat"`
-	Width          int    `json:"width"`
-	Height         int    `json:"height"`
-	AccentColor    string `json:"accentColor"`
-}
-
 func Search(
 	ctx context.Context,
 	input string,

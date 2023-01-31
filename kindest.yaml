@@ -12,6 +12,88 @@ env:
         releaseName: ts
         namespace: ts
         values:
+          db:
+            driver: mongo
+            postgres:
+              url:
+                valueFrom:
+                  secretKeyRef:
+                    name: postgres-cred
+                    key: url
+              username:
+                valueFrom:
+                  secretKeyRef:
+                    name: postgres-cred
+                    key: username
+              password:
+                valueFrom:
+                  secretKeyRef:
+                    name: postgres-cred
+                    key: password
+              host:
+                valueFrom:
+                  secretKeyRef:
+                    name: postgres-cred
+                    key: host
+              port:
+                valueFrom:
+                  secretKeyRef:
+                    name: postgres-cred
+                    key: port
+              database:
+                valueFrom:
+                  secretKeyRef:
+                    name: postgres-cred
+                    key: database
+              sslmode:
+                valueFrom:
+                  secretKeyRef:
+                    name: postgres-cred
+                    key: sslmode
+              ca:
+                valueFrom:
+                  secretKeyRef:
+                    name: postgres-cred
+                    key: ca
+            mongo:
+              host:
+                valueFrom:
+                  secretKeyRef:
+                    name: mongo-cred
+                    key: host
+              dbName:
+                valueFrom:
+                  secretKeyRef:
+                    name: mongo-cred
+                    key: dbname
+              authSource:
+                valueFrom:
+                  secretKeyRef:
+                    name: mongo-cred
+                    key: authsource
+              username:
+                valueFrom:
+                  secretKeyRef:
+                    name: mongo-cred
+                    key: username
+              password:
+                valueFrom:
+                  secretKeyRef:
+                    name: mongo-cred
+                    key: password
+          s3:
+            endpoint: "https://nyc3.digitaloceanspaces.com"
+            bucket: medimg
+            accessKeyId:
+              valueFrom:
+                secretKeyRef:
+                  name: s3-cred
+                  key: accesskeyid
+            secretAccessKey:
+              valueFrom:
+                secretKeyRef:
+                  name: s3-cred
+                  key: secretaccesskey
           app:
             enabled: true
           imgsearch:

@@ -1,5 +1,47 @@
 imagePullSecrets: []
 
+db:
+  # Configure the database for all microservices.
+  # Currently only mongo is supported but this 
+  # boilerplate exists nonetheless.
+  driver: "" # mongo | postgres
+  postgres:
+    host:
+      value: ""
+    port:
+      value: ""
+    database:
+      value: ""
+    username:
+      value: ""
+    password:
+      value: ""
+    sslmode:
+      value: ""
+    ca:
+      value: ""
+  mongo:
+    host:
+      value: ""
+    dbName:
+      value: ""
+    authSource:
+      value: ""
+    username:
+      value: ""
+    password:
+      value: ""
+
+s3:
+  endpoint: ""
+  region: us-west-2
+  bucket: ""
+  thumbnailBucket: ""
+  accessKeyId:
+    value: ""
+  secretAccessKey:
+    value: ""
+
 prometheus:
   enabled: false
 

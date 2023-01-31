@@ -99,7 +99,7 @@ void checkHttpStatus(Response response) {
 }
 
 Future<List<SearchImage>> search(String query) async {
-  final url = Uri.https('ts.beebs.dev', '/search', {
+  final url = Uri.https('ts.beebs.dev', '/api/search', {
     'q': query,
   });
   final response = await http.get(url);

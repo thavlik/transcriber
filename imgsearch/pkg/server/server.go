@@ -5,32 +5,38 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/thavlik/transcriber/imgsearch/pkg/cache"
 	"go.uber.org/zap"
 )
 
 type server struct {
-	apiKey   string
-	endpoint string
-	log      *zap.Logger
+	apiKey     string
+	endpoint   string
+	imageCache *cache.ImageCache
+	log        *zap.Logger
 }
 
 func newServer(
 	apiKey string,
 	endpoint string,
+	imageCache *cache.ImageCache,
 	log *zap.Logger,
 ) *server {
 	return &server{
-		apiKey:   apiKey,
-		endpoint: endpoint,
-		log:      log,
+		apiKey:     apiKey,
+		endpoint:   endpoint,
+		imageCache: imageCache,
+		log:        log,
 	}
 }
 
 func (s *server) listenAndServe(port int) error {
 	mux := http.NewServeMux()
+	// it's okay if the health and ready checks are publicly accessible
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {})
 	mux.HandleFunc("/readyz", func(w http.ResponseWriter, r *http.Request) {})
-	mux.HandleFunc("/", s.handleSearch())
+	mux.HandleFunc("/search", s.handleSearch())
+	mux.HandleFunc("/img", s.handleImage())
 	s.log.Info("listening forever", zap.Int("port", port))
 	return (&http.Server{
 		Handler:      mux,
