@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/thavlik/transcriber/base/pkg/base"
 	"github.com/thavlik/transcriber/imgsearch/pkg/cache"
 	"go.uber.org/zap"
 )
@@ -33,10 +34,11 @@ func newServer(
 func (s *server) listenAndServe(port int) error {
 	mux := http.NewServeMux()
 	// it's okay if the health and ready checks are publicly accessible
+	mux.HandleFunc("/", base.Handle404(s.log))
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {})
 	mux.HandleFunc("/readyz", func(w http.ResponseWriter, r *http.Request) {})
-	mux.HandleFunc("/search", s.handleSearch())
-	mux.HandleFunc("/img", s.handleImage())
+	mux.HandleFunc("/api/search", s.handleSearch())
+	mux.HandleFunc("/api/img", s.handleImage())
 	s.log.Info("listening forever", zap.Int("port", port))
 	return (&http.Server{
 		Handler:      mux,

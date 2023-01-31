@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/thavlik/transcriber/base/pkg/base"
 	"github.com/thavlik/transcriber/transcriber/pkg/refmat"
 	"github.com/thavlik/transcriber/transcriber/pkg/source"
 	"github.com/thavlik/transcriber/transcriber/pkg/transcriber"
@@ -32,13 +33,10 @@ func (s *server) ListenAndServe(
 	rtmpPort int,
 ) error {
 	mux := http.NewServeMux()
+	mux.HandleFunc("/", base.Handle404(s.log))
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {})
 	mux.HandleFunc("/readyz", func(w http.ResponseWriter, r *http.Request) {})
 	mux.HandleFunc("/ws", s.handleWebSock())
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusNotFound)
-		s.log.Warn("404", zap.String("r.RequestURI", r.RequestURI))
-	})
 	httpDone := make(chan error)
 	go func() {
 		s.log.Info("http server listening forever", zap.Int("port", httpPort))

@@ -32,6 +32,8 @@ spec:
           - {{ required "missing db.driver" .Values.db.driver }}
           - --s3-bucket
           - {{ required "missing s3.bucket" .Values.s3.bucket }}
+          - --meta-collection-name
+          - {{ required "missing imgsearch.metaCollectionName" .Values.imgsearch.metaCollectionName }}
         {{- if .Values.prometheus.enabled }}
           - --metrics-port
           - "2112"
