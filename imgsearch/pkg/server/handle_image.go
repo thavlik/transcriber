@@ -45,7 +45,8 @@ func (s *server) handleImage() http.HandlerFunc {
 			}
 			w.Header().Set("Content-Type", img.ContentType())
 			w.Header().Set("Content-Length", contentLength)
-			body, err := s.imageCache.Get(r.Context(), img.Hash())
+			hash := img.Hash()
+			body, err := s.imageCache.Get(r.Context(), hash)
 			if err == data.ErrNotCached {
 				return cacheImage(
 					r.Context(),
@@ -60,6 +61,16 @@ func (s *server) handleImage() http.HandlerFunc {
 			if _, err := io.Copy(w, body); err != nil {
 				return errors.Wrap(err, "copy")
 			}
+			go func() {
+				// Increment the request counter for this image
+				if err := s.imageCache.Increment(hash); err != nil {
+					s.log.Error(
+						"failed to increment image request counter",
+						zap.Error(err),
+						zap.String("hash", hash),
+					)
+				}
+			}()
 			return nil
 		}(); err != nil {
 			s.log.Error(r.RequestURI, zap.Error(err))
