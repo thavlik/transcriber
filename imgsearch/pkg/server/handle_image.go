@@ -1,17 +1,12 @@
 package server
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/transcriber/imgsearch/pkg/cache"
 	"github.com/thavlik/transcriber/imgsearch/pkg/cache/data"
-	"github.com/thavlik/transcriber/imgsearch/pkg/search"
 
 	"github.com/thavlik/transcriber/base/pkg/base"
 
@@ -48,12 +43,20 @@ func (s *server) handleImage() http.HandlerFunc {
 			hash := img.Hash()
 			body, err := s.imageCache.Get(r.Context(), hash)
 			if err == data.ErrNotCached {
-				return cacheImage(
+				if err := cacheImage(
 					r.Context(),
 					img,
 					s.imageCache,
 					w,
-				)
+				); err != nil {
+					return err
+				}
+				// in the event that multiple people request
+				// the same uncached image at the same time,
+				// we want to increment the request counter
+				// both times
+				go s.incrementRequests(hash)
+				return nil
 			} else if err != nil {
 				return err
 			}
@@ -61,19 +64,7 @@ func (s *server) handleImage() http.HandlerFunc {
 			if _, err := io.Copy(w, body); err != nil {
 				return errors.Wrap(err, "copy")
 			}
-			go func() {
-				// Increment the request counter for this image
-				if err := s.imageCache.Increment(
-					context.Background(),
-					hash,
-				); err != nil {
-					s.log.Error(
-						"failed to increment image request counter",
-						zap.Error(err),
-						zap.String("hash", hash),
-					)
-				}
-			}()
+			go s.incrementRequests(hash)
 			return nil
 		}(); err != nil {
 			s.log.Error(r.RequestURI, zap.Error(err))
@@ -81,66 +72,4 @@ func (s *server) handleImage() http.HandlerFunc {
 			w.Write([]byte(err.Error()))
 		}
 	}
-}
-
-func extractMeta(r *http.Request) (*search.Image, error) {
-	input := r.URL.Query().Get("i")
-	if input == "" {
-		return nil, errors.New("missing query parameter 'i'")
-	}
-	unescaped, err := url.QueryUnescape(input)
-	if err != nil {
-		return nil, errors.Wrap(err, "url.QueryUnescape")
-	}
-	img := new(search.Image)
-	if err := json.Unmarshal(
-		[]byte(unescaped),
-		&img,
-	); err != nil {
-		return nil, errors.Wrap(err, "json.Unmarshal")
-	}
-	return img, nil
-}
-
-func cacheImage(
-	ctx context.Context,
-	img *search.Image,
-	imageCache *cache.ImageCache,
-	w io.Writer,
-) error {
-	req, err := http.NewRequest(
-		"GET",
-		img.ContentURL,
-		nil,
-	)
-	if err != nil {
-		return errors.Wrap(err, "newrequest")
-	}
-	req = req.WithContext(ctx)
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return errors.Wrap(err, "do")
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("status code %d", resp.StatusCode)
-	}
-	if resp.Header.Get("Content-Type") != img.ContentType() {
-		// sanity check to ensure we're not caching the wrong thing
-		// if this fails, it's probably an image with a rare mimetype
-		// in any case, we probably don't want to show it to the user
-		return fmt.Errorf(
-			"content type mismatch: expected %s, got %s",
-			img.ContentType(),
-			resp.Header.Get("Content-Type"),
-		)
-	}
-	if err := imageCache.Set(
-		ctx,
-		img,
-		io.TeeReader(resp.Body, w),
-	); err != nil {
-		return errors.Wrap(err, "imagecache.Set")
-	}
-	return nil
 }

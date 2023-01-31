@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (c *mongoMetaCache) Increment(
+func (c *mongoMetaCache) IncrementRequests(
 	ctx context.Context,
 	hash string,
 ) error {
