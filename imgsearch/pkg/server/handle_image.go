@@ -47,18 +47,12 @@ func (s *server) handleImage() http.HandlerFunc {
 			w.Header().Set("Content-Length", contentLength)
 			body, err := s.imageCache.Get(r.Context(), img.Hash())
 			if err == data.ErrNotCached {
-				if err := cacheImage(
-					context.TODO(), // don't use the request context here
+				return cacheImage(
+					r.Context(),
 					img,
 					s.imageCache,
-				); err != nil {
-					s.log.Error("failed to cache image", zap.Error(err))
-					return err
-				}
-				body, err = s.imageCache.Get(r.Context(), img.Hash())
-				if err != nil {
-					return err
-				}
+					w,
+				)
 			} else if err != nil {
 				return err
 			}
@@ -98,6 +92,7 @@ func cacheImage(
 	ctx context.Context,
 	img *search.Image,
 	imageCache *cache.ImageCache,
+	w io.Writer,
 ) error {
 	req, err := http.NewRequest(
 		"GET",
@@ -129,7 +124,7 @@ func cacheImage(
 	if err := imageCache.Set(
 		ctx,
 		img,
-		resp.Body,
+		io.TeeReader(resp.Body, w),
 	); err != nil {
 		return errors.Wrap(err, "imagecache.Set")
 	}
