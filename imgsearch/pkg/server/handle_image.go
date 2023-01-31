@@ -63,7 +63,10 @@ func (s *server) handleImage() http.HandlerFunc {
 			}
 			go func() {
 				// Increment the request counter for this image
-				if err := s.imageCache.Increment(hash); err != nil {
+				if err := s.imageCache.Increment(
+					context.Background(),
+					hash,
+				); err != nil {
 					s.log.Error(
 						"failed to increment image request counter",
 						zap.Error(err),
