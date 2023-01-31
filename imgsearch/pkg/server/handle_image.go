@@ -33,7 +33,7 @@ func (s *server) handleImage() http.HandlerFunc {
 				retCode = http.StatusMethodNotAllowed
 				return fmt.Errorf("method not allowed")
 			}
-			img, err := extractImage(r)
+			img, err := extractMeta(r)
 			if err != nil {
 				retCode = http.StatusBadRequest
 				return err
@@ -75,7 +75,7 @@ func (s *server) handleImage() http.HandlerFunc {
 	}
 }
 
-func extractImage(r *http.Request) (*search.Image, error) {
+func extractMeta(r *http.Request) (*search.Image, error) {
 	input := r.URL.Query().Get("i")
 	if input == "" {
 		return nil, errors.New("missing query parameter 'i'")
