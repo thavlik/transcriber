@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 import 'model.dart';
+import 'api.dart';
 
 final kTransparentImageBytes = Uint8List.fromList(<int>[
   0x89,
@@ -363,7 +364,7 @@ class _HomePageState extends State<HomePage> {
                                   Flexible(
                                     child: Padding(
                                       padding: const EdgeInsets.all(8.0),
-                                      child: Text(model.transcript ?? '',
+                                      child: Text(model.transcript,
                                           style: Theme.of(context)
                                               .textTheme
                                               .bodyLarge!
