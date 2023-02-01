@@ -55,6 +55,7 @@ aws:
 transcriber:
   streamKey:
     value: ""
+  specialty: RADIOLOGY
   image: thavlik/transcriber:latest
   imagePullPolicy: Always
   logLevel: debug

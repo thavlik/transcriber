@@ -27,7 +27,8 @@ func Search(
 	if offset != 0 {
 		endpoint += fmt.Sprintf("&offset=%d", offset)
 	}
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		endpoint,
 		nil,
@@ -35,7 +36,6 @@ func Search(
 	if err != nil {
 		return nil, err
 	}
-	req = req.WithContext(ctx)
 	req.Header.Set("Ocp-Apim-Subscription-Key", subscriptionKey)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {

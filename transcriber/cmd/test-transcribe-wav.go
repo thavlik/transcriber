@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/aws/aws-sdk-go/service/transcribestreamingservice"
 	"github.com/pkg/errors"
@@ -13,6 +14,10 @@ import (
 	"github.com/thavlik/transcriber/transcriber/pkg/source/wav"
 	"github.com/thavlik/transcriber/transcriber/pkg/transcriber"
 )
+
+var testTranscribeWavArgs struct {
+	specialty string
+}
 
 var testTranscribeWavCmd = &cobra.Command{
 	Use:   "transcribe-wav",
@@ -28,19 +33,27 @@ var testTranscribeWavCmd = &cobra.Command{
 		var src source.Source
 		switch filepath.Ext(input) {
 		case ".wav":
-			src, err = wav.NewWavSource(f)
+			src, err = wav.NewWavSource(cmd.Context(), f)
 			if err != nil {
 				return errors.Wrap(err, "wav.NewWavSource")
 			}
 		default:
 			return errors.New("unsupported file type")
 		}
-		ctx := context.Background()
+		wg := new(sync.WaitGroup)
+		wg.Add(1)
+		defer wg.Wait()
+		ctx, cancel := context.WithCancel(cmd.Context())
+		defer cancel()
 		transcripts := make(chan *transcribestreamingservice.MedicalTranscript, 16)
-		go transcriber.PrintTranscripts(ctx, transcripts)
+		go func() {
+			defer wg.Done()
+			transcriber.PrintTranscripts(ctx, transcripts)
+		}()
 		return transcriber.Transcribe(
 			ctx,
 			src,
+			testTranscribeWavArgs.specialty,
 			transcripts,
 			base.DefaultLog,
 		)
@@ -49,4 +62,11 @@ var testTranscribeWavCmd = &cobra.Command{
 
 func init() {
 	testCmd.AddCommand(testTranscribeWavCmd)
+	testTranscribeWavCmd.Flags().StringVarP(
+		&testTranscribeWavArgs.specialty,
+		"specialty",
+		"s",
+		defaultSpecialty,
+		"the specialty to use for transcription",
+	)
 }

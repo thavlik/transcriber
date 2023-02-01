@@ -1,3 +1,9 @@
+// Note: the code in this file was lifted from the MIT-licensed
+// repository for go-oryx-lib: https://github.com/ossrs/go-oryx-lib
+// It may or may not be used used by the transcriber, but it's here
+// for reference and debugging purposes. The AudioSpecificConfig for
+// an RTMP stream is announced in the OnAudio handler method. There's
+// no need to unmarshal it into this struct unless you want to debug.
 package aac
 
 import (
@@ -14,7 +20,8 @@ const (
 	ObjectTypeForbidden ObjectType = iota
 
 	ObjectTypeMain
-	ObjectTypeLC
+
+	ObjectTypeLC // LowComplexity is the most common profile. It is a sensible default if you don't know what else to choose.
 	ObjectTypeSSR
 
 	ObjectTypeHE   ObjectType = 5  // HE=LC+SBR
@@ -42,6 +49,7 @@ func (o ObjectType) String() string {
 
 // The aac sample rate index.
 // Refer to @doc ISO_IEC_13818-7-AAC-2004.pdf, @page 46, @section Table 35 – Sampling frequency
+// Note: the maximum sample rate for RTMP streams is 44.1kHz.
 type SampleRateIndex uint8
 
 const (

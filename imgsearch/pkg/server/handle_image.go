@@ -13,7 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *server) handleImage() http.HandlerFunc {
+func (s *Server) handleImage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		retCode := http.StatusInternalServerError
 		if err := func() error {
@@ -40,13 +40,12 @@ func (s *server) handleImage() http.HandlerFunc {
 			}
 			w.Header().Set("Content-Type", img.ContentType())
 			w.Header().Set("Content-Length", contentLength)
-			hash := img.Hash()
-			body, err := s.imageCache.Get(r.Context(), hash)
+			metaHash := img.Hash()
+			body, err := s.imageCache.Get(r.Context(), metaHash)
 			if err == data.ErrNotCached {
-				if err := cacheImage(
+				if err := s.cacheImage(
 					r.Context(),
 					img,
-					s.imageCache,
 					w,
 				); err != nil {
 					return err
@@ -55,7 +54,7 @@ func (s *server) handleImage() http.HandlerFunc {
 				// the same uncached image at the same time,
 				// we want to increment the request counter
 				// both times
-				go s.incrementRequests(hash)
+				go s.incrementRequests(metaHash)
 				return nil
 			} else if err != nil {
 				return err
@@ -64,7 +63,7 @@ func (s *server) handleImage() http.HandlerFunc {
 			if _, err := io.Copy(w, body); err != nil {
 				return errors.Wrap(err, "copy")
 			}
-			go s.incrementRequests(hash)
+			go s.incrementRequests(metaHash)
 			return nil
 		}(); err != nil {
 			s.log.Error(r.RequestURI, zap.Error(err))

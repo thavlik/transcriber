@@ -2,6 +2,7 @@ package aac
 
 import (
 	"context"
+	"fmt"
 	"io"
 
 	"github.com/izern/go-fdkaac/fdkaac"
@@ -23,8 +24,8 @@ type AACSource struct {
 // NewAACSource creates a new Source that reads audio from an AAC
 // stream. The sampleRate parameter is the sample rate of the
 // audio stream in Hertz. It is required here because the sample
-// rate otherwise cannot be known until the first audio chunk is
-// read, and it's needed to create the transcription request.
+// rate otherwise cannot be known until an AudioSpecificConfig (asc)
+// header is read, but it's needed to create the transcription request.
 // Use this Source in concert with OBS (https://obsproject.com/)
 // to transcribe live audio from a microphone.
 func NewAACSource(
@@ -77,15 +78,15 @@ func (s *AACSource) Context() context.Context {
 func (s *AACSource) ReadAudioChunk(
 	buf []byte,
 ) (int, error) {
+	if err := s.ctx.Err(); err != nil {
+		return 0, err
+	}
 	// read aac audio from the reader into the buffer
-	//s.log.Debug("reading aac audio chunk")
 	n, err := s.r.Read(buf)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to read aac audio")
 	}
-	//s.log.Debug("read aac audio chunk", zap.Int("bytes", n))
 	// decode the aac audio into pcm values
-	//s.log.Debug("decoding aac frame", zap.Int("bytes", n))
 	pcm, err := s.dec.Decode(buf[:n])
 	if err != nil {
 		s.log.Error("failed to decode aac audio", zap.Error(err))
@@ -98,11 +99,14 @@ func (s *AACSource) ReadAudioChunk(
 		s.log.Warn("no pcm audio data available yet")
 		return 0, nil
 	}
-	//s.log.Warn("pcm data is available", zap.Int("n", len(pcm)))
 	// copy the pcm audio to the output buffer
 	return copy(buf, pcm), nil
 }
 
 func (s *AACSource) String() string {
-	return "AAC audio source"
+	return fmt.Sprintf(
+		"AACSource{sampleRate=%d, stereo=%t}",
+		s.sampleRate,
+		s.stereo,
+	)
 }

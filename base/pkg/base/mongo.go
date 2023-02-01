@@ -47,12 +47,15 @@ func AddMongoFlags(cmd *cobra.Command, o *MongoOptions) {
 	cmd.PersistentFlags().StringVar(&o.Password, "mongo-password", "", "mongodb password")
 }
 
-func ConnectMongo(o *MongoOptions) *mongo.Database {
+func ConnectMongo(
+	ctx context.Context,
+	o *MongoOptions,
+) *mongo.Database {
 	if !o.IsSet() {
 		panic("missing mongo options")
 	}
 	mongoClient, err := mongo.Connect(
-		context.Background(),
+		ctx,
 		options.Client().
 			ApplyURI("mongodb+srv://"+o.Host).
 			SetAuth(options.Credential{
@@ -63,7 +66,7 @@ func ConnectMongo(o *MongoOptions) *mongo.Database {
 	if err != nil {
 		panic(fmt.Errorf("mongo: error connecting to %s: %v", o.Host, err))
 	}
-	if err := mongoClient.Ping(context.Background(), nil); err != nil {
+	if err := mongoClient.Ping(ctx, nil); err != nil {
 		panic(fmt.Errorf("mongo: failed to ping: %v", err))
 	}
 	db := mongoClient.Database(o.DBName)

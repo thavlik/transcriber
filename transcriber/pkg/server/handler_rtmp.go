@@ -5,6 +5,7 @@ import (
 	"context"
 	"io"
 	"log"
+	"sync"
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/transcriber/transcriber/pkg/source"
@@ -17,11 +18,12 @@ import (
 
 var _ rtmp.Handler = (*Handler)(nil)
 
-type CheckStreamKey func(string) bool
+type CheckStreamKey func(string) error
 
 // Handler An RTMP connection handler
 type Handler struct {
 	rtmp.DefaultHandler
+	wg             *sync.WaitGroup
 	source         *aac.AACSource
 	ctx            context.Context
 	cancel         context.CancelFunc
@@ -34,14 +36,17 @@ func NewHandler(
 	ctx context.Context,
 	newSource chan<- source.Source,
 	checkStreamKey CheckStreamKey,
+	wg *sync.WaitGroup,
 	log *zap.Logger,
 ) *Handler {
+	wg.Add(1)
 	ctx, cancel := context.WithCancel(ctx)
 	return &Handler{
 		ctx:            ctx,
 		cancel:         cancel,
 		newSource:      newSource,
 		checkStreamKey: checkStreamKey,
+		wg:             wg,
 		log:            log,
 	}
 }
@@ -71,8 +76,8 @@ func (h *Handler) OnPublish(
 	if cmd.PublishingName == "" {
 		return errors.New("PublishingName is empty")
 	}
-	if !h.checkStreamKey(cmd.PublishingName) {
-		return errors.New("invalid stream key")
+	if err := h.checkStreamKey(cmd.PublishingName); err != nil {
+		return errors.Wrap(err, "invalid stream key")
 	}
 	return nil
 }
@@ -108,7 +113,7 @@ func (h *Handler) OnAudio(timestamp uint32, payload io.Reader) error {
 		var sampleRate int64
 		switch audio.SoundRate {
 		case flvtag.SoundRate5_5kHz:
-			sampleRate = 5512
+			return errors.Errorf("sample rate of 5kHz is less than minimum supported rate of 8kHz")
 		case flvtag.SoundRate11kHz:
 			sampleRate = 11025
 		case flvtag.SoundRate22kHz:
@@ -173,6 +178,7 @@ func (h *Handler) OnVideo(timestamp uint32, payload io.Reader) error {
 }
 
 func (h *Handler) OnClose() {
+	defer h.wg.Done()
 	h.log.Debug("OnClose")
 	h.cancel()
 	// TODO: properly cancel transcription

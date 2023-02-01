@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 
 	"github.com/spf13/cobra"
@@ -51,12 +52,13 @@ var serverCmd = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return server.Entry(
+			cmd.Context(),
 			serverArgs.httpPort,
 			serverArgs.metricsPort,
 			serverArgs.bingApiKey,
 			serverArgs.bingEndpoint,
 			cache.NewImageCache(
-				initMetaCache(),
+				initMetaCache(cmd.Context()),
 				initDataCache(),
 			),
 			base.DefaultLog,
@@ -70,9 +72,10 @@ func initDataCache() data.ImageDataCache {
 	)
 }
 
-func initMetaCache() meta.ImageMetaCache {
+func initMetaCache(ctx context.Context) meta.ImageMetaCache {
 	return mongo.NewMongoMetaCache(
 		base.ConnectMongo(
+			ctx,
 			&serverArgs.db.Mongo,
 		).Collection(serverArgs.metaCollectionName),
 	)

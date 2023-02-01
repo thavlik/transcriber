@@ -7,17 +7,16 @@ import (
 	"net/http"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/transcriber/imgsearch/pkg/cache"
 	"github.com/thavlik/transcriber/imgsearch/pkg/search"
 )
 
-func cacheImage(
+func (s *Server) cacheImage(
 	ctx context.Context,
 	img *search.Image,
-	imageCache *cache.ImageCache,
 	w io.Writer,
 ) error {
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		img.ContentURL,
 		nil,
@@ -25,7 +24,6 @@ func cacheImage(
 	if err != nil {
 		return errors.Wrap(err, "newrequest")
 	}
-	req = req.WithContext(ctx)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return errors.Wrap(err, "do")
@@ -44,7 +42,7 @@ func cacheImage(
 			resp.Header.Get("Content-Type"),
 		)
 	}
-	if err := imageCache.Set(
+	if err := s.imageCache.Set(
 		ctx,
 		img,
 		io.TeeReader(resp.Body, w),

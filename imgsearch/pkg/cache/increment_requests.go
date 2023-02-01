@@ -10,5 +10,8 @@ func (c *ImageCache) IncrementRequests(
 	ctx context.Context,
 	hash string,
 ) error {
-	return c.metaCache.IncrementRequests(ctx, hash)
+	return c.metaCache.IncrementRequests(
+		ctx,
+		hash,
+	)
 }

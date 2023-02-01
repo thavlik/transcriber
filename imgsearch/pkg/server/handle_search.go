@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *server) handleSearch() http.HandlerFunc {
+func (s *Server) handleSearch() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		retCode := http.StatusInternalServerError
 		if err := func() error {

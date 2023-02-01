@@ -13,6 +13,7 @@ var serverArgs struct {
 	rtmpPort    int
 	metricsPort int
 	streamKey   string
+	specialty   string
 }
 
 var serverCmd = &cobra.Command{
@@ -26,9 +27,11 @@ var serverCmd = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return server.Entry(
+			cmd.Context(),
 			serverArgs.httpPort,
 			serverArgs.rtmpPort,
 			serverArgs.metricsPort,
+			serverArgs.specialty,
 			serverArgs.streamKey,
 			base.DefaultLog,
 		)
@@ -40,5 +43,12 @@ func init() {
 	serverCmd.Flags().IntVarP(&serverArgs.httpPort, "http-port", "p", 80, "http port to listen on")
 	serverCmd.Flags().IntVarP(&serverArgs.rtmpPort, "rtmp-port", "r", 1935, "rtmp port to listen on")
 	serverCmd.Flags().IntVarP(&serverArgs.metricsPort, "metrics-port", "m", 0, "metrics port to listen on")
-	serverCmd.Flags().StringVarP(&serverArgs.streamKey, "stream-key", "s", "", "stream key to use for authentication")
+	serverCmd.Flags().StringVarP(&serverArgs.streamKey, "stream-key", "k", "", "stream key to use for authentication")
+	serverCmd.Flags().StringVarP(
+		&serverArgs.specialty,
+		"specialty",
+		"s",
+		defaultSpecialty,
+		"the specialty to use for transcription",
+	)
 }

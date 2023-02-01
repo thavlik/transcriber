@@ -75,7 +75,10 @@ func AddRedisFlags(cmd *cobra.Command, o *RedisOptions) {
 	cmd.PersistentFlags().StringVar(&o.Password, "redis-password", "", "redis password")
 }
 
-func ConnectRedis(o *RedisOptions) *redis.Client {
+func ConnectRedis(
+	ctx context.Context,
+	o *RedisOptions,
+) *redis.Client {
 	if !o.IsSet() {
 		panic("missing redis options")
 	}
@@ -85,7 +88,7 @@ func ConnectRedis(o *RedisOptions) *redis.Client {
 		panic(fmt.Errorf("failed to parse redis url '%s': %v", url, err))
 	}
 	redisClient := redis.NewClient(options)
-	if _, err := redisClient.Ping(context.Background()).Result(); err != nil {
+	if _, err := redisClient.Ping(ctx).Result(); err != nil {
 		panic(errors.Wrap(err, "failed to ping redis"))
 	}
 	DefaultLog.Debug("connected to redis", Elapsed(start))

@@ -11,17 +11,19 @@ import (
 )
 
 type wavSource struct {
+	ctx context.Context
 	dec *wav.Decoder
 	buf *audio.IntBuffer
 }
 
 func NewWavSource(
+	ctx context.Context,
 	r io.ReadSeeker,
 ) (source.Source, error) {
 	dec := wav.NewDecoder(r)
 	if !dec.IsValidFile() {
 		if err := dec.Err(); err != nil {
-			return nil, errors.Wrap(err, "dec.ReadInfo")
+			return nil, errors.Wrap(err, "failed to read wav file header")
 		}
 		return nil, errors.New("invalid wav file")
 	}
@@ -29,10 +31,10 @@ func NewWavSource(
 		return nil, errors.Wrap(err, "dec.FwdToPCM")
 	}
 	if dec.BitDepth != 16 {
-		// TODO: support other bit depths
 		return nil, errors.Errorf("unsupported bit depth %d", dec.BitDepth)
 	}
 	return &wavSource{
+		ctx,
 		dec,
 		&audio.IntBuffer{
 			Data: make([]int, 15000), // max chunk size is 32kb, so 15000 16 bit samples = 30kb
@@ -52,7 +54,7 @@ func (s *wavSource) IsStereo() (bool, error) {
 }
 
 func (s *wavSource) Context() context.Context {
-	return context.Background()
+	return s.ctx
 }
 
 func (s *wavSource) SampleRate() (int64, error) {
@@ -62,6 +64,9 @@ func (s *wavSource) SampleRate() (int64, error) {
 func (s *wavSource) ReadAudioChunk(
 	buf []byte,
 ) (int, error) {
+	if err := s.ctx.Err(); err != nil {
+		return 0, err
+	}
 	n, err := s.dec.PCMBuffer(s.buf)
 	if err != nil {
 		return 0, errors.Wrap(err, "dec.PCMBuffer")

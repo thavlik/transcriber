@@ -11,6 +11,6 @@ import (
 // This is never read by the application, only written to.
 // It is utilized so the source for an image can be queried.
 type ImageMetaCache interface {
-	Set(context.Context, *search.Image) error
+	Set(ctx context.Context, img *search.Image, fileHash string) error
 	IncrementRequests(ctx context.Context, hash string) error
 }

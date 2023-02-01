@@ -27,6 +27,8 @@ spec:
         command:
           - transcriber
           - server
+          - --specialty
+          - {{ .Values.transcriber.specialty }}
         {{- if .Values.prometheus.enabled }}
           - --metrics-port
           - "2112"

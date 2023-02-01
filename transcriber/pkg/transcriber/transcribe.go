@@ -2,6 +2,7 @@ package transcriber
 
 import (
 	"context"
+	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/transcribestreamingservice"
@@ -12,32 +13,45 @@ import (
 	"go.uber.org/zap"
 )
 
+const minSampleRate = int64(8000)
+
 func Transcribe(
 	ctx context.Context,
 	source source.Source,
+	specialty string,
 	transcripts chan<- *transcribestreamingservice.MedicalTranscript,
 	log *zap.Logger,
 ) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	// read stream details
+
 	sampleRate, err := source.SampleRate()
 	if err != nil {
 		return errors.Wrap(err, "source.SampleRate")
+	} else if sampleRate < minSampleRate {
+		return errors.Errorf(
+			"sample rate of %d Hz is too low (minimum required is %d Hz)",
+			sampleRate,
+			minSampleRate,
+		)
 	}
-	stereo, err := source.IsStereo()
+
+	isStereo, err := source.IsStereo()
 	if err != nil {
 		return errors.Wrap(err, "source.IsStereo")
 	}
+
 	log.Debug("starting transcription",
-		zap.Int64("sampleRate", sampleRate))
-	// start the transcription stream
+		zap.Int64("sampleRate", sampleRate),
+		zap.Bool("isStero", isStereo))
 	var enableChannelIdentification *bool
-	if stereo {
+	if isStereo {
+		// the only acceptable values are nil and true
 		enableChannelIdentification = aws.Bool(true)
 	}
 	var numberOfChannels *int64
-	if stereo {
+	if isStereo {
+		// the only acceptable values are nil and 2
 		numberOfChannels = aws.Int64(2)
 	}
 	svc := transcribestreamingservice.New(util.AWSSession())
@@ -49,7 +63,7 @@ func Transcribe(
 			MediaSampleRateHertz:        aws.Int64(sampleRate),
 			NumberOfChannels:            numberOfChannels,
 			EnableChannelIdentification: enableChannelIdentification,
-			Specialty:                   aws.String("RADIOLOGY"), // PRIMARYCARE | CARDIOLOGY | NEUROLOGY | ONCOLOGY | RADIOLOGY | UROLOGY
+			Specialty:                   aws.String(specialty),   // PRIMARYCARE | CARDIOLOGY | NEUROLOGY | ONCOLOGY | RADIOLOGY | UROLOGY
 			Type:                        aws.String("DICTATION"), // CONVERSATION | DICTATION
 		})
 	if err != nil {
@@ -57,9 +71,14 @@ func Transcribe(
 	}
 	stream := resp.GetStream()
 
+	wg := new(sync.WaitGroup)
+	wg.Add(2)
+	defer wg.Wait()
+
 	// spin up a goroutine for sending the audio stream
 	writeAudioStreamErr := make(chan error)
 	go func() {
+		defer wg.Done()
 		writeAudioStreamErr <- writeAudioStream(
 			ctx,
 			source,
@@ -71,6 +90,7 @@ func Transcribe(
 	// read the transcription event stream
 	readTranscriptionErr := make(chan error)
 	go func() {
+		defer wg.Done()
 		readTranscriptionErr <- readTranscription(
 			ctx,
 			stream.Events(),

@@ -2,7 +2,6 @@ package mongo
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/transcriber/imgsearch/pkg/search"
@@ -11,18 +10,14 @@ import (
 func (c *mongoMetaCache) Set(
 	ctx context.Context,
 	img *search.Image,
+	fileHash string,
 ) error {
-	// simple hack for converting a struct to a map and
-	// then assigning the hash as the mongo _id field
-	body, err := json.Marshal(img)
+	doc, err := img.AsMap()
 	if err != nil {
-		return errors.Wrap(err, "json")
-	}
-	doc := make(map[string]interface{})
-	if err := json.Unmarshal(body, &doc); err != nil {
-		return errors.Wrap(err, "json")
+		return err
 	}
 	doc["_id"] = img.Hash()
+	doc["fileHash"] = fileHash
 	if _, err := c.c.InsertOne(
 		ctx,
 		doc,

@@ -3,8 +3,11 @@ package search
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 type Image struct {
@@ -18,15 +21,30 @@ type Image struct {
 	AccentColor    string `json:"accentColor"`
 }
 
+func (i *Image) AsMap() (map[string]interface{}, error) {
+	body, err := json.Marshal(i)
+	if err != nil {
+		return nil, errors.Wrap(err, "json")
+	}
+	doc := make(map[string]interface{})
+	if err := json.Unmarshal(body, &doc); err != nil {
+		return nil, errors.Wrap(err, "json")
+	}
+	return doc, nil
+}
+
+// Hash returns a unique hash for the image metadata.
+// The thumbnail is not included in the hash because
+// it may change between search requests.
 func (i *Image) Hash() string {
 	h := md5.New()
 	// note: md5.Write cannot fail so we don't need to check the error
 	h.Write([]byte(i.ContentURL))
 	h.Write([]byte(i.ContentSize))
-	h.Write([]byte(i.ThumbnailURL))
+	//h.Write([]byte(i.ThumbnailURL)) // do not include thumbnail url in hash
 	h.Write([]byte(i.HostPageURL))
 	h.Write([]byte(i.EncodingFormat))
-	h.Write([]byte(fmt.Sprintf("%d\n%d\n", i.Width, i.Height)))
+	h.Write([]byte(fmt.Sprintf("\n%dx%d", i.Width, i.Height)))
 	raw := h.Sum(nil) // 16 bytes
 	return hex.EncodeToString(raw[:])
 }

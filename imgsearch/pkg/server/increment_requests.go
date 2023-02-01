@@ -6,18 +6,20 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *server) incrementRequests(imageHash string) {
-	// Increment the request counter for this image
-	ctx, cancel := context.WithCancel(context.Background())
+// incrementRequests increments the request counter for the given image
+func (s *Server) incrementRequests(metaHash string) {
+	s.wg.Add(1)
+	defer s.wg.Done()
+	ctx, cancel := context.WithCancel(s.ctx)
 	defer cancel()
 	if err := s.imageCache.IncrementRequests(
 		ctx,
-		imageHash,
+		metaHash,
 	); err != nil {
 		s.log.Error(
 			"failed to increment image request counter",
 			zap.Error(err),
-			zap.String("hash", imageHash),
+			zap.String("hash", metaHash),
 		)
 	}
 }

@@ -14,13 +14,13 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *server) sub(cl *wsClient) {
+func (s *Server) sub(cl *wsClient) {
 	s.connsL.Lock()
 	defer s.connsL.Unlock()
 	s.conns[cl] = struct{}{}
 }
 
-func (s *server) unsub(cl *wsClient) {
+func (s *Server) unsub(cl *wsClient) {
 	s.connsL.Lock()
 	defer s.connsL.Unlock()
 	delete(s.conns, cl)
@@ -53,7 +53,7 @@ func (cl *wsClient) sendMessage(
 	return cl.sendBytes(ctx, body)
 }
 
-func (s *server) getSubs(lock bool) []*wsClient {
+func (s *Server) getSubs(lock bool) []*wsClient {
 	if lock {
 		s.connsL.Lock()
 		defer s.connsL.Unlock()
@@ -65,7 +65,7 @@ func (s *server) getSubs(lock bool) []*wsClient {
 	return conns
 }
 
-func (s *server) broadcastMessage(
+func (s *Server) broadcastMessage(
 	ctx context.Context,
 	ty string,
 	payload interface{},
@@ -80,7 +80,7 @@ func (s *server) broadcastMessage(
 	s.broadcast(ctx, body)
 }
 
-func (s *server) broadcast(
+func (s *Server) broadcast(
 	ctx context.Context,
 	body []byte,
 ) {
@@ -88,13 +88,16 @@ func (s *server) broadcast(
 	defer s.connsL.Unlock()
 	subs := s.getSubs(false)
 	for _, cl := range subs {
-		go func(cl *wsClient) {
-			if err := cl.sendBytes(
-				ctx,
-				body,
-			); err != nil {
-				_ = cl.c.Close()
-			}
+		// capture the loop variable
+		func(cl *wsClient) {
+			s.spawn(func() {
+				if err := cl.sendBytes(
+					ctx,
+					body,
+				); err != nil {
+					_ = cl.c.Close()
+				}
+			})
 		}(cl)
 	}
 }
@@ -131,7 +134,7 @@ func (cl *wsClient) writePump() {
 	}
 }
 
-func (s *server) handleWebSock() http.HandlerFunc {
+func (s *Server) handleWebSock() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := func() error {
 			w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -145,6 +148,8 @@ func (s *server) handleWebSock() http.HandlerFunc {
 				w.WriteHeader(http.StatusMethodNotAllowed)
 				return fmt.Errorf("method not allowed")
 			}
+			s.wg.Add(1)
+			defer s.wg.Done()
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 			upgrader := websocket.Upgrader{
 				CheckOrigin: func(r *http.Request) bool {
@@ -167,7 +172,9 @@ func (s *server) handleWebSock() http.HandlerFunc {
 				send:   send,
 				log:    reqLog,
 			}
-			go cl.writePump()
+			s.spawn(func() {
+				cl.writePump()
+			})
 			defer c.Close()
 			s.sub(cl)
 			defer s.unsub(cl)

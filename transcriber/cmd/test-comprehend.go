@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"os"
 	"strings"
@@ -30,7 +29,7 @@ var testComprehendCmd = &cobra.Command{
 		}
 		base.DefaultLog.Info("testing comprehend", zap.String("text", text))
 		entities, err := comprehend.Comprehend(
-			context.Background(),
+			cmd.Context(),
 			text,
 			strings.Split(testComprehendArgs.filter, ","),
 			base.DefaultLog,

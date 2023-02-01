@@ -14,7 +14,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *server) checkTerm(term string) []*refmat.ReferenceMaterial {
+func (s *Server) checkTerm(term string) []*refmat.ReferenceMaterial {
 	term = strings.ToLower(term)
 	refs, ok := s.refs[term]
 	if ok {
@@ -23,22 +23,24 @@ func (s *server) checkTerm(term string) []*refmat.ReferenceMaterial {
 	return nil
 }
 
-func (s *server) handleTranscript(
+func (s *Server) handleTranscript(
 	ctx context.Context,
 	transcript *transcribestreamingservice.MedicalTranscript,
 ) error {
 	text := transcriber.ConvertTranscript(transcript)
-	go s.broadcastMessage(
-		ctx,
-		"transcript",
-		map[string]interface{}{
-			"text": text,
-		})
-	go func() {
+	s.spawn(func() {
+		s.broadcastMessage(
+			ctx,
+			"transcript",
+			map[string]interface{}{
+				"text": text,
+			},
+		)
+	})
+	s.spawn(func() {
 		entities, err := comprehend.Comprehend(
 			ctx,
 			text,
-			//[]string{"OTHER"},
 			nil,
 			s.log,
 		)
@@ -69,8 +71,7 @@ func (s *server) handleTranscript(
 			zap.String("top.Text", top.Text),
 			zap.Float64("top.Score", top.Score),
 		)
-	}()
-
+	})
 	var lastTerm string
 	fmt.Println(text)
 	for _, result := range transcript.Results {
@@ -90,10 +91,6 @@ func (s *server) handleTranscript(
 						// see if a compound word will match a reference material
 						matched = fmt.Sprintf("%s %s", lastTerm, term)
 						refs = s.checkTerm(matched)
-						//if ref == nil {
-						//	s.log.Debug("no reference material found",
-						//		zap.String("search", matched))
-						//}
 					}
 				}
 				lastTerm = term

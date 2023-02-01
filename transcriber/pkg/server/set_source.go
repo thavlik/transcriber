@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *server) setSource(
+func (s *Server) setSource(
 	ctx context.Context,
 	src source.Source,
 ) error {
@@ -30,10 +30,11 @@ func (s *server) setSource(
 		s.job = transcriber.NewTranscriptionJob(
 			src.Context(),
 			src,
+			s.specialty,
 			transcripts,
 			s.log,
 		)
-		go func() {
+		s.spawn(func() {
 			for {
 				select {
 				case <-s.job.Context().Done():
@@ -47,13 +48,13 @@ func (s *server) setSource(
 					}
 				}
 			}
-		}()
-		go func() {
+		})
+		s.spawn(func() {
 			s.log.Debug("starting transcribe job")
 			if err := s.job.Transcribe(); err != nil {
 				s.log.Error("transcribe error", zap.Error(err))
 			}
-		}()
+		})
 		return nil
 	}
 }

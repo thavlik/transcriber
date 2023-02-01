@@ -12,6 +12,7 @@ type TranscriptionJob struct {
 	ctx         context.Context
 	cancel      context.CancelFunc
 	source      source.Source
+	specialty   string
 	transcripts chan<- *transcribestreamingservice.MedicalTranscript
 	log         *zap.Logger
 }
@@ -19,6 +20,7 @@ type TranscriptionJob struct {
 func NewTranscriptionJob(
 	ctx context.Context,
 	source source.Source,
+	specialty string,
 	transcripts chan<- *transcribestreamingservice.MedicalTranscript,
 	log *zap.Logger,
 ) *TranscriptionJob {
@@ -27,6 +29,7 @@ func NewTranscriptionJob(
 		ctx:         childCtx,
 		cancel:      cancel,
 		source:      source,
+		specialty:   specialty,
 		transcripts: transcripts,
 		log:         log,
 	}
@@ -44,6 +47,7 @@ func (j *TranscriptionJob) Transcribe() error {
 	return Transcribe(
 		j.ctx,
 		j.source,
+		j.specialty,
 		j.transcripts,
 		j.log,
 	)

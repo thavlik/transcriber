@@ -24,6 +24,8 @@ func Elapsed(since time.Time) zap.Field {
 func init() {
 	SetLogLevel()
 	encoderCfg := zap.NewProductionEncoderConfig()
+	encoderCfg.EncodeTime = zapcore.RFC3339TimeEncoder
+	encoderCfg.EncodeDuration = zapcore.MillisDurationEncoder
 	DefaultLog = zap.New(zapcore.NewCore(
 		zapcore.NewJSONEncoder(encoderCfg),
 		zapcore.Lock(os.Stdout),
