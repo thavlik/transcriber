@@ -257,7 +257,12 @@ class _HomePageState extends State<HomePage> {
         child: Text(name, style: Theme.of(context).textTheme.headlineSmall),
       );
 
-  Widget _buildSearchImage(BuildContext context, SearchImage img) => Padding(
+  Widget _buildSearchImage(
+    BuildContext context,
+    SearchImage img,
+    MyModel model,
+  ) =>
+      Padding(
         padding: const EdgeInsets.all(8.0),
         child: SizedBox(
           width: 100,
@@ -270,15 +275,35 @@ class _HomePageState extends State<HomePage> {
                   decoration: BoxDecoration(
                     color: HexColor.fromHex(img.accentColor),
                   ),
-                  child: FadeInImage(
-                    placeholder: MemoryImage(kTransparentImageBytes),
-                    image: NetworkImage(img.thumbnailUrl),
-                    fit: BoxFit.cover,
-                    imageErrorBuilder: (context, error, stackTrace) {
-                      return kTransparentImage;
-                      //return Image.asset('assets/images/error.jpg',
-                      //    fit: BoxFit.fitWidth);
-                    },
+                  child: Stack(
+                    children: [
+                      FadeInImage(
+                        placeholder: MemoryImage(kTransparentImageBytes),
+                        image: NetworkImage(img.thumbnailUrl),
+                        fit: BoxFit.cover,
+                        imageErrorBuilder: (context, error, stackTrace) {
+                          return kTransparentImage;
+                          //return Image.asset('assets/images/error.jpg',
+                          //    fit: BoxFit.fitWidth);
+                        },
+                      ),
+                      Positioned(
+                        top: 3,
+                        right: 3,
+                        child: Opacity(
+                          opacity: img.isLiked == true ? 0.8 : 0.7,
+                          child: GestureDetector(
+                            child: Icon(
+                              img.isLiked == true
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                            ),
+                            onTap: () =>
+                                model.likeImage(img, !(img.isLiked ?? false)),
+                          ),
+                        ),
+                      ),
+                    ],
                   )),
             ),
           ),
@@ -364,13 +389,22 @@ class _HomePageState extends State<HomePage> {
                             Flexible(
                               flex: 1,
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   if (model.searchImages != null)
-                                    ...model.searchImages!
-                                        .map((e) =>
-                                            _buildSearchImage(context, e))
-                                        .toList(),
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Wrap(
+                                        crossAxisAlignment:
+                                            WrapCrossAlignment.start,
+                                        alignment: WrapAlignment.spaceAround,
+                                        direction: Axis.horizontal,
+                                        children: model.searchImages!
+                                            .map((e) => _buildSearchImage(
+                                                context, e, model))
+                                            .toList(),
+                                      ),
+                                    ),
                                   ...model.referenceMaterials.reversed
                                       .map((ref) => ReferenceMaterialWidget(
                                             ref,

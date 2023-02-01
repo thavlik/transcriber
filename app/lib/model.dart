@@ -66,6 +66,7 @@ class SearchImage {
   final int width;
   final int height;
   final String accentColor;
+  bool? isLiked;
 
   SearchImage({
     required this.contentUrl,
@@ -76,6 +77,7 @@ class SearchImage {
     required this.width,
     required this.height,
     required this.accentColor,
+    this.isLiked,
   });
 
   factory SearchImage.fromJson(Map<String, dynamic> json) {
@@ -88,6 +90,7 @@ class SearchImage {
       width: json['width'] as int,
       height: json['height'] as int,
       accentColor: json['accentColor'] as String,
+      isLiked: json['isLiked'] as bool?,
     );
   }
 }
@@ -117,30 +120,6 @@ class MyModel extends Model {
   KeyTerms? _keyTerms;
   Entity? _selectedEntity;
   List<SearchImage>? _searchImages;
-
-  /*
-    ReferenceMaterial("vertebral arch", [
-      "vertebral arch",
-    ], [
-      "https://refmat.nyc3.digitaloceanspaces.com/lumbar-vertebra-vertebral-arch-superior-view-745x550.png",
-      "https://refmat.nyc3.digitaloceanspaces.com/General-Structure-of-a-Vertebrae.jpg",
-    ]),
-    ReferenceMaterial("ligamentum flavum", [
-      "ligamentum flavum",
-      "ligamentum",
-      "flavum",
-    ], [
-      "https://refmat.nyc3.digitaloceanspaces.com/ligamentum-flavum-1024x670.jpg",
-      "https://refmat.nyc3.digitaloceanspaces.com/LigamentumFlavum.png",
-    ]),
-    ReferenceMaterial("facet joint", [
-      "facet joint",
-    ], [
-      "https://refmat.nyc3.digitaloceanspaces.com/facet_joints_related_spine_structures_shutterstock_157672247.jpg",
-      "https://refmat.nyc3.digitaloceanspaces.com/Thoracic-Facet-Syndrome.jpg",
-    ]),
-  ];
-  */
 
   bool get isConnected => _isConnected;
   String? get transcript => _transcript;
@@ -173,6 +152,11 @@ class MyModel extends Model {
 
   void onDisconnect() {
     _isConnected = false;
+    notifyListeners();
+  }
+
+  void likeImage(SearchImage img, bool isLiked) {
+    img.isLiked = isLiked;
     notifyListeners();
   }
 
