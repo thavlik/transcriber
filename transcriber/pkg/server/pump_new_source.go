@@ -12,7 +12,6 @@ func (s *Server) pumpNewSource() {
 			return
 		case src := <-s.newSource:
 			s.log.Info("received new audio source")
-			s.clearUsedRefs()
 			if err := s.setSource(
 				s.ctx,
 				src,

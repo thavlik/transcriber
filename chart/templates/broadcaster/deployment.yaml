@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-transcriber
+  name: {{ .Release.Name }}-broadcaster
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ .Release.Name }}-transcriber
+      app: {{ .Release.Name }}-broadcaster
   template:
     metadata:
       labels:
-        app: {{ .Release.Name }}-transcriber
+        app: {{ .Release.Name }}-broadcaster
     spec:
     {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -18,19 +18,15 @@ spec:
     {{- end }}
       containers:
       - name: server
-        imagePullPolicy: {{ .Values.transcriber.imagePullPolicy }}
-        image: {{ .Values.transcriber.image }}
-    {{- if .Values.transcriber.resources }}
+        imagePullPolicy: {{ .Values.broadcaster.imagePullPolicy }}
+        image: {{ .Values.broadcaster.image }}
+    {{- if .Values.broadcaster.resources }}
         resources:
-{{ toYaml .Values.transcriber.resources | indent 10 }}
+{{ toYaml .Values.broadcaster.resources | indent 10 }}
     {{- end }}
         command:
-          - transcriber
+          - broadcaster
           - server
-          - --broadcaster-endpoint
-          - "http://{{ .Release.Name }}-broadcaster:80"
-          - --specialty
-          - {{ .Values.transcriber.specialty }}
         {{- if .Values.prometheus.enabled }}
           - --metrics-port
           - "2112"
@@ -45,13 +41,17 @@ spec:
       {{- end }}
         env:
         - name: LOG_LEVEL
-          value: {{ .Values.transcriber.logLevel }}
-        - name: AWS_REGION
-          value: {{ .Values.aws.region }}
-        - name: AWS_ACCESS_KEY_ID
-{{ tpl (toYaml .Values.aws.accessKeyId) . | indent 10 }}
-        - name: AWS_SECRET_ACCESS_KEY
-{{ tpl (toYaml .Values.aws.secretAccessKey) . | indent 10 }}
+          value: {{ .Values.broadcaster.logLevel }}
+      {{- if .Values.redis.enabled }}
+        - name: REDIS_USERNAME
+{{ tpl (toYaml .Values.redis.username) . | indent 10 }}
+        - name: REDIS_PASSWORD
+{{ tpl (toYaml .Values.redis.password) . | indent 10 }}
+        - name: REDIS_HOST
+{{ tpl (toYaml .Values.redis.host) . | indent 10 }}
+        - name: REDIS_PORT
+{{ tpl (toYaml .Values.redis.port) . | indent 10 }}
+      {{- end }}
         readinessProbe:
           httpGet:
             path: /readyz

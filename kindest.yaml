@@ -3,6 +3,7 @@ dependencies:
   - transcriber
   - imgsearch
   - strim
+  - broadcaster
 env:
   kubernetes:
     resources:
@@ -13,6 +14,28 @@ env:
         releaseName: ts
         namespace: ts
         values:
+          redis:
+            enabled: true
+            username:
+              valueFrom:
+                secretKeyRef:
+                  name: redis-cred
+                  key: username
+            password:
+              valueFrom:
+                secretKeyRef:
+                  name: redis-cred
+                  key: password
+            host:
+              valueFrom:
+                secretKeyRef:
+                  name: redis-cred
+                  key: host
+            port:
+              valueFrom:
+                secretKeyRef:
+                  name: redis-cred
+                  key: port
           db:
             driver: mongo
             postgres:

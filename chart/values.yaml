@@ -1,5 +1,16 @@
 imagePullSecrets: []
 
+redis:
+  enabled: false
+  username:
+    value: ""
+  password:
+    value: ""
+  host:
+    value: ""
+  port:
+    value: ""
+
 db:
   # Configure the database for all microservices.
   # Currently only mongo is supported but this 
@@ -55,6 +66,12 @@ aws:
 transcriber:
   specialty: RADIOLOGY
   image: thavlik/transcriber:latest
+  imagePullPolicy: Always
+  logLevel: debug
+  resources: {}
+
+broadcaster:
+  image: thavlik/broadcaster:latest
   imagePullPolicy: Always
   logLevel: debug
   resources: {}

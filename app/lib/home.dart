@@ -265,11 +265,12 @@ class _HomePageState extends State<HomePage> {
   ) =>
       Padding(
         padding: const EdgeInsets.all(8.0),
-        child: SizedBox(
-          width: 100,
-          height: 100,
-          child: AspectRatio(
-            aspectRatio: img.width / img.height,
+        child: Container(
+          constraints: const BoxConstraints(
+            maxWidth: 100,
+            maxHeight: 100,
+          ),
+          child: Center(
             child: InkWell(
               onTap: () => onImageTap(context, img.contentUrl),
               child: Container(
@@ -278,15 +279,18 @@ class _HomePageState extends State<HomePage> {
                   ),
                   child: Stack(
                     children: [
-                      FadeInImage(
-                        placeholder: MemoryImage(kTransparentImageBytes),
-                        image: NetworkImage(img.thumbnailUrl),
-                        fit: BoxFit.cover,
-                        imageErrorBuilder: (context, error, stackTrace) {
-                          return kTransparentImage;
-                          //return Image.asset('assets/images/error.jpg',
-                          //    fit: BoxFit.fitWidth);
-                        },
+                      AspectRatio(
+                        aspectRatio: img.width / img.height,
+                        child: FadeInImage(
+                          placeholder: MemoryImage(kTransparentImageBytes),
+                          image: NetworkImage(img.thumbnailUrl),
+                          fit: BoxFit.cover,
+                          imageErrorBuilder: (context, error, stackTrace) {
+                            return kTransparentImage;
+                            //return Image.asset('assets/images/error.jpg',
+                            //    fit: BoxFit.fitWidth);
+                          },
+                        ),
                       ),
                       Positioned(
                         top: 3,
@@ -294,10 +298,24 @@ class _HomePageState extends State<HomePage> {
                         child: Opacity(
                           opacity: img.isLiked == true ? 0.8 : 0.7,
                           child: GestureDetector(
-                            child: Icon(
-                              img.isLiked == true
-                                  ? Icons.favorite
-                                  : Icons.favorite_border,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                boxShadow: BoxDecoration(
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withAlpha(80),
+                                      blurRadius: 8.0,
+                                      spreadRadius: 0.0,
+                                      offset: Offset.zero,
+                                    ),
+                                  ],
+                                ).boxShadow,
+                              ),
+                              child: Icon(
+                                img.isLiked == true
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                              ),
                             ),
                             onTap: () =>
                                 model.likeImage(img, !(img.isLiked ?? false)),

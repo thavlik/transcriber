@@ -3,8 +3,8 @@ package server
 import (
 	"context"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/thavlik/transcriber/base/pkg/base"
-
 	"go.uber.org/zap"
 )
 
@@ -12,9 +12,7 @@ func Entry(
 	ctx context.Context,
 	httpPort int,
 	metricsPort int,
-	broadcaster base.ServiceOptions,
-	specialty string,
-	streamKey string,
+	redisClient *redis.Client,
 	log *zap.Logger,
 ) error {
 	ctx, cancel := context.WithCancel(ctx)
@@ -22,9 +20,7 @@ func Entry(
 
 	s := NewServer(
 		ctx,
-		broadcaster,
-		specialty,
-		streamKey,
+		redisClient,
 		log,
 	)
 	defer s.ShutDown()
@@ -37,9 +33,32 @@ func Entry(
 		)
 	})
 
-	s.spawn(s.pumpNewSource)
+	if redisClient != nil {
+		s.spawn(s.runSub)
+	}
 
 	return s.ListenAndServe(
 		httpPort,
 	)
+}
+
+func (s *Server) runSub() {
+	ch := s.redisClient.Subscribe(
+		s.ctx,
+		channelName,
+	).Channel()
+	for {
+		select {
+		case <-s.ctx.Done():
+			return
+		case msg, ok := <-ch:
+			if !ok {
+				panic("redis channel closed")
+			}
+			go s.broadcastLocal(
+				s.ctx,
+				[]byte(msg.Payload),
+			)
+		}
+	}
 }

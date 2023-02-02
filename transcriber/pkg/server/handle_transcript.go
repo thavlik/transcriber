@@ -2,26 +2,13 @@ package server
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/transcribestreamingservice"
 	"github.com/thavlik/transcriber/transcriber/pkg/comprehend"
-	"github.com/thavlik/transcriber/transcriber/pkg/refmat"
 	"github.com/thavlik/transcriber/transcriber/pkg/transcriber"
 
 	"go.uber.org/zap"
 )
-
-func (s *Server) checkTerm(term string) []*refmat.ReferenceMaterial {
-	term = strings.ToLower(term)
-	refs, ok := s.refs[term]
-	if ok {
-		return refs
-	}
-	return nil
-}
 
 func (s *Server) handleTranscript(
 	ctx context.Context,
@@ -73,48 +60,5 @@ func (s *Server) handleTranscript(
 			zap.Float64("top.Score", top.Score),
 		)
 	})
-	var lastTerm string
-	fmt.Println(text)
-	for _, result := range transcript.Results {
-		for _, alt := range result.Alternatives {
-			for _, item := range alt.Items {
-				if aws.StringValue(item.Type) == "punctuation" {
-					continue
-				}
-				term := aws.StringValue(item.Content)
-				if term == "" {
-					continue
-				}
-				matched := term
-				refs := s.checkTerm(term)
-				if lastTerm != "" {
-					if refs == nil || s.areRefsUsed(refs) {
-						// see if a compound word will match a reference material
-						matched = fmt.Sprintf("%s %s", lastTerm, term)
-						refs = s.checkTerm(matched)
-					}
-				}
-				lastTerm = term
-				for _, ref := range refs {
-					if s.isRefUsed(ref) {
-						continue
-					}
-					s.log.Debug("detected reference material",
-						zap.String("matched", matched),
-						zap.Strings("terms", ref.Terms))
-					// broadcast the reference material to all websockets
-					s.broadcastMessage(
-						ctx,
-						"ref",
-						map[string]interface{}{
-							"matched": matched,
-							"terms":   ref.Terms,
-							"images":  ref.Images,
-						})
-					s.useRef(ref) // mark the reference material as used
-				}
-			}
-		}
-	}
 	return nil
 }

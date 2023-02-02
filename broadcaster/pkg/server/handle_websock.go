@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
+	"github.com/pkg/errors"
 	"github.com/thavlik/transcriber/base/pkg/base"
 
 	"go.uber.org/zap"
@@ -26,15 +28,17 @@ func (s *Server) unsub(cl *wsClient) {
 	delete(s.conns, cl)
 }
 
+var errSendChannelFull = errors.New("send channel full")
+
 func (cl *wsClient) sendBytes(
 	ctx context.Context,
 	body []byte,
 ) error {
 	select {
-	case <-ctx.Done():
-		return ctx.Err()
 	case cl.send <- body:
 		return nil
+	default:
+		return errSendChannelFull
 	}
 }
 
@@ -65,39 +69,25 @@ func (s *Server) getSubs(lock bool) []*wsClient {
 	return conns
 }
 
-func (s *Server) broadcastMessage(
-	ctx context.Context,
-	ty string,
-	payload interface{},
-) {
-	body, err := json.Marshal(&wsMessage{
-		Type:    ty,
-		Payload: payload,
-	})
-	if err != nil {
-		panic(err)
-	}
-	s.broadcast(ctx, body)
-}
-
-func (s *Server) broadcast(
+func (s *Server) broadcastLocal(
 	ctx context.Context,
 	body []byte,
 ) {
 	s.connsL.Lock()
 	defer s.connsL.Unlock()
 	subs := s.getSubs(false)
+	wg := new(sync.WaitGroup)
+	wg.Add(len(subs))
+	defer wg.Wait()
 	for _, cl := range subs {
-		// capture the loop variable
-		func(cl *wsClient) {
-			s.spawn(func() {
-				if err := cl.sendBytes(
-					ctx,
-					body,
-				); err != nil {
-					_ = cl.c.Close()
-				}
-			})
+		go func(cl *wsClient) {
+			defer wg.Done()
+			if err := cl.sendBytes(
+				ctx,
+				body,
+			); err != nil && err != errSendChannelFull {
+				_ = cl.c.Close()
+			}
 		}(cl)
 	}
 }
@@ -179,7 +169,6 @@ func (s *Server) handleWebSock() http.HandlerFunc {
 			defer c.Close()
 			s.sub(cl)
 			defer s.unsub(cl)
-			s.clearUsedRefs() // clear used refs for demo
 			if err := cl.sendMessage(
 				r.Context(),
 				"ping",

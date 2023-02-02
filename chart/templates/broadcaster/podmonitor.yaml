@@ -2,13 +2,15 @@
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
-  name: {{ .Release.Name }}-strim
+  name: {{ .Release.Name }}-broadcaster
   labels:
     chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
 spec:
   selector:
     matchLabels:
-      app: {{ .Release.Name }}-strim
+      app: {{ .Release.Name }}-broadcaster
   podMetricsEndpoints:
   - port: metrics
 {{- end }}
+
+
