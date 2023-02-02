@@ -4,6 +4,8 @@ dependencies:
   - imgsearch
   - strim
   - broadcaster
+  - gateway
+  - keycloak
 env:
   kubernetes:
     resources:
@@ -14,6 +16,31 @@ env:
         releaseName: ts
         namespace: ts
         values:
+          app:
+            enabled: true
+          gateway:
+            enabled: true
+          imgsearch:
+            enabled: true
+            bing:
+              apiKey:
+                valueFrom:
+                  secretKeyRef:
+                    name: bing-cred
+                    key: apikey
+          strim:
+            enabled: true
+            streamKey:
+              valueFrom:
+                secretKeyRef:
+                  name: rtmp-cred
+                  key: streamkey
+            resources:
+            # we need to reserve resources for smooth audio decoding
+              requests:
+                cpu: 500m
+                memory: 256Mi
+          transcriber: {}
           redis:
             enabled: true
             username:
@@ -118,28 +145,54 @@ env:
                 secretKeyRef:
                   name: s3-cred
                   key: secretaccesskey
-          app:
-            enabled: true
-          imgsearch:
-            enabled: true
-            bing:
-              apiKey:
+          iam:
+            driver: cognito
+            cognito:
+              region: us-east-1
+              userPoolId:
                 valueFrom:
                   secretKeyRef:
-                    name: bing-cred
-                    key: apikey
-          strim:
-            streamKey:
-              valueFrom:
-                secretKeyRef:
-                  name: rtmp-cred
-                  key: streamkey
-            resources:
-            # we need to reserve resources for smooth audio decoding
-              requests:
-                cpu: 500m
-                memory: 256Mi
-          transcriber: {}
+                    name: cognito-cred
+                    key: userpoolid
+              clientId:
+                  valueFrom:
+                    secretKeyRef:
+                      name: cognito-cred
+                      key: clientid
+              accessKeyId:
+                valueFrom:
+                  secretKeyRef:
+                    name: aws-cred
+                    key: accesskeyid
+              secretAccessKey:
+                valueFrom:
+                  secretKeyRef:
+                    name: aws-cred
+                    key: secretaccesskey
+            keycloak:
+              enabled: true
+              realm: t4vd
+              clientId:
+                  valueFrom:
+                    secretKeyRef:
+                      name: keycloak-cred
+                      key: clientid
+              clientSecret:
+                  valueFrom:
+                    secretKeyRef:
+                      name: keycloak-cred
+                      key: clientsecret
+              admin:
+                username:
+                  valueFrom:
+                    secretKeyRef:
+                      name: keycloak-cred
+                      key: username
+                password:
+                  valueFrom:
+                    secretKeyRef:
+                      name: keycloak-cred
+                      key: password
           aws:
             region: us-east-1
             accessKeyId:

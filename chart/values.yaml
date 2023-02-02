@@ -79,16 +79,39 @@ broadcaster:
 strim:
   streamKey:
     value: ""
+  enabled: true
   image: thavlik/strim:latest
   imagePullPolicy: Always
   logLevel: debug
-  resources: {}
+  resources:
+  # It is *highly* recommended that some cpu be
+  # reserved for audio decoding, otherwise it
+  # might not be a smooth experience. This isn't
+  # extensively tested, but as little as half a
+  # core appears sufficient for a single stream.
+    requests:
+      cpu: 500m
+      memory: 256Mi
 
 app:
   enabled: true
   image: thavlik/transcriber-app:latest
   imagePullPolicy: Always
   replicas: 1
+  resources: {}
+
+gateway:
+  # Access-Control-Allow-Origin value, e.g. https://app.mydomain.com
+  # This is used by browsers to ensure a backend resource is not
+  # accessed by a malicious domain. It is a strict and important check
+  # that should not be skipped in production. Leaving the default
+  # value effectively opens an attack surface well known to hackers. 
+  corsHeader: "*"
+  enabled: true
+  image: thavlik/transcriber-gateway:latest
+  imagePullPolicy: Always
+  replicas: 1
+  logLevel: debug
   resources: {}
 
 imgsearch:
@@ -107,3 +130,44 @@ imgsearch:
   replicas: 1
   resources: {}
   logLevel: debug
+
+iam:
+  # Configure identity & access management for
+  # the backend. This feature is optional, both
+  # AWS Cognito and KeyCloak are supported. Not
+  # specifying a driver will disable RBAC, thus
+  # allowing access to the public API without
+  # login.
+  driver: "" # keycloak | cognito
+  cognito:
+    region: us-east-1
+    userPoolId:
+      value: ""
+    clientId:
+      value: ""
+    clientSecret:
+      value: ""
+    accessKeyId:
+      value: ""
+    secretAccessKey:
+      value: ""
+  keycloak:
+    # to use an external keycloak instance, set enabled=false
+    # and set the endpoint to the external keycloak endpoint
+    enabled: false
+    endpoint: "http://{{ .Release.Name }}-keycloak:8080"
+    realm: ""
+    clientId:
+      value: ""
+    clientSecret:
+      value: ""
+    admin:
+      realm: master
+      username:
+        value: null
+      password:
+        value: null
+    image: thavlik/transcriber-keycloak:latest
+    imagePullPolicy: Always
+    replicas: 1
+    resources: {}
