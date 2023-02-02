@@ -10,7 +10,7 @@ import (
 	"github.com/thavlik/transcriber/transcriber/pkg/source"
 )
 
-func (s *Server) setSource(
+func (s *Server) pushAudioSource(
 	ctx context.Context,
 	src source.Source,
 ) error {
@@ -19,7 +19,7 @@ func (s *Server) setSource(
 	req, err := http.NewRequestWithContext(
 		ctx,
 		"POST",
-		s.transcriber.Endpoint+"/transcribe",
+		s.transcriber.Endpoint+"/source",
 		src,
 	)
 	if err != nil {
@@ -53,9 +53,7 @@ func (s *Server) setSource(
 			channels,
 		),
 	)
-	resp, err := (&http.Client{
-		Timeout: s.transcriber.Timeout,
-	}).Do(req)
+	resp, err := (&http.Client{}).Do(req)
 	if err != nil {
 		return err
 	}

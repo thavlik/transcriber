@@ -111,16 +111,12 @@ env:
                 secretKeyRef:
                   name: rtmp-cred
                   key: streamkey
-          transcriber:
-            streamKey:
-              valueFrom:
-                secretKeyRef:
-                  name: rtmp-cred
-                  key: streamkey
             resources:
+            # we need to reserve resources for smooth audio decoding
               requests:
                 cpu: 500m
                 memory: 256Mi
+          transcriber: {}
           aws:
             region: us-east-1
             accessKeyId:

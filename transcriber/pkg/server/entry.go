@@ -11,7 +11,6 @@ import (
 func Entry(
 	ctx context.Context,
 	httpPort int,
-	rtmpPort int,
 	metricsPort int,
 	specialty string,
 	streamKey string,
@@ -40,6 +39,5 @@ func Entry(
 
 	return s.ListenAndServe(
 		httpPort,
-		rtmpPort,
 	)
 }

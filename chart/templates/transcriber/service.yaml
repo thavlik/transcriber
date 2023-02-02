@@ -11,5 +11,3 @@ spec:
   ports:
   - name: http
     port: 80
-  - name: rtmp
-    port: 1935

@@ -36,8 +36,6 @@ spec:
         ports:
         - containerPort: 80
           name: http
-        - containerPort: 1935
-          name: rtmp
       {{- if .Values.prometheus.enabled }}
         - containerPort: 2112
           protocol: TCP
@@ -46,8 +44,6 @@ spec:
         env:
         - name: LOG_LEVEL
           value: {{ .Values.transcriber.logLevel }}
-        - name: STREAM_KEY
-{{ tpl (toYaml .Values.transcriber.streamKey) . | indent 10 }}
         - name: AWS_REGION
           value: {{ .Values.aws.region }}
         - name: AWS_ACCESS_KEY_ID

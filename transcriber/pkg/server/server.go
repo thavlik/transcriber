@@ -12,7 +12,6 @@ import (
 	"github.com/thavlik/transcriber/transcriber/pkg/source"
 	"github.com/thavlik/transcriber/transcriber/pkg/transcriber"
 
-	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
@@ -57,52 +56,30 @@ func NewServer(
 
 func (s *Server) ListenAndServe(
 	httpPort int,
-	rtmpPort int,
 ) error {
 	ctx, cancel := context.WithCancel(s.ctx)
 	defer cancel()
-
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", base.Handle404(s.log))
 	mux.HandleFunc("/healthz", base.Handle200)
 	mux.HandleFunc("/readyz", base.Handle200)
 	mux.HandleFunc("/ws", s.handleWebSock())
 	mux.HandleFunc("/source", s.handleNewSource())
-
 	srv := &http.Server{
-		Handler:      mux,
-		Addr:         fmt.Sprintf("0.0.0.0:%d", httpPort),
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
+		Handler: mux,
+		Addr:    fmt.Sprintf("0.0.0.0:%d", httpPort),
+		// no read/write timeout because streams must
+		// be able to write for a very long time
 	}
-
-	httpDone := make(chan error, 1)
-	s.spawn(func() {
-		s.log.Info(
-			"http server listening forever",
-			zap.Int("port", httpPort),
-		)
-		httpDone <- srv.ListenAndServe()
-	})
-
 	s.spawn(func() {
 		<-ctx.Done()
 		_ = srv.Shutdown(ctx)
 	})
-
-	rtmpDone := make(chan error, 1)
-	s.spawn(func() {
-		rtmpDone <- s.listenRTMP(ctx, rtmpPort)
-	})
-
-	select {
-	case err := <-httpDone:
-		cancel()
-		return errors.Wrap(err, "http server failed")
-	case err := <-rtmpDone:
-		cancel()
-		return errors.Wrap(err, "rtmp server failed")
-	}
+	s.log.Info(
+		"http server listening forever",
+		zap.Int("port", httpPort),
+	)
+	return srv.ListenAndServe()
 }
 
 func (s *Server) ShutDown() {

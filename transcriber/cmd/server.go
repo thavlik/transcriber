@@ -10,7 +10,6 @@ import (
 
 var serverArgs struct {
 	httpPort    int
-	rtmpPort    int
 	metricsPort int
 	streamKey   string
 	specialty   string
@@ -29,7 +28,6 @@ var serverCmd = &cobra.Command{
 		return server.Entry(
 			cmd.Context(),
 			serverArgs.httpPort,
-			serverArgs.rtmpPort,
 			serverArgs.metricsPort,
 			serverArgs.specialty,
 			serverArgs.streamKey,
@@ -41,7 +39,6 @@ var serverCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(serverCmd)
 	serverCmd.Flags().IntVarP(&serverArgs.httpPort, "http-port", "p", 80, "http port to listen on")
-	serverCmd.Flags().IntVarP(&serverArgs.rtmpPort, "rtmp-port", "r", 1935, "rtmp port to listen on")
 	serverCmd.Flags().IntVarP(&serverArgs.metricsPort, "metrics-port", "m", 0, "metrics port to listen on")
 	serverCmd.Flags().StringVarP(&serverArgs.streamKey, "stream-key", "k", "", "stream key to use for authentication")
 	serverCmd.Flags().StringVarP(
