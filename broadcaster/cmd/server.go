@@ -15,7 +15,9 @@ import (
 var serverArgs struct {
 	httpPort    int
 	metricsPort int
+	iam         base.IAMOptions
 	redis       base.RedisOptions
+	corsHeader  string
 }
 
 var serverCmd = &cobra.Command{
@@ -23,6 +25,8 @@ var serverCmd = &cobra.Command{
 	Args: cobra.NoArgs,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		base.RedisEnv(&serverArgs.redis, false)
+		base.IAMEnv(&serverArgs.iam, false)
+		base.CheckEnv("CORS_HEADER", &serverArgs.corsHeader)
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -30,10 +34,12 @@ var serverCmd = &cobra.Command{
 			cmd.Context(),
 			serverArgs.httpPort,
 			serverArgs.metricsPort,
+			nil, //iam.InitIAM(&serverArgs.iam, base.DefaultLog),
 			initPubSub(
 				cmd.Context(),
 				base.DefaultLog,
 			),
+			serverArgs.corsHeader,
 			base.DefaultLog,
 		)
 	},
@@ -59,5 +65,7 @@ func init() {
 	rootCmd.AddCommand(serverCmd)
 	serverCmd.Flags().IntVarP(&serverArgs.httpPort, "http-port", "p", 80, "http port to listen on")
 	serverCmd.Flags().IntVarP(&serverArgs.metricsPort, "metrics-port", "m", 0, "metrics port to listen on")
+	serverCmd.Flags().StringVar(&serverArgs.corsHeader, "cors-header", "", "Access-Control-Allow-Origin header")
 	base.AddRedisFlags(serverCmd, &serverArgs.redis)
+	base.AddIAMFlags(serverCmd, &serverArgs.iam)
 }

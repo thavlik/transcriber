@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -17,17 +16,20 @@ import (
 
 type Server struct {
 	iam        iam.IAM
+	imgSearch  *base.ServiceOptions
 	corsHeader string
 	log        *zap.Logger
 }
 
 func NewServer(
 	iam iam.IAM,
+	imgSearch *base.ServiceOptions,
 	corsHeader string,
 	log *zap.Logger,
 ) *Server {
 	s := &Server{
 		iam,
+		imgSearch,
 		corsHeader,
 		log,
 	}
@@ -52,6 +54,7 @@ func (s *Server) AdminListenAndServe(port int) error {
 
 func (s *Server) ListenAndServe(port int) error {
 	mux := http.NewServeMux()
+	mux.HandleFunc("/", base.Handle404(s.log))
 	mux.HandleFunc("/healthz", base.HealthHandler)
 	mux.HandleFunc("/readyz", base.ReadyHandler)
 	mux.HandleFunc("/user/login", s.handleLogin())
@@ -60,6 +63,8 @@ func (s *Server) ListenAndServe(port int) error {
 	mux.HandleFunc("/user/register", s.handleRegister())
 	mux.HandleFunc("/user/resetpassword", s.handleSetPassword())
 	mux.HandleFunc("/user/exists", s.handleUserExists())
+	mux.HandleFunc("/img", s.handleImage())
+	mux.HandleFunc("/img/search", s.handleImageSearch())
 	s.log.Info("public api listening forever", zap.Int("port", port))
 	return (&http.Server{
 		Handler:      mux,
@@ -67,16 +72,6 @@ func (s *Server) ListenAndServe(port int) error {
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}).ListenAndServe()
-}
-
-func addPreflightHeaders(w http.ResponseWriter) {
-	w.Header().Set("Content-Type", "text/plain")
-	w.Header().Set("Content-Length", "0")
-	w.Header().Set("Access-Control-Max-Age", "1728000")
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
-	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "AccessToken,DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type")
-	w.WriteHeader(http.StatusNoContent)
 }
 
 func (s *Server) rbacHandler(
@@ -88,7 +83,7 @@ func (s *Server) rbacHandler(
 		if err := func() (err error) {
 			w.Header().Set("Access-Control-Allow-Origin", s.corsHeader)
 			if r.Method == http.MethodOptions {
-				addPreflightHeaders(w)
+				base.AddPreflightHeaders(w)
 				return nil
 			}
 			if method != "" && r.Method != method {
@@ -110,10 +105,8 @@ func (s *Server) rbacHandler(
 			}
 			return f(userID, w, r)
 		}(); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			s.log.Error("handler error",
-				zap.String("r.RequestURI", r.RequestURI),
-				zap.Error(err))
+			s.log.Error(r.RequestURI, zap.Error(err))
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	}
 }
@@ -125,7 +118,7 @@ func (s *Server) handler(
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", s.corsHeader)
 		if r.Method == http.MethodOptions {
-			addPreflightHeaders(w)
+			base.AddPreflightHeaders(w)
 			return
 		}
 		if err := func() (err error) {
@@ -135,22 +128,8 @@ func (s *Server) handler(
 			}
 			return f(w, r)
 		}(); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			s.log.Error("handler error",
-				zap.Error(err),
-				zap.String("r.RequestURI", r.RequestURI))
+			s.log.Error(r.RequestURI, zap.Error(err))
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	}
-}
-
-func writeError(
-	w http.ResponseWriter,
-	code int,
-	err error,
-) {
-	w.WriteHeader(http.StatusInternalServerError)
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
-		"error": err.Error(),
-	})
 }

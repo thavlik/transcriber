@@ -58,8 +58,8 @@ func (s *Server) ListenAndServe(port int) error {
 	mux.HandleFunc("/", base.Handle404(s.log))
 	mux.HandleFunc("/healthz", base.Handle200)
 	mux.HandleFunc("/readyz", base.Handle200)
-	mux.HandleFunc("/api/search", s.handleSearch())
-	mux.HandleFunc("/api/img", s.handleImage())
+	mux.HandleFunc("/img/search", s.handleSearch())
+	mux.HandleFunc("/img/view", s.handleImage())
 	srv := &http.Server{
 		Handler:      mux,
 		Addr:         fmt.Sprintf("0.0.0.0:%d", port),

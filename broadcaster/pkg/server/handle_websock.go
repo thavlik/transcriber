@@ -11,7 +11,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
-	"github.com/thavlik/transcriber/base/pkg/base"
 
 	"go.uber.org/zap"
 )
@@ -127,25 +126,16 @@ func (cl *wsClient) writePump() {
 }
 
 func (s *Server) handleWebSock() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		retCode := http.StatusInternalServerError
-		if err := func() error {
-			w.Header().Set("Access-Control-Allow-Origin", "*")
-			switch r.Method {
-			case http.MethodOptions:
-				base.AddPreflightHeaders(w)
-				return nil
-			case http.MethodGet:
-				break
-			default:
-				retCode = http.StatusMethodNotAllowed
-				return fmt.Errorf("method not allowed")
-			}
+	return s.rbacHandler(
+		http.MethodGet,
+		nil,
+		func(userID string, w http.ResponseWriter, r *http.Request) error {
 			s.wg.Add(1)
 			defer s.wg.Done()
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 			upgrader := websocket.Upgrader{
 				CheckOrigin: func(r *http.Request) bool {
+					// TODO: fix CORS check
 					return true
 				},
 			}
@@ -190,9 +180,6 @@ func (s *Server) handleWebSock() http.HandlerFunc {
 					}
 				}
 			}
-		}(); err != nil {
-			s.log.Error(r.RequestURI, zap.Error(err))
-			http.Error(w, err.Error(), retCode)
-		}
-	}
+		},
+	)
 }

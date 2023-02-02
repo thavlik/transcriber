@@ -4,13 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"net/http"
 	"net/mail"
 	"regexp"
 	"strings"
-	"time"
-	"unsafe"
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/transcriber/base/pkg/base"
@@ -76,10 +73,10 @@ func (s *Server) handleUserExists() http.HandlerFunc {
 			}
 			if username := r.URL.Query().Get("u"); username != "" {
 				if r.URL.Query().Has("e") {
-					writeError(
+					http.Error(
 						w,
+						"username and email are mutually exclusive",
 						http.StatusBadRequest,
-						errors.New("username and email are mutually exclusive"),
 					)
 					return nil
 				}
@@ -114,10 +111,10 @@ func (s *Server) handleUserExists() http.HandlerFunc {
 					zap.Bool("exists", result.Exists))
 				return nil
 			}
-			writeError(
+			http.Error(
 				w,
+				"username or email is required",
 				http.StatusBadRequest,
-				errors.New("username or email is required"),
 			)
 			return nil
 		})
@@ -350,31 +347,4 @@ func (s *Server) handleUserSearch() http.HandlerFunc {
 type searchUser struct {
 	ID       string `json:"id"`
 	Username string `json:"username"`
-}
-
-var src = rand.NewSource(time.Now().UnixNano())
-
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-const (
-	letterIdxBits = 6                    // 6 bits to represent a letter index
-	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
-	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
-)
-
-func RandStringBytesMaskImprSrcUnsafe(n int) string {
-	b := make([]byte, n)
-	// A src.Int63() generates 63 random bits, enough for letterIdxMax characters!
-	for i, cache, remain := n-1, src.Int63(), letterIdxMax; i >= 0; {
-		if remain == 0 {
-			cache, remain = src.Int63(), letterIdxMax
-		}
-		if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
-			b[i] = letterBytes[idx]
-			i--
-		}
-		cache >>= letterIdxBits
-		remain--
-	}
-
-	return *(*string)(unsafe.Pointer(&b))
 }

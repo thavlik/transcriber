@@ -27,6 +27,10 @@ spec:
         command:
           - broadcaster
           - server
+        {{- if .Values.iam.driver }}
+          - --iam-driver
+          - {{ .Values.iam.driver }}
+        {{- end }}
         {{- if .Values.prometheus.enabled }}
           - --metrics-port
           - "2112"
@@ -40,6 +44,8 @@ spec:
           name: metrics
       {{- end }}
         env:
+        - name: CORS_HEADER
+          value: "{{ .Values.corsHeader }}"
         - name: LOG_LEVEL
           value: {{ .Values.broadcaster.logLevel }}
       {{- if .Values.redis.enabled }}
@@ -51,6 +57,39 @@ spec:
 {{ tpl (toYaml .Values.redis.host) . | indent 10 }}
         - name: REDIS_PORT
 {{ tpl (toYaml .Values.redis.port) . | indent 10 }}
+      {{- end }}
+      {{- if eq .Values.iam.driver "keycloak" }}
+        - name: KC_ENDPOINT
+          value: {{ tpl .Values.iam.keycloak.endpoint . }}
+        - name: KC_ADMIN_USERNAME
+{{ tpl (toYaml .Values.iam.keycloak.admin.username) . | indent 10 }}
+        - name: KC_ADMIN_PASSWORD
+{{ tpl (toYaml .Values.iam.keycloak.admin.password) . | indent 10 }}
+        - name: KC_ADMIN_REALM
+          value: {{ required "missing iam.keycloak.admin.realm" .Values.iam.keycloak.admin.realm }}
+        - name: KC_REALM
+          value: {{ required "missing iam.keycloak.realm" .Values.iam.keycloak.realm }}
+        - name: KC_CLIENT_ID
+{{ tpl (toYaml .Values.iam.keycloak.clientId) . | indent 10 }}
+        - name: KC_CLIENT_SECRET
+{{ tpl (toYaml .Values.iam.keycloak.clientSecret) . | indent 10 }}
+      {{- else if eq .Values.iam.driver "cognito" }}
+        - name: AWS_REGION
+          value: {{ required "missing iam.cognito.region" .Values.iam.cognito.region }}
+        - name: COGNITO_USER_POOL_ID
+{{ tpl (toYaml .Values.iam.cognito.userPoolId) . | indent 10 }}
+        - name: COGNITO_CLIENT_ID
+{{ tpl (toYaml .Values.iam.cognito.clientId) . | indent 10 }}
+        - name: COGNITO_CLIENT_SECRET
+{{ tpl (toYaml .Values.iam.cognito.clientSecret) . | indent 10 }}
+        - name: AWS_ACCESS_KEY_ID
+{{ tpl (toYaml .Values.iam.cognito.accessKeyId) . | indent 10 }}
+        - name: AWS_SECRET_ACCESS_KEY
+{{ tpl (toYaml .Values.iam.cognito.secretAccessKey) . | indent 10 }}
+      {{- if .Values.iam.cognito.allowTokenUseBeforeIssue }}
+        - name: COGNITO_ALLOW_TOKEN_USE_BEFORE_ISSUE
+          value: "1"
+      {{- end }}
       {{- end }}
         readinessProbe:
           httpGet:

@@ -19,39 +19,52 @@ func (s *Server) handleSearch() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		retCode := http.StatusInternalServerError
 		if err := func() error {
-			w.Header().Set("Access-Control-Allow-Origin", "*")
+			var req struct {
+				Query  string `json:"query"`
+				UserID string `json:"userID,omitempty"`
+			}
 			switch r.Method {
 			case http.MethodOptions:
 				base.AddPreflightHeaders(w)
 				return nil
 			case http.MethodGet:
-				break
+				req.Query = r.URL.Query().Get("q")
+			case http.MethodPost:
+				if r.Header.Get("Content-Type") != "application/json" {
+					retCode = http.StatusUnsupportedMediaType
+					return fmt.Errorf("unsupported media type %s", r.Header.Get("Content-Type"))
+				}
+				if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+					retCode = http.StatusBadRequest
+					return errors.Wrap(err, "failed to decode request body")
+				}
 			default:
 				retCode = http.StatusMethodNotAllowed
-				return fmt.Errorf("method not allowed")
+				return errors.New("bad method")
 			}
-			// TODO: check iam
-			userID := "test"
-			h := &history.Search{
-				ID:        uuid.New().String(),
-				Query:     r.URL.Query().Get("q"),
-				UserID:    userID,
-				Timestamp: time.Now(),
-			}
-			if h.Query == "" {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			if req.Query == "" {
 				retCode = http.StatusBadRequest
-				return fmt.Errorf("query parameter 'q' is required")
+				return fmt.Errorf("missing query")
 			}
-			historyDone := make(chan error, 1)
-			s.spawn(func() {
-				historyDone <- s.history.Push(
-					s.ctx,
-					h,
-				)
-			})
+			var historyDone chan error
+			if req.UserID != "" {
+				historyDone = make(chan error, 1)
+				s.spawn(func() {
+					historyDone <- s.history.Push(
+						s.ctx,
+						&history.Search{
+							ID:        uuid.New().String(),
+							Query:     req.Query,
+							UserID:    req.UserID,
+							Timestamp: time.Now(),
+						},
+					)
+				})
+			}
 			images, err := search.Search(
 				r.Context(),
-				h.Query,
+				req.Query,
 				s.endpoint,
 				s.apiKey,
 				10,
@@ -60,12 +73,14 @@ func (s *Server) handleSearch() http.HandlerFunc {
 			if err != nil {
 				return errors.Wrap(err, "search failed")
 			}
-			select {
-			case <-r.Context().Done():
-				return r.Context().Err()
-			case err := <-historyDone:
-				if err != nil {
-					return errors.Wrap(err, "failed to push search to history")
+			if historyDone != nil {
+				select {
+				case <-r.Context().Done():
+					return r.Context().Err()
+				case err := <-historyDone:
+					if err != nil {
+						return errors.Wrap(err, "failed to push search to history")
+					}
 				}
 			}
 			w.Header().Set("Content-Type", "application/json")

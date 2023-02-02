@@ -1,14 +1,14 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/transcriber/imgsearch/pkg/cache/data"
-
-	"github.com/thavlik/transcriber/base/pkg/base"
+	"github.com/thavlik/transcriber/imgsearch/pkg/search"
 
 	"go.uber.org/zap"
 )
@@ -16,22 +16,32 @@ import (
 func (s *Server) handleImage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		retCode := http.StatusInternalServerError
-		if err := func() error {
-			w.Header().Set("Access-Control-Allow-Origin", "*")
+		if err := func() (err error) {
+			img := new(search.Image)
 			switch r.Method {
-			case http.MethodOptions:
-				base.AddPreflightHeaders(w)
-				return nil
 			case http.MethodGet:
-				break
+				// extract metadata from query parameters
+				// this handler is provided in case a client requires
+				// a direct link to an image via GET request
+				if err := extractMeta(r, img); err != nil {
+					retCode = http.StatusBadRequest
+					return errors.Wrap(err, "extractMeta")
+				}
+			case http.MethodPost:
+				// extract metadata from request body
+				// this is the faster way of getting an image
+				// when the metadata is already unmarshalled
+				if r.Header.Get("Content-Type") != "application/json" {
+					retCode = http.StatusUnsupportedMediaType
+					return fmt.Errorf("unsupported media type %s", r.Header.Get("Content-Type"))
+				}
+				if err := json.NewDecoder(r.Body).Decode(&img); err != nil {
+					retCode = http.StatusBadRequest
+					return errors.Wrap(err, "decode")
+				}
 			default:
 				retCode = http.StatusMethodNotAllowed
-				return fmt.Errorf("method not allowed")
-			}
-			img, err := extractMeta(r)
-			if err != nil {
-				retCode = http.StatusBadRequest
-				return err
+				return fmt.Errorf("method %s not allowed", r.Method)
 			}
 			contentLength, err := img.ContentLength()
 			if err != nil {
@@ -71,8 +81,7 @@ func (s *Server) handleImage() http.HandlerFunc {
 			return nil
 		}(); err != nil {
 			s.log.Error(r.RequestURI, zap.Error(err))
-			w.WriteHeader(retCode)
-			w.Write([]byte(err.Error()))
+			http.Error(w, err.Error(), retCode)
 		}
 	}
 }

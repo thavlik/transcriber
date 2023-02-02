@@ -13,7 +13,6 @@ func Handle404(
 		AddPreflightHeaders(w)
 		msg := "404: the requested page could not be found"
 		log.Error(r.RequestURI, zap.String("err", msg))
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte(msg))
+		http.Error(w, msg, http.StatusNotFound)
 	}
 }

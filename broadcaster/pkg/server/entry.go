@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/transcriber/base/pkg/base"
+	"github.com/thavlik/transcriber/base/pkg/iam"
 	"github.com/thavlik/transcriber/base/pkg/pubsub"
 	"go.uber.org/zap"
 )
@@ -13,7 +14,9 @@ func Entry(
 	ctx context.Context,
 	httpPort int,
 	metricsPort int,
+	iam iam.IAM,
 	pubSub pubsub.PubSub,
+	corsHeader string,
 	log *zap.Logger,
 ) error {
 	ctx, cancel := context.WithCancel(ctx)
@@ -21,7 +24,9 @@ func Entry(
 
 	s := NewServer(
 		ctx,
+		iam,
 		pubsub.Publisher(pubSub),
+		corsHeader,
 		log,
 	)
 	defer s.ShutDown()

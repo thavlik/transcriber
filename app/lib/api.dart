@@ -104,7 +104,7 @@ void checkHttpStatus(Response response) {
 }
 
 Future<List<SearchImage>> search(String query) async {
-  final url = Uri.https(apiHost, '/api/search', {
+  final url = Uri.https(apiHost, '/img/search', {
     'q': query,
   });
   final response = await http.get(url);

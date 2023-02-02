@@ -1,29 +1,28 @@
 package server
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
-	"net/url"
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/transcriber/imgsearch/pkg/search"
 )
 
-func extractMeta(r *http.Request) (*search.Image, error) {
+func extractMeta(r *http.Request, img *search.Image) error {
 	input := r.URL.Query().Get("i")
 	if input == "" {
-		return nil, errors.New("missing query parameter 'i'")
+		return errors.New("missing query parameter 'i'")
 	}
-	unescaped, err := url.QueryUnescape(input)
+	body, err := base64.RawURLEncoding.DecodeString(input)
 	if err != nil {
-		return nil, errors.Wrap(err, "url.QueryUnescape")
+		return errors.Wrap(err, "url.QueryUnescape")
 	}
-	img := new(search.Image)
 	if err := json.Unmarshal(
-		[]byte(unescaped),
+		[]byte(body),
 		img,
 	); err != nil {
-		return nil, errors.Wrap(err, "json.Unmarshal")
+		return errors.Wrap(err, "json.Unmarshal")
 	}
-	return img, nil
+	return nil
 }

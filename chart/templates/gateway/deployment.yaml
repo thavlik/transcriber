@@ -28,6 +28,8 @@ spec:
         command:
           - gateway
           - server
+          - --imgsearch-endpoint
+          - "http://{{ .Release.Name }}-imgsearch:80"
         {{- if .Values.iam.driver }}
           - --iam-driver
           - {{ .Values.iam.driver }}
@@ -56,7 +58,7 @@ spec:
             port: 80
         env:
         - name: CORS_HEADER
-          value: "{{ .Values.gateway.corsHeader }}"
+          value: "{{ .Values.corsHeader }}"
         - name: LOG_LEVEL
           value: {{ .Values.gateway.logLevel }}
       {{- if eq .Values.iam.driver "keycloak" }}
