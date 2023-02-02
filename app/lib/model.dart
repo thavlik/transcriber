@@ -119,7 +119,9 @@ class MyModel extends Model {
   }
 
   void displayKeyTerms(api.KeyTerms keyTerms) {
-    _keyTerms = keyTerms;
+    _keyTerms ??= api.KeyTerms(entities: []);
+    _keyTerms!.integrate(keyTerms.entities);
+    _keyTerms!.prune();
     notifyListeners();
   }
 }

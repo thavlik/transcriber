@@ -6,10 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/thavlik/transcriber/base/pkg/base"
-	"github.com/thavlik/transcriber/imgsearch/pkg/history"
 	"github.com/thavlik/transcriber/imgsearch/pkg/search"
 
 	"go.uber.org/zap"
@@ -47,21 +45,7 @@ func (s *Server) handleSearch() http.HandlerFunc {
 				retCode = http.StatusBadRequest
 				return fmt.Errorf("missing query")
 			}
-			var historyDone chan error
-			if req.UserID != "" {
-				historyDone = make(chan error, 1)
-				s.spawn(func() {
-					historyDone <- s.history.Push(
-						s.ctx,
-						&history.Search{
-							ID:        uuid.New().String(),
-							Query:     req.Query,
-							UserID:    req.UserID,
-							Timestamp: time.Now(),
-						},
-					)
-				})
-			}
+			start := time.Now()
 			images, err := search.Search(
 				r.Context(),
 				req.Query,
@@ -73,18 +57,25 @@ func (s *Server) handleSearch() http.HandlerFunc {
 			if err != nil {
 				return errors.Wrap(err, "search failed")
 			}
-			if historyDone != nil {
-				select {
-				case <-r.Context().Done():
-					return r.Context().Err()
-				case err := <-historyDone:
-					if err != nil {
-						return errors.Wrap(err, "failed to push search to history")
-					}
-				}
-			}
+			s.log.Debug(
+				"searched bing for images",
+				base.Elapsed(start),
+				zap.Int("count", len(images)),
+			)
 			w.Header().Set("Content-Type", "application/json")
-			return json.NewEncoder(w).Encode(images)
+			if err := json.NewEncoder(w).Encode(images); err != nil {
+				return err
+			}
+			if req.UserID != "" {
+				s.spawn(func() {
+					// Only count searches for logged in users,
+					// don't block the response, and only count
+					// it if everything is successful. This is
+					// the most generous policy for the user.
+					s.pushSearchHistory(req.Query, req.UserID)
+				})
+			}
+			return nil
 		}(); err != nil {
 			s.log.Error(r.RequestURI, zap.Error(err))
 			w.WriteHeader(retCode)

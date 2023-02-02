@@ -8,9 +8,9 @@ import 'package:http/http.dart';
 const apiHost = 'ts.beebs.dev';
 
 class Entity {
-  final String text;
-  final String type;
-  final double score;
+  String text;
+  String type;
+  double score;
 
   Entity({
     required this.text,
@@ -29,10 +29,51 @@ class Entity {
 
 class KeyTerms {
   final List<Entity> entities;
+  final Map<Entity, DateTime> _lastUsed = {};
+  final Duration pruneAfter;
 
   KeyTerms({
     required this.entities,
+    this.pruneAfter = const Duration(seconds: 3),
   });
+
+  void sort() => entities.sort((a, b) => a.text.compareTo(b.text));
+
+  void integrate(List<Entity> other) {
+    for (var entity in other) {
+      bool found = false;
+      for (var existing in entities) {
+        if (existing.text == entity.text && existing.type == entity.type) {
+          // update the score
+          existing.score = entity.score;
+          found = true;
+          break;
+        }
+      }
+      if (!found) entities.add(entity);
+      used(entity);
+    }
+    sort();
+  }
+
+  void prune() {
+    final List<Entity> remove = [];
+    for (var entity in entities) {
+      final used = _lastUsed[entity];
+      if (used == null) {
+        continue;
+      }
+      if (DateTime.now().difference(used) > pruneAfter) {
+        remove.add(entity);
+        _lastUsed.remove(entity);
+      }
+    }
+    for (var entity in remove) {
+      entities.remove(entity);
+    }
+  }
+
+  void used(Entity e) => _lastUsed[e] = DateTime.now();
 
   factory KeyTerms.fromJson(Map<String, dynamic> json) {
     return KeyTerms(
