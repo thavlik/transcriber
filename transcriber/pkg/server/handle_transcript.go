@@ -38,9 +38,10 @@ func (s *Server) handleTranscript(
 		)
 	})
 	s.spawn(func() {
-		entities, err := comprehend.Comprehend(
+		entities, err := comprehend.ComprehendMedical(
 			ctx,
 			text,
+			nil,
 			nil,
 			s.log,
 		)

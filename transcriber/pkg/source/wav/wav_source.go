@@ -61,7 +61,7 @@ func (s *wavSource) SampleRate() (int64, error) {
 	return int64(s.dec.SampleRate), nil
 }
 
-func (s *wavSource) ReadAudioChunk(
+func (s *wavSource) Read(
 	buf []byte,
 ) (int, error) {
 	if err := s.ctx.Err(); err != nil {

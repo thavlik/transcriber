@@ -2,6 +2,7 @@ dependencies:
   - app
   - transcriber
   - imgsearch
+  - strim
 env:
   kubernetes:
     resources:
@@ -104,6 +105,12 @@ env:
                   secretKeyRef:
                     name: bing-cred
                     key: apikey
+          strim:
+            streamKey:
+              valueFrom:
+                secretKeyRef:
+                  name: rtmp-cred
+                  key: streamkey
           transcriber:
             streamKey:
               valueFrom:

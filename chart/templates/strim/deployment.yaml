@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-strim
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-strim
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-strim
+    spec:
+    {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 10 }}
+    {{- end }}
+      containers:
+      - name: server
+        imagePullPolicy: {{ .Values.strim.imagePullPolicy }}
+        image: {{ .Values.strim.image }}
+    {{- if .Values.strim.resources }}
+        resources:
+{{ toYaml .Values.strim.resources | indent 10 }}
+    {{- end }}
+        command:
+          - strim
+          - server
+          - --transcriber-endpoint
+          - "http://{{ .Release.Name }}-transcriber:80"
+        {{- if .Values.prometheus.enabled }}
+          - --metrics-port
+          - "2112"
+        {{- end }}
+        ports:
+        - containerPort: 80
+          name: http # for healthz and readyz
+        - containerPort: 1935
+          name: rtmp
+      {{- if .Values.prometheus.enabled }}
+        - containerPort: 2112
+          protocol: TCP
+          name: metrics
+      {{- end }}
+        env:
+        - name: LOG_LEVEL
+          value: {{ .Values.strim.logLevel }}
+        - name: STREAM_KEY
+{{ tpl (toYaml .Values.strim.streamKey) . | indent 10 }}
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 80
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 80

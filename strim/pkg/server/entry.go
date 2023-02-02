@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/thavlik/transcriber/base/pkg/base"
-
 	"go.uber.org/zap"
 )
 
@@ -13,7 +12,7 @@ func Entry(
 	httpPort int,
 	rtmpPort int,
 	metricsPort int,
-	specialty string,
+	transcriber base.ServiceOptions,
 	streamKey string,
 	log *zap.Logger,
 ) error {
@@ -22,7 +21,7 @@ func Entry(
 
 	s := NewServer(
 		ctx,
-		specialty,
+		transcriber,
 		streamKey,
 		log,
 	)

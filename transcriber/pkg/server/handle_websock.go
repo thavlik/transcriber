@@ -136,6 +136,7 @@ func (cl *wsClient) writePump() {
 
 func (s *Server) handleWebSock() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		retCode := http.StatusInternalServerError
 		if err := func() error {
 			w.Header().Set("Access-Control-Allow-Origin", "*")
 			switch r.Method {
@@ -145,7 +146,7 @@ func (s *Server) handleWebSock() http.HandlerFunc {
 			case http.MethodGet:
 				break
 			default:
-				w.WriteHeader(http.StatusMethodNotAllowed)
+				retCode = http.StatusMethodNotAllowed
 				return fmt.Errorf("method not allowed")
 			}
 			s.wg.Add(1)
@@ -202,6 +203,7 @@ func (s *Server) handleWebSock() http.HandlerFunc {
 			}
 		}(); err != nil {
 			s.log.Error(r.RequestURI, zap.Error(err))
+			http.Error(w, err.Error(), retCode)
 		}
 	}
 }

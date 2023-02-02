@@ -8,8 +8,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/transcribestreamingservice"
 	"github.com/hashicorp/go-multierror"
 	"github.com/pkg/errors"
+	"github.com/thavlik/transcriber/base/pkg/base"
 	"github.com/thavlik/transcriber/transcriber/pkg/source"
-	"github.com/thavlik/transcriber/transcriber/pkg/util"
 	"go.uber.org/zap"
 )
 
@@ -54,7 +54,7 @@ func Transcribe(
 		// the only acceptable values are nil and 2
 		numberOfChannels = aws.Int64(2)
 	}
-	svc := transcribestreamingservice.New(util.AWSSession())
+	svc := transcribestreamingservice.New(base.AWSSession())
 	resp, err := svc.StartMedicalStreamTranscriptionWithContext(
 		ctx,
 		&transcribestreamingservice.StartMedicalStreamTranscriptionInput{

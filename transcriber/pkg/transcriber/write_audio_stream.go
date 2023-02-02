@@ -5,8 +5,8 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/transcribestreamingservice"
 	"github.com/pkg/errors"
+	"github.com/thavlik/transcriber/base/pkg/base"
 	"github.com/thavlik/transcriber/transcriber/pkg/source"
-	"github.com/thavlik/transcriber/transcriber/pkg/util"
 	"go.uber.org/zap"
 )
 
@@ -22,7 +22,7 @@ func writeAudioStream(
 		case <-ctx.Done():
 			return ctx.Err()
 		default:
-			n, err := source.ReadAudioChunk(buf)
+			n, err := source.Read(buf)
 			if err != nil {
 				return errors.Wrap(err, "source.ReadAudioChunk")
 			} else if n == 0 {
@@ -37,7 +37,7 @@ func writeAudioStream(
 					// it's wise to duplicate the buffer in case
 					// the memory is reused by the source before
 					// the stream has finished sending it
-					AudioChunk: util.Duplicate(buf[:n]),
+					AudioChunk: base.Duplicate(buf[:n]),
 				},
 			); err != nil {
 				return errors.Wrap(err, "stream.Send")

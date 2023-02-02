@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 
@@ -12,44 +14,60 @@ import (
 )
 
 var testComprehendArgs struct {
-	filter string
+	service string
+	include string
+	exclude string
 }
 
 var testComprehendCmd = &cobra.Command{
 	Use:   "comprehend",
 	Short: "test Amazon Comprehend with a text string",
 	Args:  cobra.ArbitraryArgs,
-	RunE: func(cmd *cobra.Command, args []string) error {
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		text, ok := os.LookupEnv("TEXT")
 		if !ok {
-			if len(args) == 0 {
+			text = strings.TrimSpace(strings.Join(args, " "))
+			if len(text) == 0 {
 				return errors.New("no text provided")
 			}
-			text = strings.Join(args, " ")
 		}
 		base.DefaultLog.Info("testing comprehend", zap.String("text", text))
-		entities, err := comprehend.Comprehend(
-			cmd.Context(),
-			text,
-			strings.Split(testComprehendArgs.filter, ","),
-			base.DefaultLog,
-		)
+		var entities []*comprehend.Entity
+		switch testComprehendArgs.service {
+		case "default":
+			entities, err = comprehend.Comprehend(
+				cmd.Context(),
+				text,
+				strings.Split(testComprehendArgs.include, ","),
+				strings.Split(testComprehendArgs.exclude, ","),
+				base.DefaultLog,
+			)
+		case "medical":
+			entities, err = comprehend.ComprehendMedical(
+				cmd.Context(),
+				text,
+				strings.Split(testComprehendArgs.include, ","),
+				strings.Split(testComprehendArgs.exclude, ","),
+				base.DefaultLog,
+			)
+		default:
+			return fmt.Errorf("invalid service '%s'", testComprehendArgs.service)
+		}
 		if err != nil {
 			return err
 		}
-		for _, entity := range entities {
-			base.DefaultLog.Info(
-				"entity",
-				zap.String("text", entity.Text),
-				zap.String("type", entity.Type),
-				zap.Float64("score", entity.Score),
-			)
+		body, err := json.MarshalIndent(entities, "", "  ")
+		if err != nil {
+			return err
 		}
+		fmt.Println(string(body))
 		return nil
 	},
 }
 
 func init() {
 	testCmd.AddCommand(testComprehendCmd)
-	testComprehendCmd.Flags().StringVarP(&testComprehendArgs.filter, "filter", "f", "", "entity type filter (comma-separated list)")
+	testComprehendCmd.Flags().StringVarP(&testComprehendArgs.service, "service", "s", "default", "Amazon Comprehend service (default, medical)")
+	testComprehendCmd.Flags().StringVarP(&testComprehendArgs.include, "include", "i", "", "entity type include filter (comma-separated list)")
+	testComprehendCmd.Flags().StringVarP(&testComprehendArgs.exclude, "exclude", "e", "", "entity type exclude filter (comma-separated list)")
 }

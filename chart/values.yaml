@@ -61,6 +61,14 @@ transcriber:
   logLevel: debug
   resources: {}
 
+strim:
+  streamKey:
+    value: ""
+  image: thavlik/strim:latest
+  imagePullPolicy: Always
+  logLevel: debug
+  resources: {}
+
 app:
   enabled: true
   image: thavlik/transcriber-app:latest

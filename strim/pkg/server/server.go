@@ -8,50 +8,37 @@ import (
 	"time"
 
 	"github.com/thavlik/transcriber/base/pkg/base"
-	"github.com/thavlik/transcriber/transcriber/pkg/refmat"
 	"github.com/thavlik/transcriber/transcriber/pkg/source"
-	"github.com/thavlik/transcriber/transcriber/pkg/transcriber"
 
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
 type Server struct {
-	ctx       context.Context
-	cancel    context.CancelFunc
-	specialty string
-	newSource chan source.Source
-	job       *transcriber.TranscriptionJob
-	l         chan struct{}
-	conns     map[*wsClient]struct{}
-	connsL    sync.Mutex
-	streamKey string
-	refs      refmat.ReferenceMap
-	usedRefsL sync.Mutex
-	usedRefs  map[*refmat.ReferenceMaterial]time.Time
-	wg        *sync.WaitGroup
-	log       *zap.Logger
+	ctx         context.Context
+	cancel      context.CancelFunc
+	newSource   chan source.Source
+	transcriber base.ServiceOptions
+	streamKey   string
+	wg          *sync.WaitGroup
+	log         *zap.Logger
 }
 
 func NewServer(
 	ctx context.Context,
-	specialty string,
+	transcriber base.ServiceOptions,
 	streamKey string,
 	log *zap.Logger,
 ) *Server {
 	ctx, cancel := context.WithCancel(ctx)
 	return &Server{
-		ctx:       ctx,
-		cancel:    cancel,
-		specialty: specialty,
-		newSource: make(chan source.Source, 16),
-		l:         make(chan struct{}, 1),
-		conns:     make(map[*wsClient]struct{}),
-		streamKey: streamKey,
-		refs:      refmat.BuildReferenceMap(refmat.TestReferenceMaterials),
-		usedRefs:  make(map[*refmat.ReferenceMaterial]time.Time),
-		wg:        new(sync.WaitGroup),
-		log:       log,
+		ctx:         ctx,
+		cancel:      cancel,
+		transcriber: transcriber,
+		newSource:   make(chan source.Source, 16),
+		streamKey:   streamKey,
+		wg:          new(sync.WaitGroup),
+		log:         log,
 	}
 }
 
@@ -66,8 +53,6 @@ func (s *Server) ListenAndServe(
 	mux.HandleFunc("/", base.Handle404(s.log))
 	mux.HandleFunc("/healthz", base.Handle200)
 	mux.HandleFunc("/readyz", base.Handle200)
-	mux.HandleFunc("/ws", s.handleWebSock())
-	mux.HandleFunc("/source", s.handleNewSource())
 
 	srv := &http.Server{
 		Handler:      mux,

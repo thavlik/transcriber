@@ -75,7 +75,7 @@ func (s *AACSource) Context() context.Context {
 	return s.ctx
 }
 
-func (s *AACSource) ReadAudioChunk(
+func (s *AACSource) Read(
 	buf []byte,
 ) (int, error) {
 	if err := s.ctx.Err(); err != nil {
