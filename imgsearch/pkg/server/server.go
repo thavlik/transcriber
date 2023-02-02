@@ -9,12 +9,14 @@ import (
 
 	"github.com/thavlik/transcriber/base/pkg/base"
 	"github.com/thavlik/transcriber/imgsearch/pkg/cache"
+	"github.com/thavlik/transcriber/imgsearch/pkg/history"
 	"go.uber.org/zap"
 )
 
 type Server struct {
 	ctx        context.Context
 	cancel     context.CancelFunc
+	history    history.History
 	apiKey     string
 	endpoint   string
 	imageCache *cache.ImageCache
@@ -24,6 +26,7 @@ type Server struct {
 
 func NewServer(
 	ctx context.Context,
+	history history.History,
 	apiKey string,
 	endpoint string,
 	imageCache *cache.ImageCache,
@@ -33,6 +36,7 @@ func NewServer(
 	return &Server{
 		ctx:        ctx,
 		cancel:     cancel,
+		history:    history,
 		apiKey:     apiKey,
 		endpoint:   endpoint,
 		imageCache: imageCache,

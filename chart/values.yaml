@@ -94,6 +94,7 @@ app:
 imgsearch:
   enabled: true
   metaCollectionName: images
+  historyCollectionName: history
   bing:
     location:
       value: global

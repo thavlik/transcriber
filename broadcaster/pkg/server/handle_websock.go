@@ -80,14 +80,16 @@ func (s *Server) broadcastLocal(
 	wg.Add(len(subs))
 	defer wg.Wait()
 	for _, cl := range subs {
-		go func(cl *wsClient) {
-			defer wg.Done()
-			if err := cl.sendBytes(
-				ctx,
-				body,
-			); err != nil && err != errSendChannelFull {
-				_ = cl.c.Close()
-			}
+		func(cl *wsClient) {
+			s.spawn(func() {
+				defer wg.Done()
+				if err := cl.sendBytes(
+					ctx,
+					body,
+				); err != nil && err != errSendChannelFull {
+					_ = cl.c.Close()
+				}
+			})
 		}(cl)
 	}
 }
@@ -163,9 +165,7 @@ func (s *Server) handleWebSock() http.HandlerFunc {
 				send:   send,
 				log:    reqLog,
 			}
-			s.spawn(func() {
-				cl.writePump()
-			})
+			s.spawn(cl.writePump)
 			defer c.Close()
 			s.sub(cl)
 			defer s.unsub(cl)

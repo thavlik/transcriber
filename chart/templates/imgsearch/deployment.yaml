@@ -34,6 +34,8 @@ spec:
           - {{ required "missing s3.bucket" .Values.s3.bucket }}
           - --meta-collection-name
           - {{ required "missing imgsearch.metaCollectionName" .Values.imgsearch.metaCollectionName }}
+          - --history-collection-name
+          - {{ required "missing imgsearch.historyCollectionName" .Values.imgsearch.historyCollectionName }}
         {{- if .Values.prometheus.enabled }}
           - --metrics-port
           - "2112"

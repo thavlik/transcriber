@@ -40,7 +40,7 @@ func (o *MongoOptions) Ensure() {
 }
 
 func AddMongoFlags(cmd *cobra.Command, o *MongoOptions) {
-	cmd.PersistentFlags().StringVar(&o.DBName, "mongo-db-name", "t4vd", "mongodb database name")
+	cmd.PersistentFlags().StringVar(&o.DBName, "mongo-db-name", "ts", "mongodb database name")
 	cmd.PersistentFlags().StringVar(&o.Host, "mongo-host", "", "mongodb service endpoint, with port")
 	cmd.PersistentFlags().StringVar(&o.AuthSource, "mongo-auth-source", "admin", "mongodb auth db name")
 	cmd.PersistentFlags().StringVar(&o.Username, "mongo-username", "", "mongodb username")

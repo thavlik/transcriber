@@ -1,10 +1,15 @@
 package main
 
 import (
-	"github.com/redis/go-redis/v9"
+	"context"
+
 	"github.com/spf13/cobra"
 	"github.com/thavlik/transcriber/base/pkg/base"
+	"github.com/thavlik/transcriber/base/pkg/pubsub"
+	memory_pubsub "github.com/thavlik/transcriber/base/pkg/pubsub/memory"
+	redis_pubsub "github.com/thavlik/transcriber/base/pkg/pubsub/redis"
 	"github.com/thavlik/transcriber/broadcaster/pkg/server"
+	"go.uber.org/zap"
 )
 
 var serverArgs struct {
@@ -21,21 +26,33 @@ var serverCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var redisClient *redis.Client
-		if serverArgs.redis.IsSet() {
-			redisClient = base.ConnectRedis(
-				cmd.Context(),
-				&serverArgs.redis,
-			)
-		}
 		return server.Entry(
 			cmd.Context(),
 			serverArgs.httpPort,
 			serverArgs.metricsPort,
-			redisClient,
+			initPubSub(
+				cmd.Context(),
+				base.DefaultLog,
+			),
 			base.DefaultLog,
 		)
 	},
+}
+
+func initPubSub(
+	ctx context.Context,
+	log *zap.Logger,
+) pubsub.PubSub {
+	if serverArgs.redis.IsSet() {
+		return redis_pubsub.NewRedisPubSub(
+			base.ConnectRedis(
+				ctx,
+				&serverArgs.redis,
+			),
+			log,
+		)
+	}
+	return memory_pubsub.NewMemoryPubSub(log)
 }
 
 func init() {

@@ -7,35 +7,35 @@ import (
 	"sync"
 	"time"
 
-	"github.com/redis/go-redis/v9"
 	"github.com/thavlik/transcriber/base/pkg/base"
+	"github.com/thavlik/transcriber/base/pkg/pubsub"
 
 	"go.uber.org/zap"
 )
 
 type Server struct {
-	ctx         context.Context
-	cancel      context.CancelFunc
-	conns       map[*wsClient]struct{}
-	connsL      sync.Mutex
-	redisClient *redis.Client
-	wg          *sync.WaitGroup
-	log         *zap.Logger
+	ctx    context.Context
+	cancel context.CancelFunc
+	conns  map[*wsClient]struct{}
+	connsL sync.Mutex
+	pub    pubsub.Publisher
+	wg     *sync.WaitGroup
+	log    *zap.Logger
 }
 
 func NewServer(
 	ctx context.Context,
-	redisClient *redis.Client,
+	pub pubsub.Publisher,
 	log *zap.Logger,
 ) *Server {
 	ctx, cancel := context.WithCancel(ctx)
 	return &Server{
-		ctx:         ctx,
-		cancel:      cancel,
-		redisClient: redisClient,
-		wg:          new(sync.WaitGroup),
-		conns:       make(map[*wsClient]struct{}),
-		log:         log,
+		ctx:    ctx,
+		cancel: cancel,
+		pub:    pub,
+		wg:     new(sync.WaitGroup),
+		conns:  make(map[*wsClient]struct{}),
+		log:    log,
 	}
 }
 
@@ -73,6 +73,11 @@ func (s *Server) ListenAndServe(
 
 func (s *Server) ShutDown() {
 	s.cancel()
+	s.connsL.Lock()
+	for conn := range s.conns {
+		_ = conn.c.Close()
+	}
+	s.connsL.Unlock()
 	s.wg.Wait()
 }
 

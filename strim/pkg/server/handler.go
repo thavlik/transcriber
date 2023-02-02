@@ -70,13 +70,15 @@ func (h *Handler) OnPublish(
 	cmd *rtmpmsg.NetStreamPublish,
 ) error {
 	log.Printf("OnPublish [%s]", cmd.PublishingType)
+	streamKey := cmd.PublishingName
 	// cmd.PublishingName is the stream secret key in OBS
 	// use this value to determine which clients should
 	// receive the transcription over websocket
-	if cmd.PublishingName == "" {
-		return errors.New("PublishingName is empty")
+	if streamKey == "" {
+		return errors.New("missing stream key")
 	}
-	if err := h.checkStreamKey(cmd.PublishingName); err != nil {
+	// TODO: check iam
+	if err := h.checkStreamKey(streamKey); err != nil {
 		return errors.Wrap(err, "invalid stream key")
 	}
 	return nil

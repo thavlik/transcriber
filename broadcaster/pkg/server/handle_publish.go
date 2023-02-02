@@ -21,7 +21,7 @@ func (s *Server) handlePublish() http.HandlerFunc {
 				return err
 			}
 			s.spawn(func() {
-				s.publish(string(body))
+				s.publish(body)
 			})
 			return nil
 		}(); err != nil {

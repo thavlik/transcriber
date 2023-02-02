@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"errors"
 
 	"github.com/spf13/cobra"
@@ -10,18 +9,22 @@ import (
 	"github.com/thavlik/transcriber/imgsearch/pkg/cache/data"
 	"github.com/thavlik/transcriber/imgsearch/pkg/cache/data/s3"
 	"github.com/thavlik/transcriber/imgsearch/pkg/cache/meta"
-	"github.com/thavlik/transcriber/imgsearch/pkg/cache/meta/mongo"
+	mongo_metacache "github.com/thavlik/transcriber/imgsearch/pkg/cache/meta/mongo"
+	"github.com/thavlik/transcriber/imgsearch/pkg/history"
+	mongo_history "github.com/thavlik/transcriber/imgsearch/pkg/history/mongo"
 	"github.com/thavlik/transcriber/imgsearch/pkg/server"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 var serverArgs struct {
-	httpPort           int
-	metricsPort        int
-	bingApiKey         string
-	bingEndpoint       string
-	db                 base.DatabaseOptions
-	metaCollectionName string
-	s3Bucket           string
+	httpPort              int
+	metricsPort           int
+	bingApiKey            string
+	bingEndpoint          string
+	db                    base.DatabaseOptions
+	metaCollectionName    string
+	historyCollectionName string
+	s3Bucket              string
 }
 
 var serverCmd = &cobra.Command{
@@ -32,6 +35,10 @@ var serverCmd = &cobra.Command{
 		base.CheckEnv("META_COLLECTION_NAME", &serverArgs.metaCollectionName)
 		if serverArgs.metaCollectionName == "" {
 			return errors.New("missing --meta-collection-name")
+		}
+		base.CheckEnv("HISTORY_COLLECTION_NAME", &serverArgs.historyCollectionName)
+		if serverArgs.historyCollectionName == "" {
+			return errors.New("missing --history-collection-name")
 		}
 		base.CheckEnv("S3_BUCKET", &serverArgs.s3Bucket)
 		if serverArgs.s3Bucket == "" {
@@ -51,14 +58,16 @@ var serverCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		mongo := base.ConnectMongo(cmd.Context(), &serverArgs.db.Mongo)
 		return server.Entry(
 			cmd.Context(),
 			serverArgs.httpPort,
 			serverArgs.metricsPort,
+			initHistory(mongo),
 			serverArgs.bingApiKey,
 			serverArgs.bingEndpoint,
 			cache.NewImageCache(
-				initMetaCache(cmd.Context()),
+				initMetaCache(mongo),
 				initDataCache(),
 			),
 			base.DefaultLog,
@@ -72,12 +81,15 @@ func initDataCache() data.ImageDataCache {
 	)
 }
 
-func initMetaCache(ctx context.Context) meta.ImageMetaCache {
-	return mongo.NewMongoMetaCache(
-		base.ConnectMongo(
-			ctx,
-			&serverArgs.db.Mongo,
-		).Collection(serverArgs.metaCollectionName),
+func initMetaCache(db *mongo.Database) meta.ImageMetaCache {
+	return mongo_metacache.NewMongoMetaCache(
+		db.Collection(serverArgs.metaCollectionName),
+	)
+}
+
+func initHistory(db *mongo.Database) history.History {
+	return mongo_history.NewMongoHistory(
+		db.Collection(serverArgs.historyCollectionName),
 	)
 }
 
@@ -89,5 +101,6 @@ func init() {
 	serverCmd.Flags().StringVar(&serverArgs.bingEndpoint, "bing-endpoint", defaultBingEndpoint, "bing search endpoint")
 	base.AddDatabaseFlags(serverCmd, &serverArgs.db)
 	serverCmd.Flags().StringVar(&serverArgs.metaCollectionName, "meta-collection-name", "", "name of the collection to store image metadata in")
+	serverCmd.Flags().StringVar(&serverArgs.historyCollectionName, "history-collection-name", "", "name of the collection to store image search history in")
 	serverCmd.Flags().StringVar(&serverArgs.s3Bucket, "s3-bucket", "", "name of the s3 bucket to store image data in")
 }

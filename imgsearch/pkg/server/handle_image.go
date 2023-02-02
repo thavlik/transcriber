@@ -54,7 +54,9 @@ func (s *Server) handleImage() http.HandlerFunc {
 				// the same uncached image at the same time,
 				// we want to increment the request counter
 				// both times
-				go s.incrementRequests(metaHash)
+				s.spawn(func() {
+					s.incrementRequests(metaHash)
+				})
 				return nil
 			} else if err != nil {
 				return err
@@ -63,7 +65,9 @@ func (s *Server) handleImage() http.HandlerFunc {
 			if _, err := io.Copy(w, body); err != nil {
 				return errors.Wrap(err, "copy")
 			}
-			go s.incrementRequests(metaHash)
+			s.spawn(func() {
+				s.incrementRequests(metaHash)
+			})
 			return nil
 		}(); err != nil {
 			s.log.Error(r.RequestURI, zap.Error(err))
