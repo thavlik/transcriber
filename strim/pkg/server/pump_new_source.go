@@ -25,7 +25,7 @@ func (s *Server) pumpNewSource() {
 			}
 			ctx, cancel = context.WithCancel(newSource.Context())
 			go func(ctx context.Context, src source.Source) {
-				retryDelay := 2 * time.Second
+				retryDelay := time.Second
 				for {
 					s.log.Debug("pushing audio source")
 					if err := s.pushAudioSource(
