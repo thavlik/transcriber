@@ -41,9 +41,11 @@ class KeyTerms {
 
   void integrate(List<Entity> other) {
     for (var entity in other) {
+      final lower = entity.text.toLowerCase();
       bool found = false;
       for (var existing in entities) {
-        if (existing.text == entity.text && existing.type == entity.type) {
+        if (existing.text.toLowerCase() == lower &&
+            existing.type == entity.type) {
           // update the score
           existing.score = entity.score;
           found = true;
