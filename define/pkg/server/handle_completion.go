@@ -5,9 +5,12 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/PullRequestInc/go-gpt3"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"github.com/thavlik/transcriber/define/pkg/storage"
 	"go.uber.org/zap"
 )
 
@@ -28,12 +31,12 @@ func (s *Server) handleDefine() http.HandlerFunc {
 				retCode = http.StatusBadRequest
 				return errors.New("missing query")
 			}
-			unescaped, err := url.QueryUnescape(query)
+			input, err := url.QueryUnescape(query)
 			if err != nil {
 				retCode = http.StatusBadRequest
 				return errors.Wrap(err, "unescaping query")
 			}
-			unescaped = strings.TrimSpace(unescaped)
+			input = strings.TrimSpace(input)
 			client := gpt3.NewClient(
 				s.openAISecretKey,
 				gpt3.WithDefaultEngine(gpt3.TextDavinci003Engine),
@@ -42,10 +45,11 @@ func (s *Server) handleDefine() http.HandlerFunc {
 			var temp float32 = 0.7
 			var topP float32 = 1.0
 			maxLength := 256
+			timestamp := time.Now()
 			resp, err := client.Completion(
 				r.Context(),
 				gpt3.CompletionRequest{
-					Prompt:           []string{unescaped},
+					Prompt:           []string{input},
 					Temperature:      &temp,
 					MaxTokens:        &maxLength,
 					TopP:             &topP,
@@ -57,9 +61,23 @@ func (s *Server) handleDefine() http.HandlerFunc {
 			if err != nil {
 				return errors.Wrap(err, "gpt3")
 			}
+			output := strings.TrimSpace(resp.Choices[0].Text)
+			s.spawn(func() {
+				if err := s.storage.Insert(
+					s.ctx,
+					&storage.Definition{
+						ID:        uuid.New().String(),
+						Input:     input,
+						Output:    output,
+						Timestamp: timestamp,
+					},
+				); err != nil {
+					s.log.Error("failed to save definition", zap.Error(err))
+				}
+			})
 			w.Header().Set("Content-Type", "application/json")
 			return json.NewEncoder(w).Encode(map[string]interface{}{
-				"text": strings.TrimSpace(resp.Choices[0].Text),
+				"text": output,
 			})
 		}(); err != nil {
 			s.log.Error(r.RequestURI, zap.Error(err))

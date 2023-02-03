@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/thavlik/transcriber/base/pkg/base"
+	"github.com/thavlik/transcriber/define/pkg/storage"
 	"go.uber.org/zap"
 )
 
@@ -11,6 +12,7 @@ func Entry(
 	ctx context.Context,
 	httpPort int,
 	metricsPort int,
+	storage storage.Storage,
 	openAISecretKey string,
 	log *zap.Logger,
 ) error {
@@ -19,6 +21,7 @@ func Entry(
 
 	s := NewServer(
 		ctx,
+		storage,
 		openAISecretKey,
 		log,
 	)

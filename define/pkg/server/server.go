@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/thavlik/transcriber/base/pkg/base"
+	"github.com/thavlik/transcriber/define/pkg/storage"
 
 	"go.uber.org/zap"
 )
@@ -15,6 +16,7 @@ import (
 type Server struct {
 	ctx             context.Context
 	cancel          context.CancelFunc
+	storage         storage.Storage
 	wg              *sync.WaitGroup
 	openAISecretKey string
 	log             *zap.Logger
@@ -22,6 +24,7 @@ type Server struct {
 
 func NewServer(
 	ctx context.Context,
+	storage storage.Storage,
 	openAISecretKey string,
 	log *zap.Logger,
 ) *Server {
@@ -29,6 +32,7 @@ func NewServer(
 	return &Server{
 		ctx:             ctx,
 		cancel:          cancel,
+		storage:         storage,
 		openAISecretKey: openAISecretKey,
 		wg:              new(sync.WaitGroup),
 		log:             log,
