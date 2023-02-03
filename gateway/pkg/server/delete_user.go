@@ -11,7 +11,7 @@ import (
 
 func (s *Server) DeleteUser(ctx context.Context, req api.DeleteUser) (_ *api.Void, err error) {
 	if req.ID == "" {
-		user, err := s.iam.GetUser(context.Background(), req.Username)
+		user, err := s.iam.GetUser(ctx, req.Username)
 		if err == iam.ErrUserNotFound {
 			return &api.Void{}, nil
 		} else if err != nil {

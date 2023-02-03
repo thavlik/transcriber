@@ -28,6 +28,8 @@ spec:
         command:
           - define
           - server
+          - --db-driver
+          - {{ required "missing db.driver" .Values.db.driver }}
         {{- if .Values.prometheus.enabled }}
           - --metrics-port
           - "2112"
@@ -45,6 +47,33 @@ spec:
           value: {{ .Values.define.logLevel }}
         - name: OPENAI_SECRET_KEY
 {{ tpl (toYaml .Values.define.openAISecretKey) . | indent 10 }}
+{{- if eq .Values.db.driver "postgres" }}
+        - name: POSTGRES_DATABASE
+{{ tpl (toYaml .Values.db.postgres.database) . | indent 10 }}
+        - name: POSTGRES_HOST
+{{ tpl (toYaml .Values.db.postgres.host) . | indent 10 }}
+        - name: POSTGRES_PORT
+{{ tpl (toYaml .Values.db.postgres.port) . | indent 10 }}
+        - name: POSTGRES_USERNAME
+{{ tpl (toYaml .Values.db.postgres.username) . | indent 10 }}
+        - name: POSTGRES_PASSWORD
+{{ tpl (toYaml .Values.db.postgres.password) . | indent 10 }}
+        - name: POSTGRES_CA_CERT
+{{ tpl (toYaml .Values.db.postgres.ca) . | indent 10 }}
+        - name: POSTGRES_SSL_MODE
+{{ tpl (toYaml .Values.db.postgres.sslmode) . | indent 10 }}
+{{- else if eq .Values.db.driver "mongo" }}
+        - name: MONGO_DB_NAME
+{{ tpl (toYaml .Values.db.mongo.dbName) . | indent 10 }}
+        - name: MONGO_AUTH_SOURCE
+{{ tpl (toYaml .Values.db.mongo.authSource) . | indent 10 }}
+        - name: MONGO_HOST
+{{ tpl (toYaml .Values.db.mongo.host) . | indent 10 }}
+        - name: MONGO_USERNAME
+{{ tpl (toYaml .Values.db.mongo.username) . | indent 10 }}
+        - name: MONGO_PASSWORD
+{{ tpl (toYaml .Values.db.mongo.password) . | indent 10 }}
+{{- end }}
       {{- if .Values.redis.enabled }}
         - name: REDIS_USERNAME
 {{ tpl (toYaml .Values.redis.username) . | indent 10 }}

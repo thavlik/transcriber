@@ -1,3 +1,3 @@
 package base
 
-var Unreachable string = "unreachable branch detected"
+const Unreachable = "unreachable branch detected"

@@ -4,7 +4,7 @@ ARG KINDEST_TAG="latest"
 ARG RUNTIME_BASE_IMAGE="debian:bullseye-slim"
 FROM ${KINDEST_REPOSITORY}thavlik/transcriber-base:${KINDEST_TAG} AS builder
 COPY base/pkg base/pkg
-COPY transcriber/pkg/source transcriber/pkg/source
+COPY scribe/pkg/source scribe/pkg/source
 COPY strim strim
 RUN cd strim/cmd && go build -o strim
 FROM ${RUNTIME_BASE_IMAGE}

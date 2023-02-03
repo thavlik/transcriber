@@ -10,8 +10,7 @@ import (
 
 func Entry(
 	ctx context.Context,
-	httpPort int,
-	metricsPort int,
+	serverOpts *base.ServerOptions,
 	storage storage.Storage,
 	openAISecretKey string,
 	log *zap.Logger,
@@ -30,12 +29,12 @@ func Entry(
 	s.spawn(func() {
 		base.RunMetrics(
 			ctx,
-			metricsPort,
+			serverOpts.MetricsPort,
 			log,
 		)
 	})
 
 	return s.ListenAndServe(
-		httpPort,
+		serverOpts.Port,
 	)
 }

@@ -1,8 +1,10 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/pacedotdev/oto/otohttp"
@@ -15,28 +17,49 @@ import (
 )
 
 type Server struct {
+	ctx        context.Context
+	cancel     context.CancelFunc
 	iam        iam.IAM
 	imgSearch  *base.ServiceOptions
 	define     *base.ServiceOptions
 	corsHeader string
+	wg         *sync.WaitGroup
 	log        *zap.Logger
 }
 
 func NewServer(
+	ctx context.Context,
 	iam iam.IAM,
 	imgSearch *base.ServiceOptions,
 	define *base.ServiceOptions,
 	corsHeader string,
 	log *zap.Logger,
 ) *Server {
+	ctx, cancel := context.WithCancel(ctx)
 	s := &Server{
+		ctx,
+		cancel,
 		iam,
 		imgSearch,
 		define,
 		corsHeader,
+		new(sync.WaitGroup),
 		log,
 	}
 	return s
+}
+
+func (s *Server) spawn(f func()) {
+	s.wg.Add(1)
+	go func() {
+		defer s.wg.Done()
+		f()
+	}()
+}
+
+func (s *Server) ShutDown() {
+	s.cancel()
+	s.wg.Wait()
 }
 
 func (s *Server) AdminListenAndServe(port int) error {

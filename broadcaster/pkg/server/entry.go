@@ -12,8 +12,7 @@ import (
 
 func Entry(
 	ctx context.Context,
-	httpPort int,
-	metricsPort int,
+	serverOpts *base.ServerOptions,
 	iam iam.IAM,
 	pubSub pubsub.PubSub,
 	corsHeader string,
@@ -34,7 +33,7 @@ func Entry(
 	s.spawn(func() {
 		base.RunMetrics(
 			ctx,
-			metricsPort,
+			serverOpts.MetricsPort,
 			log,
 		)
 	})
@@ -52,6 +51,6 @@ func Entry(
 	})
 
 	return s.ListenAndServe(
-		httpPort,
+		serverOpts.Port,
 	)
 }

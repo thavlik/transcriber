@@ -6,7 +6,7 @@ import (
 	"io"
 	"net"
 
-	"github.com/thavlik/transcriber/transcriber/pkg/source"
+	"github.com/thavlik/transcriber/scribe/pkg/source"
 	"github.com/yutopp/go-rtmp"
 
 	"github.com/pkg/errors"

@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: {{ .Release.Name }}-broadcaster
 spec:
-  replicas: 1
+  replicas: {{ .Values.broadcaster.replicas }}
   selector:
     matchLabels:
       app: {{ .Release.Name }}-broadcaster

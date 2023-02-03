@@ -17,8 +17,7 @@ import (
 )
 
 var serverArgs struct {
-	httpPort              int
-	metricsPort           int
+	base.ServerOptions
 	bingApiKey            string
 	bingEndpoint          string
 	db                    base.DatabaseOptions
@@ -31,6 +30,7 @@ var serverCmd = &cobra.Command{
 	Use:  "server",
 	Args: cobra.NoArgs,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
+		base.ServerEnv(&serverArgs.ServerOptions)
 		base.DatabaseEnv(&serverArgs.db, true)
 		base.CheckEnv("META_COLLECTION_NAME", &serverArgs.metaCollectionName)
 		if serverArgs.metaCollectionName == "" {
@@ -61,8 +61,7 @@ var serverCmd = &cobra.Command{
 		mongo := base.ConnectMongo(cmd.Context(), &serverArgs.db.Mongo)
 		return server.Entry(
 			cmd.Context(),
-			serverArgs.httpPort,
-			serverArgs.metricsPort,
+			&serverArgs.ServerOptions,
 			initHistory(mongo),
 			serverArgs.bingApiKey,
 			serverArgs.bingEndpoint,
@@ -95,8 +94,7 @@ func initHistory(db *mongo.Database) history.History {
 
 func init() {
 	rootCmd.AddCommand(serverCmd)
-	serverCmd.Flags().IntVarP(&serverArgs.httpPort, "http-port", "p", 80, "http port to listen on")
-	serverCmd.Flags().IntVarP(&serverArgs.metricsPort, "metrics-port", "m", 0, "metrics port to listen on")
+	base.AddServerFlags(serverCmd, &serverArgs.ServerOptions)
 	serverCmd.Flags().StringVar(&serverArgs.bingApiKey, "bing-api-key", "", "bing api secret key")
 	serverCmd.Flags().StringVar(&serverArgs.bingEndpoint, "bing-endpoint", defaultBingEndpoint, "bing search endpoint")
 	base.AddDatabaseFlags(serverCmd, &serverArgs.db)

@@ -11,8 +11,7 @@ import (
 
 func Entry(
 	ctx context.Context,
-	port int,
-	metricsPort int,
+	serverOpts *base.ServerOptions,
 	history history.History,
 	apiKey string,
 	endpoint string,
@@ -35,10 +34,10 @@ func Entry(
 	s.spawn(func() {
 		base.RunMetrics(
 			ctx,
-			metricsPort,
+			serverOpts.MetricsPort,
 			log,
 		)
 	})
 
-	return s.ListenAndServe(port)
+	return s.ListenAndServe(serverOpts.Port)
 }

@@ -4,7 +4,7 @@ kind: Deployment
 metadata:
   name: {{ .Release.Name }}-strim
 spec:
-  replicas: 1
+  replicas: {{ .Values.strim.replicas }}
   selector:
     matchLabels:
       app: {{ .Release.Name }}-strim
@@ -28,8 +28,8 @@ spec:
         command:
           - strim
           - server
-          - --transcriber-endpoint
-          - "http://{{ .Release.Name }}-transcriber:80"
+          - --scribe-endpoint
+          - "http://{{ .Release.Name }}-scribe:80"
         {{- if .Values.prometheus.enabled }}
           - --metrics-port
           - "2112"

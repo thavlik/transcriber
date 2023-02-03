@@ -13,8 +13,7 @@ import (
 )
 
 var serverArgs struct {
-	httpPort        int
-	metricsPort     int
+	base.ServerOptions
 	openAISecretKey string
 	db              base.DatabaseOptions
 }
@@ -23,6 +22,7 @@ var serverCmd = &cobra.Command{
 	Use:  "server",
 	Args: cobra.NoArgs,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
+		base.ServerEnv(&serverArgs.ServerOptions)
 		base.DatabaseEnv(&serverArgs.db, true)
 		base.CheckEnv("OPENAI_SECRET_KEY", &serverArgs.openAISecretKey)
 		if serverArgs.openAISecretKey == "" {
@@ -33,8 +33,7 @@ var serverCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return server.Entry(
 			cmd.Context(),
-			serverArgs.httpPort,
-			serverArgs.metricsPort,
+			&serverArgs.ServerOptions,
 			initStorage(cmd.Context()),
 			serverArgs.openAISecretKey,
 			base.DefaultLog,
@@ -57,8 +56,7 @@ func initStorage(ctx context.Context) storage.Storage {
 
 func init() {
 	rootCmd.AddCommand(serverCmd)
-	serverCmd.Flags().IntVarP(&serverArgs.httpPort, "http-port", "p", 80, "http port to listen on")
-	serverCmd.Flags().IntVarP(&serverArgs.metricsPort, "metrics-port", "m", 0, "metrics port to listen on")
+	base.AddServerFlags(serverCmd, &serverArgs.ServerOptions)
 	serverCmd.Flags().StringVar(&serverArgs.openAISecretKey, "openai-secret-key", "", "OpenAI API secret key")
 	base.AddDatabaseFlags(serverCmd, &serverArgs.db)
 }

@@ -8,8 +8,8 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/transcriber/transcriber/pkg/source"
-	"github.com/thavlik/transcriber/transcriber/pkg/source/aac"
+	"github.com/thavlik/transcriber/scribe/pkg/source"
+	"github.com/thavlik/transcriber/scribe/pkg/source/aac"
 	flvtag "github.com/yutopp/go-flv/tag"
 	"github.com/yutopp/go-rtmp"
 	rtmpmsg "github.com/yutopp/go-rtmp/message"

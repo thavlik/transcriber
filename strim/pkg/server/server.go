@@ -8,37 +8,37 @@ import (
 	"time"
 
 	"github.com/thavlik/transcriber/base/pkg/base"
-	"github.com/thavlik/transcriber/transcriber/pkg/source"
+	"github.com/thavlik/transcriber/scribe/pkg/source"
 
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
 type Server struct {
-	ctx         context.Context
-	cancel      context.CancelFunc
-	newSource   chan source.Source
-	transcriber base.ServiceOptions
-	streamKey   string
-	wg          *sync.WaitGroup
-	log         *zap.Logger
+	ctx       context.Context
+	cancel    context.CancelFunc
+	newSource chan source.Source
+	scribe    base.ServiceOptions
+	streamKey string
+	wg        *sync.WaitGroup
+	log       *zap.Logger
 }
 
 func NewServer(
 	ctx context.Context,
-	transcriber base.ServiceOptions,
+	scribe base.ServiceOptions,
 	streamKey string,
 	log *zap.Logger,
 ) *Server {
 	ctx, cancel := context.WithCancel(ctx)
 	return &Server{
-		ctx:         ctx,
-		cancel:      cancel,
-		transcriber: transcriber,
-		newSource:   make(chan source.Source, 16),
-		streamKey:   streamKey,
-		wg:          new(sync.WaitGroup),
-		log:         log,
+		ctx:       ctx,
+		cancel:    cancel,
+		scribe:    scribe,
+		newSource: make(chan source.Source, 16),
+		streamKey: streamKey,
+		wg:        new(sync.WaitGroup),
+		log:       log,
 	}
 }
 

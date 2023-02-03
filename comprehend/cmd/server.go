@@ -12,23 +12,22 @@ import (
 )
 
 var serverArgs struct {
-	httpPort    int
-	metricsPort int
-	redis       base.RedisOptions
+	base.ServerOptions
+	redis base.RedisOptions
 }
 
 var serverCmd = &cobra.Command{
 	Use:  "server",
 	Args: cobra.NoArgs,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
+		base.ServerEnv(&serverArgs.ServerOptions)
 		base.RedisEnv(&serverArgs.redis, false)
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return server.Entry(
 			cmd.Context(),
-			serverArgs.httpPort,
-			serverArgs.metricsPort,
+			&serverArgs.ServerOptions,
 			initEntityCache(cmd.Context()),
 			base.DefaultLog,
 		)
@@ -46,7 +45,6 @@ func initEntityCache(ctx context.Context) entitycache.EntityCache {
 
 func init() {
 	rootCmd.AddCommand(serverCmd)
-	serverCmd.Flags().IntVarP(&serverArgs.httpPort, "http-port", "p", 80, "http port to listen on")
-	serverCmd.Flags().IntVarP(&serverArgs.metricsPort, "metrics-port", "m", 0, "metrics port to listen on")
+	base.AddServerFlags(serverCmd, &serverArgs.ServerOptions)
 	base.AddRedisFlags(serverCmd, &serverArgs.redis)
 }

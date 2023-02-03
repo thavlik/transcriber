@@ -39,5 +39,5 @@ func RunMetrics(
 		<-ctx.Done()
 		_ = srv.Shutdown(ctx)
 	}()
-	_ = srv.ListenAndServe()
+	panic(srv.ListenAndServe())
 }

@@ -7,7 +7,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use: "transcriber",
+	Use: "comprehend",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return errors.New("please choose a subcommand")
 	},

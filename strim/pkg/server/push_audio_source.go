@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/transcriber/transcriber/pkg/source"
+	"github.com/thavlik/transcriber/scribe/pkg/source"
 )
 
 func (s *Server) pushAudioSource(
@@ -19,16 +19,16 @@ func (s *Server) pushAudioSource(
 	req, err := http.NewRequestWithContext(
 		ctx,
 		"POST",
-		s.transcriber.Endpoint+"/source",
+		s.scribe.Endpoint+"/source",
 		src,
 	)
 	if err != nil {
 		return err
 	}
-	if s.transcriber.BasicAuth.Username != "" {
+	if s.scribe.BasicAuth.Username != "" {
 		req.SetBasicAuth(
-			s.transcriber.BasicAuth.Username,
-			s.transcriber.BasicAuth.Password,
+			s.scribe.BasicAuth.Username,
+			s.scribe.BasicAuth.Password,
 		)
 	}
 	rate, err := src.SampleRate()

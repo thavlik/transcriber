@@ -20,6 +20,7 @@ var serverArgs struct {
 var serverCmd = &cobra.Command{
 	Use: "server",
 	PreRunE: func(cmd *cobra.Command, args []string) error {
+		base.ServerEnv(&serverArgs.ServerOptions)
 		base.ServiceEnv("imgsearch", &serverArgs.imgSearch)
 		base.ServiceEnv("define", &serverArgs.define)
 		base.ServerEnv(&serverArgs.ServerOptions)
@@ -30,7 +31,8 @@ var serverCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		log := base.DefaultLog
 		return server.Entry(
-			serverArgs.Port,
+			cmd.Context(),
+			&serverArgs.ServerOptions,
 			serverArgs.adminPort,
 			nil, //iam.InitIAM(&serverArgs.iam, log),
 			&serverArgs.imgSearch,
@@ -43,9 +45,9 @@ var serverCmd = &cobra.Command{
 
 func init() {
 	base.AddServerFlags(serverCmd, &serverArgs.ServerOptions)
+	serverCmd.PersistentFlags().IntVar(&serverArgs.adminPort, "admin-port", 8080, "http service port")
 	base.AddServiceFlags(serverCmd, "imgsearch", &serverArgs.imgSearch, 8*time.Second)
 	base.AddServiceFlags(serverCmd, "define", &serverArgs.define, 8*time.Second)
-	serverCmd.PersistentFlags().IntVar(&serverArgs.adminPort, "admin-port", 8080, "http service port")
 	serverCmd.PersistentFlags().StringVar(&serverArgs.corsHeader, "cors-header", "", "Access-Control-Allow-Origin header")
 	base.AddIAMFlags(serverCmd, &serverArgs.iam)
 	ConfigureCommand(serverCmd)

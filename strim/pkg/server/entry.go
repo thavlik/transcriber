@@ -9,10 +9,9 @@ import (
 
 func Entry(
 	ctx context.Context,
-	httpPort int,
+	serverOpts *base.ServerOptions,
 	rtmpPort int,
-	metricsPort int,
-	transcriber base.ServiceOptions,
+	scribe base.ServiceOptions,
 	streamKey string,
 	log *zap.Logger,
 ) error {
@@ -21,7 +20,7 @@ func Entry(
 
 	s := NewServer(
 		ctx,
-		transcriber,
+		scribe,
 		streamKey,
 		log,
 	)
@@ -30,7 +29,7 @@ func Entry(
 	s.spawn(func() {
 		base.RunMetrics(
 			ctx,
-			metricsPort,
+			serverOpts.MetricsPort,
 			log,
 		)
 	})
@@ -38,7 +37,7 @@ func Entry(
 	s.spawn(s.pumpNewSource)
 
 	return s.ListenAndServe(
-		httpPort,
+		serverOpts.Port,
 		rtmpPort,
 	)
 }

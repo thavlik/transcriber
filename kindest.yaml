@@ -1,6 +1,6 @@
 dependencies:
   - app
-  - transcriber
+  - scribe
   - comprehend
   - imgsearch
   - define
@@ -42,7 +42,7 @@ env:
               requests:
                 cpu: 500m
                 memory: 256Mi
-          transcriber: {}
+          scribe: {}
           define:
             openAISecretKey:
               valueFrom:

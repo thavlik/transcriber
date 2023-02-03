@@ -70,17 +70,26 @@ aws:
   secretAccessKey:
     value: ""
 
-transcriber:
+scribe:
   specialty: RADIOLOGY
-  image: thavlik/transcriber:latest
+  image: thavlik/scribe:latest
   imagePullPolicy: Always
   logLevel: debug
+  # If there is a large number of concurrent
+  # transcription jobs, you can increase the
+  # replica count here to horizontally scale.
+  replicas: 1
   resources: {}
 
 broadcaster:
   image: thavlik/broadcaster:latest
   imagePullPolicy: Always
   logLevel: debug
+  # If there is a large number of active websocks,
+  # you can increase the replica count here to
+  # horizontally scale. The service uses redis
+  # pub/sub to coordinate activity across pods.
+  replicas: 1
   resources: {}
 
 strim:
@@ -90,6 +99,10 @@ strim:
   image: thavlik/strim:latest
   imagePullPolicy: Always
   logLevel: debug
+  # If there are a large number of incoming RTMP
+  # streams, the replica count can be increased
+  # here to horizontally scale the service.
+  replicas: 1
   resources:
   # It is *highly* recommended that some cpu be
   # reserved for audio decoding, otherwise it
@@ -104,6 +117,10 @@ app:
   enabled: true
   image: thavlik/transcriber-app:latest
   imagePullPolicy: Always
+  # If the app page takes a long time to load
+  # due to multiple concurrent requests, the
+  # replica count can be increased here to
+  # horizontally scale the serving of the app.
   replicas: 1
   resources: {}
 
@@ -112,6 +129,9 @@ define:
   enabled: true
   image: thavlik/define:latest
   imagePullPolicy: Always
+  # If there is a large number of concurrent 
+  # requests to OpenAI/ChatGPT, you can increase
+  # the replica count here to horizontally scale. 
   replicas: 1
   logLevel: debug
   resources: {}
@@ -120,6 +140,10 @@ comprehend:
   enabled: true
   image: thavlik/comprehend:latest
   imagePullPolicy: Always
+  # If the backend is having issues comprehending
+  # entities as quickly as the transcript generates
+  # them, increase this service's replica count to
+  # horizontally scale.
   replicas: 1
   logLevel: debug
   resources: {}
@@ -128,6 +152,10 @@ gateway:
   enabled: true
   image: thavlik/transcriber-gateway:latest
   imagePullPolicy: Always
+  # If there are large numbers of concurrent
+  # requests to RBAC-protected methods, you
+  # can increase the replica count here to
+  # horizontally scale the service. 
   replicas: 1
   logLevel: debug
   resources: {}
@@ -145,6 +173,9 @@ imgsearch:
       value: ""
   image: thavlik/imgsearch:latest
   imagePullPolicy: Always
+  # If there is a large number of concurrent image
+  # searches, you can increase the replica count
+  # here to horizontally scale.
   replicas: 1
   resources: {}
   logLevel: debug

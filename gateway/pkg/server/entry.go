@@ -1,13 +1,17 @@
 package server
 
 import (
+	"context"
+
+	"github.com/pkg/errors"
 	"github.com/thavlik/transcriber/base/pkg/base"
 	"github.com/thavlik/transcriber/base/pkg/iam"
 	"go.uber.org/zap"
 )
 
 func Entry(
-	port int,
+	ctx context.Context,
+	serverOpts *base.ServerOptions,
 	adminPort int,
 	iam iam.IAM,
 	imgSearch *base.ServiceOptions,
@@ -16,20 +20,31 @@ func Entry(
 	log *zap.Logger,
 ) error {
 	s := NewServer(
+		ctx,
 		iam,
 		imgSearch,
 		define,
 		corsHeader,
 		log,
 	)
+	defer s.ShutDown()
+	s.spawn(func() {
+		base.RunMetrics(
+			s.ctx,
+			serverOpts.MetricsPort,
+			log,
+		)
+	})
 	mainErr := make(chan error, 1)
-	go func() { mainErr <- s.ListenAndServe(port) }()
+	s.spawn(func() { mainErr <- s.ListenAndServe(serverOpts.Port) })
 	adminErr := make(chan error, 1)
-	go func() { adminErr <- s.AdminListenAndServe(adminPort) }()
+	s.spawn(func() { adminErr <- s.AdminListenAndServe(adminPort) })
 	select {
+	case <-s.ctx.Done():
+		return s.ctx.Err()
 	case err := <-mainErr:
-		return err
+		return errors.Wrap(err, "main server error")
 	case err := <-adminErr:
-		return err
+		return errors.Wrap(err, "admin server error")
 	}
 }
