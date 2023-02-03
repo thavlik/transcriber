@@ -68,7 +68,7 @@ func (s *Server) handleDetect() http.HandlerFunc {
 				// cache the entity hashes so we can restrict what
 				// inputs can be used to services like OpenAI/GPT-3
 				if err := s.entityCache.BulkCache(
-					r.Context(),
+					s.ctx,
 					entities,
 				); err != nil {
 					s.log.Error("failed to cache entities", zap.Error(err))

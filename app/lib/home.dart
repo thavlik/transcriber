@@ -233,7 +233,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
-                    entity.type,
+                    entity.type.replaceAll('_', ' '),
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.labelSmall!.copyWith(
                         color: HSLColor.fromAHSL(
