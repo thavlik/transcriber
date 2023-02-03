@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go/service/transcribestreamingservice"
-	"github.com/thavlik/transcriber/transcriber/pkg/comprehend"
 	"github.com/thavlik/transcriber/transcriber/pkg/transcriber"
 
 	"go.uber.org/zap"
@@ -25,11 +24,10 @@ func (s *Server) handleTranscript(
 		)
 	})
 	s.spawn(func() {
-		entities, err := comprehend.ComprehendMedical(
+		entities, err := s.detectEntities(
 			ctx,
+			"amazon-comprehend-medical",
 			text,
-			s.filter,
-			s.log,
 		)
 		if err != nil {
 			s.log.Error("comprehend error", zap.Error(err))

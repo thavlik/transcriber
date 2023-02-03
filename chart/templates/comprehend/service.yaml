@@ -1,0 +1,15 @@
+{{- if .Values.comprehend.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-comprehend
+  labels:
+    app: {{ .Release.Name }}-comprehend
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Release.Name }}-comprehend
+  ports:
+  - name: http
+    port: 80
+{{- end }}

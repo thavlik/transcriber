@@ -1,0 +1,16 @@
+{{- if and .Values.comprehend.enabled .Values.prometheus.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ .Release.Name }}-comprehend
+  labels:
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-comprehend
+  podMetricsEndpoints:
+  - port: metrics
+{{- end }}
+
+

@@ -45,6 +45,16 @@ spec:
           value: {{ .Values.define.logLevel }}
         - name: OPENAI_SECRET_KEY
 {{ tpl (toYaml .Values.define.openAISecretKey) . | indent 10 }}
+      {{- if .Values.redis.enabled }}
+        - name: REDIS_USERNAME
+{{ tpl (toYaml .Values.redis.username) . | indent 10 }}
+        - name: REDIS_PASSWORD
+{{ tpl (toYaml .Values.redis.password) . | indent 10 }}
+        - name: REDIS_HOST
+{{ tpl (toYaml .Values.redis.host) . | indent 10 }}
+        - name: REDIS_PORT
+{{ tpl (toYaml .Values.redis.port) . | indent 10 }}
+      {{- end }}
         readinessProbe:
           httpGet:
             path: /readyz

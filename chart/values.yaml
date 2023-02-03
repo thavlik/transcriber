@@ -116,6 +116,13 @@ define:
   logLevel: debug
   resources: {}
 
+comprehend:
+  enabled: true
+  image: thavlik/comprehend:latest
+  imagePullPolicy: Always
+  replicas: 1
+  logLevel: debug
+  resources: {}
 
 gateway:
   enabled: true

@@ -15,6 +15,7 @@ var serverArgs struct {
 	streamKey   string
 	specialty   string
 	broadcaster base.ServiceOptions
+	comprehend  base.ServiceOptions
 }
 
 var serverCmd = &cobra.Command{
@@ -22,6 +23,7 @@ var serverCmd = &cobra.Command{
 	Args: cobra.NoArgs,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		base.ServiceEnv("broadcaster", &serverArgs.broadcaster)
+		base.ServiceEnv("comprehend", &serverArgs.comprehend)
 		if v, ok := os.LookupEnv("STREAM_KEY"); ok {
 			serverArgs.streamKey = v
 		}
@@ -32,7 +34,8 @@ var serverCmd = &cobra.Command{
 			cmd.Context(),
 			serverArgs.httpPort,
 			serverArgs.metricsPort,
-			serverArgs.broadcaster,
+			&serverArgs.broadcaster,
+			&serverArgs.comprehend,
 			serverArgs.specialty,
 			serverArgs.streamKey,
 			base.DefaultLog,
@@ -52,5 +55,6 @@ func init() {
 		defaultSpecialty,
 		"the specialty to use for transcription",
 	)
-	base.AddServiceFlags(serverCmd, "broadcaster", &serverArgs.broadcaster, 5*time.Second)
+	base.AddServiceFlags(serverCmd, "broadcaster", &serverArgs.broadcaster, 6*time.Second)
+	base.AddServiceFlags(serverCmd, "comprehend", &serverArgs.comprehend, 12*time.Second)
 }

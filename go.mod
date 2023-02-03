@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/Nerzal/gocloak/v12 v12.0.0
+	github.com/PullRequestInc/go-gpt3 v1.1.11
 	github.com/aws/aws-sdk-go v1.44.188
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-audio/audio v1.0.0
@@ -27,7 +28,6 @@ require (
 )
 
 require (
-	github.com/PullRequestInc/go-gpt3 v1.1.11 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.0-20210816181553-5444fa50b93d // indirect

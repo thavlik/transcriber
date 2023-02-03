@@ -1,16 +1,17 @@
+{{- if .Values.comprehend.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-transcriber
+  name: {{ .Release.Name }}-comprehend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ .Release.Name }}-transcriber
+      app: {{ .Release.Name }}-comprehend
   template:
     metadata:
       labels:
-        app: {{ .Release.Name }}-transcriber
+        app: {{ .Release.Name }}-comprehend
     spec:
     {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -18,21 +19,15 @@ spec:
     {{- end }}
       containers:
       - name: server
-        imagePullPolicy: {{ .Values.transcriber.imagePullPolicy }}
-        image: {{ .Values.transcriber.image }}
-    {{- if .Values.transcriber.resources }}
+        imagePullPolicy: {{ .Values.comprehend.imagePullPolicy }}
+        image: {{ .Values.comprehend.image }}
+    {{- if .Values.comprehend.resources }}
         resources:
-{{ toYaml .Values.transcriber.resources | indent 10 }}
+{{ toYaml .Values.comprehend.resources | indent 10 }}
     {{- end }}
         command:
-          - transcriber
+          - comprehend
           - server
-          - --broadcaster-endpoint
-          - "http://{{ .Release.Name }}-broadcaster:80"
-          - --comprehend-endpoint
-          - "http://{{ .Release.Name }}-comprehend:80"
-          - --specialty
-          - {{ .Values.transcriber.specialty }}
         {{- if .Values.prometheus.enabled }}
           - --metrics-port
           - "2112"
@@ -47,7 +42,7 @@ spec:
       {{- end }}
         env:
         - name: LOG_LEVEL
-          value: {{ .Values.transcriber.logLevel }}
+          value: {{ .Values.comprehend.logLevel }}
         - name: AWS_REGION
           value: {{ .Values.aws.region }}
         - name: AWS_ACCESS_KEY_ID
@@ -62,3 +57,4 @@ spec:
           httpGet:
             path: /healthz
             port: 80
+{{- end }}
