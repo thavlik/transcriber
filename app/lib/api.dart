@@ -48,12 +48,15 @@ class KeyTerms {
             existing.type == entity.type) {
           // update the score
           existing.score = entity.score;
+          used(existing);
           found = true;
           break;
         }
       }
-      if (!found) entities.add(entity);
-      used(entity);
+      if (!found) {
+        entities.add(entity);
+        used(entity);
+      }
     }
     sort();
   }
