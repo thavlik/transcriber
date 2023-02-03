@@ -345,7 +345,7 @@ class _HomePageState extends State<HomePage> {
             const TabBar(
               tabs: [
                 Tab(text: 'Images'),
-                Tab(text: 'Definitions'),
+                Tab(text: 'Definition'),
               ],
             ),
             Expanded(
