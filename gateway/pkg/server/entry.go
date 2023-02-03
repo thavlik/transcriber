@@ -11,12 +11,14 @@ func Entry(
 	adminPort int,
 	iam iam.IAM,
 	imgSearch *base.ServiceOptions,
+	define *base.ServiceOptions,
 	corsHeader string,
 	log *zap.Logger,
 ) error {
 	s := NewServer(
 		iam,
 		imgSearch,
+		define,
 		corsHeader,
 		log,
 	)

@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/thavlik/transcriber/base/cmd/iam"
 	"github.com/thavlik/transcriber/base/pkg/base"
 	"github.com/thavlik/transcriber/gateway/pkg/server"
 )
@@ -14,6 +13,7 @@ var serverArgs struct {
 	adminPort  int
 	iam        base.IAMOptions
 	imgSearch  base.ServiceOptions
+	define     base.ServiceOptions
 	corsHeader string
 }
 
@@ -21,6 +21,7 @@ var serverCmd = &cobra.Command{
 	Use: "server",
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		base.ServiceEnv("imgsearch", &serverArgs.imgSearch)
+		base.ServiceEnv("define", &serverArgs.define)
 		base.ServerEnv(&serverArgs.ServerOptions)
 		base.IAMEnv(&serverArgs.iam, false)
 		base.CheckEnv("CORS_HEADER", &serverArgs.corsHeader)
@@ -31,8 +32,9 @@ var serverCmd = &cobra.Command{
 		return server.Entry(
 			serverArgs.Port,
 			serverArgs.adminPort,
-			iam.InitIAM(&serverArgs.iam, log),
+			nil, //iam.InitIAM(&serverArgs.iam, log),
 			&serverArgs.imgSearch,
+			&serverArgs.define,
 			serverArgs.corsHeader,
 			log,
 		)
@@ -42,6 +44,7 @@ var serverCmd = &cobra.Command{
 func init() {
 	base.AddServerFlags(serverCmd, &serverArgs.ServerOptions)
 	base.AddServiceFlags(serverCmd, "imgsearch", &serverArgs.imgSearch, 8*time.Second)
+	base.AddServiceFlags(serverCmd, "define", &serverArgs.define, 8*time.Second)
 	serverCmd.PersistentFlags().IntVar(&serverArgs.adminPort, "admin-port", 8080, "http service port")
 	serverCmd.PersistentFlags().StringVar(&serverArgs.corsHeader, "cors-header", "", "Access-Control-Allow-Origin header")
 	base.AddIAMFlags(serverCmd, &serverArgs.iam)

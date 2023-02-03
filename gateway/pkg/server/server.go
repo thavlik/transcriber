@@ -17,6 +17,7 @@ import (
 type Server struct {
 	iam        iam.IAM
 	imgSearch  *base.ServiceOptions
+	define     *base.ServiceOptions
 	corsHeader string
 	log        *zap.Logger
 }
@@ -24,12 +25,14 @@ type Server struct {
 func NewServer(
 	iam iam.IAM,
 	imgSearch *base.ServiceOptions,
+	define *base.ServiceOptions,
 	corsHeader string,
 	log *zap.Logger,
 ) *Server {
 	s := &Server{
 		iam,
 		imgSearch,
+		define,
 		corsHeader,
 		log,
 	}
@@ -37,10 +40,12 @@ func NewServer(
 }
 
 func (s *Server) AdminListenAndServe(port int) error {
-	otoServer := otohttp.NewServer()
-	remoteiam.RegisterRemoteIAM(otoServer, s)
 	mux := http.NewServeMux()
-	mux.Handle("/", otoServer)
+	if s.iam != nil {
+		otoServer := otohttp.NewServer()
+		remoteiam.RegisterRemoteIAM(otoServer, s)
+		mux.Handle("/", otoServer)
+	}
 	mux.HandleFunc("/healthz", base.HealthHandler)
 	mux.HandleFunc("/readyz", base.ReadyHandler)
 	s.log.Info("iam admin listening forever", zap.Int("port", port))
@@ -55,16 +60,19 @@ func (s *Server) AdminListenAndServe(port int) error {
 func (s *Server) ListenAndServe(port int) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", base.Handle404(s.log))
-	mux.HandleFunc("/healthz", base.HealthHandler)
-	mux.HandleFunc("/readyz", base.ReadyHandler)
-	mux.HandleFunc("/user/login", s.handleLogin())
-	mux.HandleFunc("/user/search", s.handleUserSearch())
-	mux.HandleFunc("/user/signout", s.handleSignOut())
-	mux.HandleFunc("/user/register", s.handleRegister())
-	mux.HandleFunc("/user/resetpassword", s.handleSetPassword())
-	mux.HandleFunc("/user/exists", s.handleUserExists())
+	mux.HandleFunc("/healthz", base.Handle200)
+	mux.HandleFunc("/readyz", base.Handle200)
+	mux.HandleFunc("/define", s.handleDefine())
 	mux.HandleFunc("/img", s.handleImage())
 	mux.HandleFunc("/img/search", s.handleImageSearch())
+	if s.iam != nil {
+		mux.HandleFunc("/user/login", s.handleLogin())
+		mux.HandleFunc("/user/search", s.handleUserSearch())
+		mux.HandleFunc("/user/signout", s.handleSignOut())
+		mux.HandleFunc("/user/register", s.handleRegister())
+		mux.HandleFunc("/user/resetpassword", s.handleSetPassword())
+		mux.HandleFunc("/user/exists", s.handleUserExists())
+	}
 	s.log.Info("public api listening forever", zap.Int("port", port))
 	return (&http.Server{
 		Handler:      mux,

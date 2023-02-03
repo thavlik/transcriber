@@ -55,7 +55,7 @@ func (s *Server) handleCompletion() http.HandlerFunc {
 			}
 			w.Header().Set("Content-Type", "application/json")
 			return json.NewEncoder(w).Encode(map[string]interface{}{
-				"text": resp.Choices[0].Text,
+				"text": strings.TrimSpace(resp.Choices[0].Text),
 			})
 		}(); err != nil {
 			s.log.Error(r.RequestURI, zap.Error(err))

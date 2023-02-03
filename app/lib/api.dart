@@ -144,6 +144,17 @@ void checkHttpStatus(Response response) {
   }
 }
 
+Future<String> define(String query) async {
+  final url = Uri.https(apiHost, '/define', {
+    'q': query,
+  });
+  final response = await http.get(url);
+  checkHttpStatus(response);
+  final decodedResponse =
+      jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+  return decodedResponse["text"] as String;
+}
+
 Future<List<SearchImage>> search(String query) async {
   final url = Uri.https(apiHost, '/img/search', {
     'q': query,

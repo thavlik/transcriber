@@ -30,6 +30,8 @@ spec:
           - server
           - --imgsearch-endpoint
           - "http://{{ .Release.Name }}-imgsearch:80"
+          - --define-endpoint
+          - "http://{{ .Release.Name }}-define:80"
         {{- if .Values.iam.driver }}
           - --iam-driver
           - {{ .Values.iam.driver }}

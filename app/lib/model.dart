@@ -14,6 +14,8 @@ class MyModel extends Model {
   api.KeyTerms? _keyTerms;
   api.Entity? _selectedEntity;
   List<api.SearchImage>? _searchImages;
+  final Map<String, String> _definitions = {};
+  final Set<String> _fetchingTerms = {};
 
   bool get isConnected => _isConnected;
   String get transcript => _transcript;
@@ -46,6 +48,23 @@ class MyModel extends Model {
 
   void onDisconnect() {
     _isConnected = false;
+    notifyListeners();
+  }
+
+  String? getDefinition(String term) {
+    final def = _definitions[term];
+    if (def == null) define(term);
+    return def;
+  }
+
+  bool termIsFetching(String term) => _fetchingTerms.contains(term);
+
+  Future<void> define(String term) async {
+    if (_definitions.containsKey(term) || _fetchingTerms.contains(term)) return;
+    _fetchingTerms.add(term);
+    final def = await api.define(term);
+    _fetchingTerms.remove(term);
+    _definitions[term] = def;
     notifyListeners();
   }
 

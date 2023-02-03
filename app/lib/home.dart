@@ -202,7 +202,8 @@ class _HomePageState extends State<HomePage> {
         onTap: () => _onEntitySelected(context, entity),
         child: Container(
           decoration: BoxDecoration(
-            color: ScopedModel.of<MyModel>(context).selectedEntity == entity
+            color: ScopedModel.of<MyModel>(context).selectedEntity?.text ==
+                    entity.text
                 ? Theme.of(context).highlightColor
                 : null,
             border: Border(
@@ -244,14 +245,19 @@ class _HomePageState extends State<HomePage> {
     BuildContext context,
     KeyTerms keyTerms,
     Entity? selectedEntity,
-  ) =>
-      Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-        if (selectedEntity != null) _buildEntity(context, selectedEntity),
-        ...keyTerms.entities
-            .where((e) => e.text != selectedEntity?.text)
-            .map((e) => _buildEntity(context, e))
-            .toList(),
-      ]);
+  ) {
+    List<Entity> entities = [...keyTerms.entities];
+    if (selectedEntity != null) {
+      if (entities.indexWhere((e) => e.text == selectedEntity.text) == -1) {
+        entities.add(selectedEntity);
+      }
+      entities.sort((a, b) => a.text.compareTo(b.text));
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: entities.map((e) => _buildEntity(context, e)).toList(),
+    );
+  }
 
   Widget _columnHeader(BuildContext context, String name) => Flexible(
         flex: 1,
@@ -343,11 +349,11 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
             Expanded(
-              child: TabBarView(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: model.searchImages == null
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TabBarView(
+                  children: [
+                    model.searchImages == null
                         ? Container()
                         : SingleChildScrollView(
                             child: Wrap(
@@ -360,9 +366,26 @@ class _HomePageState extends State<HomePage> {
                                   .toList(),
                             ),
                           ),
-                  ),
-                  Container(),
-                ],
+                    model.selectedEntity == null
+                        ? Container()
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                  'Definition of "${model.selectedEntity!.text}":'),
+                              model.termIsFetching(model.selectedEntity!.text)
+                                  ? const Center(
+                                      child: CircularProgressIndicator())
+                                  : Text(
+                                      model.getDefinition(
+                                              model.selectedEntity!.text) ??
+                                          '',
+                                    )
+                            ],
+                          ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -419,16 +442,18 @@ class _HomePageState extends State<HomePage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Flexible(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(model.transcript,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyLarge!
-                                          .copyWith(
-                                            color: Colors.deepOrange
-                                                .withOpacity(0.75),
-                                          )),
+                                child: SingleChildScrollView(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(model.transcript,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge!
+                                            .copyWith(
+                                              color: Colors.deepOrange
+                                                  .withOpacity(0.75),
+                                            )),
+                                  ),
                                 ),
                               ),
                             ],
@@ -438,10 +463,12 @@ class _HomePageState extends State<HomePage> {
                           flex: 1,
                           child: model.keyTerms == null
                               ? Container()
-                              : _buildKeyTerms(
-                                  context,
-                                  model.keyTerms!,
-                                  model.selectedEntity,
+                              : SingleChildScrollView(
+                                  child: _buildKeyTerms(
+                                    context,
+                                    model.keyTerms!,
+                                    model.selectedEntity,
+                                  ),
                                 ),
                         ),
                         Flexible(
