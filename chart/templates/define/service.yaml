@@ -1,0 +1,15 @@
+{{- if .Values.define.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-define
+  labels:
+    app: {{ .Release.Name }}-define
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Release.Name }}-define
+  ports:
+  - name: http
+    port: 80
+{{- end }}

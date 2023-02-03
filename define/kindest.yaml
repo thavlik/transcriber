@@ -1,0 +1,5 @@
+dependencies:
+  - ../base
+build:
+  name: thavlik/define
+  context: ../

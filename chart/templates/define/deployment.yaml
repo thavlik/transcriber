@@ -1,0 +1,56 @@
+{{- if .Values.define.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-define
+spec:
+  replicas: {{ .Values.define.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-define
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-define
+    spec:
+    {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 10 }}
+    {{- end }}
+      containers:
+      - name: server
+        imagePullPolicy: {{ .Values.define.imagePullPolicy }}
+        image: {{ .Values.define.image }}
+    {{- if .Values.define.resources }}
+        resources:
+{{ toYaml .Values.define.resources | indent 10 }}
+    {{- end }}
+        command:
+          - define
+          - server
+        {{- if .Values.prometheus.enabled }}
+          - --metrics-port
+          - "2112"
+        {{- end }}
+        ports:
+        - containerPort: 80
+          name: http
+      {{- if .Values.prometheus.enabled }}
+        - containerPort: 2112
+          protocol: TCP
+          name: metrics
+      {{- end }}
+        env:
+        - name: LOG_LEVEL
+          value: {{ .Values.define.logLevel }}
+        - name: OPENAI_SECRET_KEY
+{{ tpl (toYaml .Values.define.openAISecretKey) . | indent 10 }}
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 80
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
+{{- end }}

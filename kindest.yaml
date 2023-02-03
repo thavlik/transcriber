@@ -2,6 +2,7 @@ dependencies:
   - app
   - transcriber
   - imgsearch
+  - define
   - strim
   - broadcaster
   - gateway
@@ -41,6 +42,12 @@ env:
                 cpu: 500m
                 memory: 256Mi
           transcriber: {}
+          define:
+            openAISecretKey:
+              valueFrom:
+                secretKeyRef:
+                  name: openai-cred
+                  key: secretkey
           redis:
             enabled: true
             username:

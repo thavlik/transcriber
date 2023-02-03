@@ -107,6 +107,16 @@ app:
   replicas: 1
   resources: {}
 
+define:
+  openAISecretKey: {}
+  enabled: true
+  image: thavlik/define:latest
+  imagePullPolicy: Always
+  replicas: 1
+  logLevel: debug
+  resources: {}
+
+
 gateway:
   enabled: true
   image: thavlik/transcriber-gateway:latest

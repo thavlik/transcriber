@@ -329,6 +329,46 @@ class _HomePageState extends State<HomePage> {
         ),
       );
 
+  Widget _buildRefTab(BuildContext context, MyModel model) =>
+      DefaultTabController(
+        length: 2,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            const TabBar(
+              tabs: [
+                Tab(text: 'Images'),
+                Tab(text: 'Definitions'),
+              ],
+            ),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: model.searchImages == null
+                        ? Container()
+                        : SingleChildScrollView(
+                            child: Wrap(
+                              crossAxisAlignment: WrapCrossAlignment.start,
+                              alignment: WrapAlignment.spaceAround,
+                              direction: Axis.horizontal,
+                              children: model.searchImages!
+                                  .map((e) =>
+                                      _buildSearchImage(context, e, model))
+                                  .toList(),
+                            ),
+                          ),
+                  ),
+                  Container(),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     return ScopedModelDescendant<MyModel>(
@@ -339,128 +379,102 @@ class _HomePageState extends State<HomePage> {
               model.isConnected ? 'Connected' : 'Not Connected',
             ),
           ),
-          body: Container(
-            constraints: const BoxConstraints.expand(),
-            child: Stack(
-              children: [
-                SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: Theme.of(context).dividerColor,
-                              width: 1,
-                            ),
-                          ),
+          body: Stack(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Theme.of(context).dividerColor,
+                          width: 1,
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0,
-                            vertical: 8.0,
-                          ),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 8.0,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _columnHeader(context, 'Transcript'),
+                          _columnHeader(context, 'Key Terms'),
+                          _columnHeader(context, 'Reference Materials'),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Flexible(
+                          flex: 1,
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _columnHeader(context, 'Transcript'),
-                              _columnHeader(context, 'Key Terms'),
-                              _columnHeader(context, 'Reference Materials'),
+                              Flexible(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(model.transcript,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge!
+                                          .copyWith(
+                                            color: Colors.deepOrange
+                                                .withOpacity(0.75),
+                                          )),
+                                ),
+                              ),
                             ],
                           ),
                         ),
-                      ),
-                      Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Flexible(
-                              flex: 1,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Flexible(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Text(model.transcript,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodyLarge!
-                                              .copyWith(
-                                                color: Colors.deepOrange
-                                                    .withOpacity(0.75),
-                                              )),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Flexible(
-                              flex: 1,
-                              child: model.keyTerms != null
-                                  ? _buildKeyTerms(
-                                      context,
-                                      model.keyTerms!,
-                                      model.selectedEntity,
-                                    )
-                                  : Container(),
-                            ),
-                            Flexible(
-                              flex: 1,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  if (model.searchImages != null)
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Wrap(
-                                        crossAxisAlignment:
-                                            WrapCrossAlignment.start,
-                                        alignment: WrapAlignment.spaceAround,
-                                        direction: Axis.horizontal,
-                                        children: model.searchImages!
-                                            .map((e) => _buildSearchImage(
-                                                context, e, model))
-                                            .toList(),
-                                      ),
-                                    ),
-                                  ...model.referenceMaterials.reversed
-                                      .map((ref) => ReferenceMaterialWidget(
-                                            ref,
-                                            onImageTap: (ref, img) =>
-                                                onImageTap(context, img),
-                                          ))
-                                      .toList()
-                                ],
-                              ),
-                            ),
-                          ]),
-                    ],
+                        Flexible(
+                          flex: 1,
+                          child: model.keyTerms == null
+                              ? Container()
+                              : _buildKeyTerms(
+                                  context,
+                                  model.keyTerms!,
+                                  model.selectedEntity,
+                                ),
+                        ),
+                        Flexible(
+                          flex: 1,
+                          child: _buildRefTab(context, model),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                if (_viewImage != null)
-                  Positioned.fill(
-                    child: GestureDetector(
-                      onTap: () => setState(() => _viewImage = null),
-                      child: Container(
-                        color: Colors.black.withOpacity(0.5),
-                        child: Center(
-                          child: FadeInImage(
-                            placeholder: MemoryImage(kTransparentImageBytes),
-                            image: NetworkImage(_viewImage!),
-                            fit: BoxFit.cover,
-                            imageErrorBuilder: (context, error, stackTrace) {
-                              return kTransparentImage;
-                              //return Image.asset('assets/images/error.jpg',
-                              //    fit: BoxFit.fitWidth);
-                            },
-                          ),
+                ],
+              ),
+              if (_viewImage != null)
+                Positioned.fill(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _viewImage = null),
+                    child: Container(
+                      color: Colors.black.withOpacity(0.5),
+                      child: Center(
+                        child: FadeInImage(
+                          placeholder: MemoryImage(kTransparentImageBytes),
+                          image: NetworkImage(_viewImage!),
+                          fit: BoxFit.cover,
+                          imageErrorBuilder: (context, error, stackTrace) {
+                            return kTransparentImage;
+                            //return Image.asset('assets/images/error.jpg',
+                            //    fit: BoxFit.fitWidth);
+                          },
                         ),
                       ),
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
         );
       },
