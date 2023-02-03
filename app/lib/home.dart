@@ -214,28 +214,41 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  entity.text,
-                  style: Theme.of(context).textTheme.bodyLarge,
+              Flexible(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8.0,
+                    vertical: 10.0,
+                  ),
+                  child: Text(
+                    entity.text,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelMedium,
+                  ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  ' (${entity.type})',
-                  style: Theme.of(context).textTheme.bodyLarge,
+              Flexible(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    entity.type,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelSmall!.copyWith(
+                        color: HSLColor.fromAHSL(
+                                1.0, entity.score * 180.0, 0.5, 0.5)
+                            .toColor()),
+                  ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  ' (${entity.score})',
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
-              ),
+              //Padding(
+              //  padding: const EdgeInsets.all(8.0),
+              //  child: Text(
+              //    ' (${entity.score})',
+              //    style: Theme.of(context).textTheme.bodyLarge,
+              //  ),
+              //),
             ],
           ),
         ),
@@ -373,14 +386,19 @@ class _HomePageState extends State<HomePage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                  'Definition of "${model.selectedEntity!.text}":'),
+                                'Definition of "${model.selectedEntity!.text}":',
+                                style: Theme.of(context).textTheme.labelLarge,
+                              ),
                               model.termIsFetching(model.selectedEntity!.text)
                                   ? const Center(
                                       child: CircularProgressIndicator())
-                                  : Text(
-                                      model.getDefinition(
-                                              model.selectedEntity!.text) ??
-                                          '',
+                                  : Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        model.getDefinition(
+                                                model.selectedEntity!.text) ??
+                                            '',
+                                      ),
                                     )
                             ],
                           ),
