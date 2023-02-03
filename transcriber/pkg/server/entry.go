@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/thavlik/transcriber/base/pkg/base"
+	"github.com/thavlik/transcriber/transcriber/pkg/comprehend"
 
 	"go.uber.org/zap"
 )
@@ -25,6 +26,10 @@ func Entry(
 		broadcaster,
 		specialty,
 		streamKey,
+		&comprehend.Filter{
+			// TODO: make exclude terms configurable
+			ExcludeTerms: []string{"Um", "Uh", "Uhm"},
+		},
 		log,
 	)
 	defer s.ShutDown()

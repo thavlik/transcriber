@@ -13,13 +13,11 @@ import (
 // Comprehend detects entities in text.
 // This is the standard Comprehend service.
 // See https://docs.aws.amazon.com/comprehend/latest/dg/how-entities.html
-// If includeTypes is not empty, the detected entity type must be in the list, otherwise it is filtered.
-// If excludeTypes is not empty, the detected entity type must not be in the list, otherwise it is filtered.
+// Use the filter parameter for fine-grain control over which entities are returned.
 func Comprehend(
 	ctx context.Context,
 	text string,
-	includeTypes []string,
-	excludeTypes []string,
+	filter *Filter,
 	log *zap.Logger,
 ) ([]*Entity, error) {
 	svc := comprehend.New(base.AWSSession())
@@ -34,26 +32,23 @@ func Comprehend(
 	}
 	return convertEntities(
 		resp.Entities,
-		includeTypes,
-		excludeTypes,
+		filter,
 	), nil
 }
 
 func convertEntities(
 	entities []*comprehend.Entity,
-	includeTypes []string,
-	excludeTypes []string,
+	filter *Filter,
 ) (result []*Entity) {
 	for _, entity := range entities {
-		ty := aws.StringValue(entity.Type)
-		if filter(ty, includeTypes, excludeTypes) {
-			continue
-		}
-		result = append(result, &Entity{
+		e := &Entity{
 			Text:  aws.StringValue(entity.Text),
-			Type:  ty,
+			Type:  aws.StringValue(entity.Type),
 			Score: aws.Float64Value(entity.Score),
-		})
+		}
+		if filter.Matches(e) {
+			result = append(result, e)
+		}
 	}
 	return
 }

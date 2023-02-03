@@ -17,8 +17,7 @@ import (
 func ComprehendMedical(
 	ctx context.Context,
 	text string,
-	includeTypes []string,
-	excludeTypes []string,
+	filter *Filter,
 	log *zap.Logger,
 ) ([]*Entity, error) {
 	svc := comprehendmedical.New(base.AWSSession())
@@ -32,26 +31,23 @@ func ComprehendMedical(
 	}
 	return convertMedicalEntities(
 		resp.Entities,
-		includeTypes,
-		excludeTypes,
+		filter,
 	), nil
 }
 
 func convertMedicalEntities(
 	entities []*comprehendmedical.Entity,
-	includeTypes []string,
-	excludeTypes []string,
+	filter *Filter,
 ) (result []*Entity) {
 	for _, entity := range entities {
-		ty := aws.StringValue(entity.Type)
-		if filter(ty, includeTypes, excludeTypes) {
-			continue
-		}
-		result = append(result, &Entity{
+		e := &Entity{
 			Text:  aws.StringValue(entity.Text),
-			Type:  ty,
+			Type:  aws.StringValue(entity.Type),
 			Score: aws.Float64Value(entity.Score),
-		})
+		}
+		if filter.Matches(e) {
+			result = append(result, e)
+		}
 	}
 	return
 }

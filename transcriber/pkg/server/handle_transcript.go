@@ -28,8 +28,7 @@ func (s *Server) handleTranscript(
 		entities, err := comprehend.ComprehendMedical(
 			ctx,
 			text,
-			nil,
-			nil,
+			s.filter,
 			s.log,
 		)
 		if err != nil {

@@ -14,9 +14,11 @@ import (
 )
 
 var testComprehendArgs struct {
-	service string
-	include string
-	exclude string
+	service      string
+	includeTerms string
+	excludeTerms string
+	includeTypes string
+	excludeTypes string
 }
 
 var testComprehendCmd = &cobra.Command{
@@ -32,22 +34,26 @@ var testComprehendCmd = &cobra.Command{
 			}
 		}
 		base.DefaultLog.Info("testing comprehend", zap.String("text", text))
+		filter := &comprehend.Filter{
+			IncludeTerms: strings.Split(testComprehendArgs.includeTerms, ","),
+			ExcludeTerms: strings.Split(testComprehendArgs.excludeTerms, ","),
+			IncludeTypes: strings.Split(testComprehendArgs.includeTypes, ","),
+			ExcludeTypes: strings.Split(testComprehendArgs.excludeTypes, ","),
+		}
 		var entities []*comprehend.Entity
 		switch testComprehendArgs.service {
 		case "default":
 			entities, err = comprehend.Comprehend(
 				cmd.Context(),
 				text,
-				strings.Split(testComprehendArgs.include, ","),
-				strings.Split(testComprehendArgs.exclude, ","),
+				filter,
 				base.DefaultLog,
 			)
 		case "medical":
 			entities, err = comprehend.ComprehendMedical(
 				cmd.Context(),
 				text,
-				strings.Split(testComprehendArgs.include, ","),
-				strings.Split(testComprehendArgs.exclude, ","),
+				filter,
 				base.DefaultLog,
 			)
 		default:
@@ -68,6 +74,8 @@ var testComprehendCmd = &cobra.Command{
 func init() {
 	testCmd.AddCommand(testComprehendCmd)
 	testComprehendCmd.Flags().StringVarP(&testComprehendArgs.service, "service", "s", "default", "Amazon Comprehend service (default, medical)")
-	testComprehendCmd.Flags().StringVarP(&testComprehendArgs.include, "include", "i", "", "entity type include filter (comma-separated list)")
-	testComprehendCmd.Flags().StringVarP(&testComprehendArgs.exclude, "exclude", "e", "", "entity type exclude filter (comma-separated list)")
+	testComprehendCmd.Flags().StringVar(&testComprehendArgs.includeTypes, "include-types", "", "entity type include filter (comma-separated list)")
+	testComprehendCmd.Flags().StringVar(&testComprehendArgs.excludeTypes, "exclude-types", "", "entity type exclude filter (comma-separated list)")
+	testComprehendCmd.Flags().StringVar(&testComprehendArgs.includeTerms, "include-terms", "", "entity type include filter (comma-separated list, case sensitive)")
+	testComprehendCmd.Flags().StringVar(&testComprehendArgs.excludeTerms, "exclude-terms", "", "entity type exclude filter (comma-separated list, case sensitive)")
 }

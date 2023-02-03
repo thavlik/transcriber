@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/thavlik/transcriber/base/pkg/base"
+	"github.com/thavlik/transcriber/transcriber/pkg/comprehend"
 	"github.com/thavlik/transcriber/transcriber/pkg/source"
 	"github.com/thavlik/transcriber/transcriber/pkg/transcriber"
 
@@ -21,6 +22,7 @@ type Server struct {
 	newSource   chan source.Source
 	job         *transcriber.TranscriptionJob
 	l           chan struct{}
+	filter      *comprehend.Filter
 	streamKey   string
 	wg          *sync.WaitGroup
 	log         *zap.Logger
@@ -31,6 +33,7 @@ func NewServer(
 	broadcaster base.ServiceOptions,
 	specialty string,
 	streamKey string,
+	filter *comprehend.Filter,
 	log *zap.Logger,
 ) *Server {
 	ctx, cancel := context.WithCancel(ctx)
@@ -43,6 +46,7 @@ func NewServer(
 		l:           make(chan struct{}, 1),
 		streamKey:   streamKey,
 		wg:          new(sync.WaitGroup),
+		filter:      filter,
 		log:         log,
 	}
 }
