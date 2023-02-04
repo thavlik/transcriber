@@ -351,14 +351,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget _buildRefTab(BuildContext context, MyModel model) {
     final selectedEntity = model.selectedEntity;
     final showRadiologyTab = selectedEntity?.type == 'SYSTEM_ORGAN_SITE';
-    final showPathologyTab = selectedEntity != null &&
+    final showHistologyTab = selectedEntity != null &&
         selectedEntity.type == 'DX_NAME' &&
         model.isDisease(selectedEntity.text) == true;
     final showPharmacologyTab = selectedEntity?.type == "GENERIC_NAME" ||
         selectedEntity?.type == "BRAND_NAME";
     int numTabs = 2;
     if (showRadiologyTab) numTabs++;
-    if (showPathologyTab) numTabs++;
+    if (showHistologyTab) numTabs++;
     if (showPharmacologyTab) numTabs++;
     return DefaultTabController(
       length: numTabs,
@@ -372,7 +372,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 const Tab(text: 'Definition'),
                 const Tab(text: 'Images'),
                 if (showRadiologyTab) const Tab(text: 'Radiology'),
-                if (showPathologyTab) const Tab(text: 'Pathology'),
+                if (showHistologyTab) const Tab(text: 'Histology'),
                 if (showPharmacologyTab) const Tab(text: 'Pharma'),
               ],
             ),
@@ -442,7 +442,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             ],
                           ),
                     model.searchImages == null
-                        ? Container()
+                        ? const Center(
+                            child: CircularProgressIndicator(),
+                          )
                         : SingleChildScrollView(
                             child: Column(
                               children: [
@@ -466,7 +468,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           ),
                     if (showRadiologyTab)
                       model.radiologySearchImages == null
-                          ? Container()
+                          ? const Center(
+                              child: CircularProgressIndicator(),
+                            )
                           : SingleChildScrollView(
                               child: Column(
                                 children: [
@@ -489,7 +493,33 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 ],
                               ),
                             ),
-                    if (showPathologyTab) Container(),
+                    if (showHistologyTab)
+                      model.histologySearchImages == null
+                          ? const Center(
+                              child: CircularProgressIndicator(),
+                            )
+                          : SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  Wrap(
+                                    crossAxisAlignment:
+                                        WrapCrossAlignment.start,
+                                    alignment: WrapAlignment.spaceAround,
+                                    direction: Axis.horizontal,
+                                    children: model.histologySearchImages!
+                                        .map((e) => _buildSearchImage(
+                                            context, e, model))
+                                        .toList(),
+                                  ),
+                                  TextButton(
+                                      onPressed: () {},
+                                      child: const Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: Text('Load more...'),
+                                      ))
+                                ],
+                              ),
+                            ),
                     if (showPharmacologyTab) Container(),
                   ],
                 ),

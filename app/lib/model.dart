@@ -15,6 +15,8 @@ class MyModel extends Model {
   api.Entity? _selectedEntity;
   List<api.SearchImage>? _searchImages;
   List<api.SearchImage>? _radiologySearchImages;
+  List<api.SearchImage>? _histologySearchImages;
+
   final Map<String, String> _definitions = {};
   final Set<String> _fetchingTerms = {};
   final Map<String, bool> _diseases = {};
@@ -27,6 +29,7 @@ class MyModel extends Model {
   api.Entity? get selectedEntity => _selectedEntity;
   List<api.SearchImage>? get searchImages => _searchImages;
   List<api.SearchImage>? get radiologySearchImages => _radiologySearchImages;
+  List<api.SearchImage>? get histologySearchImages => _histologySearchImages;
 
   void setDefinitionHelpful(bool helpful) {}
 
@@ -53,11 +56,25 @@ class MyModel extends Model {
     notifyListeners();
   }
 
+  Future<void> searchHistology(String text) async {
+    _histologySearchImages = await api.search('$text histology');
+    notifyListeners();
+  }
+
   set selectedEntity(api.Entity? entity) {
     _selectedEntity = entity;
     if (entity != null) {
       search(entity.text);
-      if (entity.type == 'SYSTEM_ORGAN_SITE') searchRadiology(entity.text);
+      switch (entity.type) {
+        case 'DX_NAME':
+          searchHistology(entity.text);
+          break;
+        case 'SYSTEM_ORGAN_SITE':
+          searchRadiology(entity.text);
+          break;
+        default:
+          break;
+      }
     }
     notifyListeners();
   }
