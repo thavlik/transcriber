@@ -8,5 +8,5 @@ install() {
 install define
 install gateway
 install imgsearch
-install transcribe
+install scribe
 install comprehend
