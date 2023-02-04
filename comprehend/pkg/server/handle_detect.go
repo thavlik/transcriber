@@ -6,6 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/transcriber/comprehend/pkg/comprehend"
+	"github.com/thavlik/transcriber/comprehend/pkg/comprehend/adapter"
 	"go.uber.org/zap"
 )
 
@@ -25,7 +26,7 @@ func (s *Server) handleDetect() http.HandlerFunc {
 			var req struct {
 				Text         string             `json:"text"`
 				Filter       *comprehend.Filter `json:"filter,omitempty"`
-				Model        string             `json:"model,omitempty"`
+				Model        adapter.Model      `json:"model,omitempty"`
 				LanguageCode string             `json:"languageCode,omitempty"`
 			}
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -36,33 +37,21 @@ func (s *Server) handleDetect() http.HandlerFunc {
 				retCode = http.StatusBadRequest
 				return errors.New("missing text")
 			}
+			if req.Model == "" {
+				req.Model = adapter.AmazonComprehend
+			}
 			if req.LanguageCode == "" {
 				req.LanguageCode = "en"
 			}
-			var entities []*comprehend.Entity
-			switch req.Model {
-			case "":
-				fallthrough
-			case "amazon-comprehend":
-				if entities, err = comprehend.Comprehend(
-					r.Context(),
-					req.Text,
-					req.LanguageCode,
-					req.Filter,
-				); err != nil {
-					return err
-				}
-			case "amazon-comprehend-medical":
-				if entities, err = comprehend.ComprehendMedical(
-					r.Context(),
-					req.Text,
-					req.Filter,
-				); err != nil {
-					return err
-				}
-			default:
-				retCode = http.StatusBadRequest
-				return errors.Errorf("invalid model '%s'", req.Model)
+			entities, err := adapter.Comprehend(
+				r.Context(),
+				adapter.Model(req.Model),
+				req.Text,
+				req.LanguageCode,
+				req.Filter,
+			)
+			if err != nil {
+				return err
 			}
 			s.spawn(func() {
 				// cache the entity hashes so we can restrict what

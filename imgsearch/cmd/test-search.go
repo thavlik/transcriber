@@ -8,11 +8,12 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/thavlik/transcriber/base/pkg/base"
-	"github.com/thavlik/transcriber/imgsearch/pkg/search"
+	"github.com/thavlik/transcriber/imgsearch/pkg/search/adapter"
 )
 
 var testSearchArgs struct {
 	input    string
+	service  string
 	endpoint string
 	apiKey   string
 	count    int
@@ -37,8 +38,9 @@ var testSearchCmd = &cobra.Command{
 		} else if testSearchArgs.input == "" {
 			return errors.New("no search terms provided")
 		}
-		images, err := search.Search(
+		images, err := adapter.Search(
 			cmd.Context(),
+			adapter.SearchService(testSearchArgs.service),
 			testSearchArgs.input,
 			testSearchArgs.endpoint,
 			testSearchArgs.apiKey,
@@ -60,11 +62,18 @@ var testSearchCmd = &cobra.Command{
 func init() {
 	testCmd.AddCommand(testSearchCmd)
 	testSearchCmd.Flags().StringVarP(
+		&testSearchArgs.service,
+		"service",
+		"s",
+		"bing",
+		"service name (bing only for now)",
+	)
+	testSearchCmd.Flags().StringVarP(
 		&testSearchArgs.input,
 		"input",
 		"i",
 		"",
-		"input",
+		"input text",
 	)
 	testSearchCmd.Flags().StringVarP(
 		&testSearchArgs.endpoint,

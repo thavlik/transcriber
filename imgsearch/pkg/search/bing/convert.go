@@ -1,9 +1,11 @@
-package search
+package bing_search
 
-func convert(result *searchResult) []*Image {
-	images := make([]*Image, len(result.Value))
+import "github.com/thavlik/transcriber/imgsearch/pkg/search"
+
+func convert(result *searchResult) []*search.Image {
+	images := make([]*search.Image, len(result.Value))
 	for i, v := range result.Value {
-		images[i] = &Image{
+		images[i] = &search.Image{
 			ContentURL:     v.ContentUrl,
 			ContentSize:    v.ContentSize,
 			ThumbnailURL:   v.ThumbnailUrl,

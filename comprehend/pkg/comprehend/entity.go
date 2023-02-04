@@ -3,6 +3,7 @@ package comprehend
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"fmt"
 )
 
 // Entity represents a detected key term or phrase.
@@ -22,4 +23,8 @@ func (e *Entity) Hash() string {
 	h.Write([]byte(e.Type))
 	raw := h.Sum(nil)
 	return hex.EncodeToString(raw[:])
+}
+
+func (e *Entity) String() string {
+	return fmt.Sprintf("%s (%s)", e.Text, e.Type)
 }

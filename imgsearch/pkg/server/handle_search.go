@@ -8,7 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/transcriber/base/pkg/base"
-	"github.com/thavlik/transcriber/imgsearch/pkg/search"
+	"github.com/thavlik/transcriber/imgsearch/pkg/search/adapter"
 
 	"go.uber.org/zap"
 )
@@ -46,8 +46,10 @@ func (s *Server) handleSearch() http.HandlerFunc {
 				return fmt.Errorf("missing query")
 			}
 			start := time.Now()
-			images, err := search.Search(
+			service := adapter.Bing
+			images, err := adapter.Search(
 				r.Context(),
+				service,
 				req.Query,
 				s.endpoint,
 				s.apiKey,
@@ -58,8 +60,9 @@ func (s *Server) handleSearch() http.HandlerFunc {
 				return errors.Wrap(err, "search failed")
 			}
 			s.log.Debug(
-				"searched bing for images",
+				"searched for images",
 				base.Elapsed(start),
+				zap.String("service", string(service)),
 				zap.Int("count", len(images)),
 			)
 			w.Header().Set("Content-Type", "application/json")

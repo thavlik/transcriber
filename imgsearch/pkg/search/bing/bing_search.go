@@ -1,4 +1,4 @@
-package search
+package bing_search
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"net/url"
 
 	"github.com/pkg/errors"
+	"github.com/thavlik/transcriber/imgsearch/pkg/search"
 )
 
 func Search(
@@ -18,7 +19,7 @@ func Search(
 	subscriptionKey string,
 	count int,
 	offset int,
-) ([]*Image, error) {
+) ([]*search.Image, error) {
 	// this was not needed:
 	// https://github.com/Azure/azure-sdk-for-go/tree/main/sdk/resourcemanager/cognitiveservices/armcognitiveservices
 	endpoint += "v7.0/images/search"

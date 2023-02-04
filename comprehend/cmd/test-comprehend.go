@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/thavlik/transcriber/base/pkg/base"
 	"github.com/thavlik/transcriber/comprehend/pkg/comprehend"
+	"github.com/thavlik/transcriber/comprehend/pkg/comprehend/adapter"
 	"go.uber.org/zap"
 )
 
@@ -35,30 +36,18 @@ var testComprehendCmd = &cobra.Command{
 			}
 		}
 		base.DefaultLog.Info("testing comprehend", zap.String("text", text))
-		filter := &comprehend.Filter{
-			IncludeTerms: strings.Split(testComprehendArgs.includeTerms, ","),
-			ExcludeTerms: strings.Split(testComprehendArgs.excludeTerms, ","),
-			IncludeTypes: strings.Split(testComprehendArgs.includeTypes, ","),
-			ExcludeTypes: strings.Split(testComprehendArgs.excludeTypes, ","),
-		}
-		var entities []*comprehend.Entity
-		switch testComprehendArgs.service {
-		case "default":
-			entities, err = comprehend.Comprehend(
-				cmd.Context(),
-				text,
-				testComprehendArgs.languageCode,
-				filter,
-			)
-		case "medical":
-			entities, err = comprehend.ComprehendMedical(
-				cmd.Context(),
-				text,
-				filter,
-			)
-		default:
-			return fmt.Errorf("invalid service '%s'", testComprehendArgs.service)
-		}
+		entities, err := adapter.Comprehend(
+			cmd.Context(),
+			adapter.Model(testComprehendArgs.service),
+			text,
+			testComprehendArgs.languageCode,
+			&comprehend.Filter{
+				IncludeTerms: strings.Split(testComprehendArgs.includeTerms, ","),
+				ExcludeTerms: strings.Split(testComprehendArgs.excludeTerms, ","),
+				IncludeTypes: strings.Split(testComprehendArgs.includeTypes, ","),
+				ExcludeTypes: strings.Split(testComprehendArgs.excludeTypes, ","),
+			},
+		)
 		if err != nil {
 			return err
 		}

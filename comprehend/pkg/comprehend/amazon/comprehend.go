@@ -1,12 +1,13 @@
-package comprehend
+package amazon_comprehend
 
 import (
 	"context"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/comprehend"
+	awscomprehend "github.com/aws/aws-sdk-go/service/comprehend"
 	"github.com/pkg/errors"
 	"github.com/thavlik/transcriber/base/pkg/base"
+	"github.com/thavlik/transcriber/comprehend/pkg/comprehend"
 )
 
 // Comprehend detects entities in text.
@@ -17,12 +18,12 @@ func Comprehend(
 	ctx context.Context,
 	text string,
 	languageCode string,
-	filter *Filter,
-) ([]*Entity, error) {
-	svc := comprehend.New(base.AWSSession())
+	filter *comprehend.Filter,
+) ([]*comprehend.Entity, error) {
+	svc := awscomprehend.New(base.AWSSession())
 	resp, err := svc.DetectEntitiesWithContext(
 		ctx,
-		&comprehend.DetectEntitiesInput{
+		&awscomprehend.DetectEntitiesInput{
 			Text:         aws.String(text),
 			LanguageCode: aws.String(languageCode),
 		})
@@ -36,11 +37,11 @@ func Comprehend(
 }
 
 func convertEntities(
-	entities []*comprehend.Entity,
-	filter *Filter,
-) (result []*Entity) {
+	entities []*awscomprehend.Entity,
+	filter *comprehend.Filter,
+) (result []*comprehend.Entity) {
 	for _, entity := range entities {
-		e := &Entity{
+		e := &comprehend.Entity{
 			Text:  aws.StringValue(entity.Text),
 			Type:  aws.StringValue(entity.Type),
 			Score: aws.Float64Value(entity.Score),
