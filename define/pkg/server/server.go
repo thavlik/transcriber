@@ -7,35 +7,40 @@ import (
 	"sync"
 	"time"
 
+	"github.com/PullRequestInc/go-gpt3"
 	"github.com/thavlik/transcriber/base/pkg/base"
+	"github.com/thavlik/transcriber/define/pkg/diseasecache"
 	"github.com/thavlik/transcriber/define/pkg/storage"
 
 	"go.uber.org/zap"
 )
 
 type Server struct {
-	ctx             context.Context
-	cancel          context.CancelFunc
-	storage         storage.Storage
-	wg              *sync.WaitGroup
-	openAISecretKey string
-	log             *zap.Logger
+	ctx          context.Context
+	cancel       context.CancelFunc
+	storage      storage.Storage
+	diseaseCache diseasecache.DiseaseCache
+	wg           *sync.WaitGroup
+	gpt3         gpt3.Client
+	log          *zap.Logger
 }
 
 func NewServer(
 	ctx context.Context,
 	storage storage.Storage,
-	openAISecretKey string,
+	diseaseCache diseasecache.DiseaseCache,
+	gpt3 gpt3.Client,
 	log *zap.Logger,
 ) *Server {
 	ctx, cancel := context.WithCancel(ctx)
 	return &Server{
-		ctx:             ctx,
-		cancel:          cancel,
-		storage:         storage,
-		openAISecretKey: openAISecretKey,
-		wg:              new(sync.WaitGroup),
-		log:             log,
+		ctx:          ctx,
+		cancel:       cancel,
+		storage:      storage,
+		diseaseCache: diseaseCache,
+		gpt3:         gpt3,
+		wg:           new(sync.WaitGroup),
+		log:          log,
 	}
 }
 
@@ -50,6 +55,7 @@ func (s *Server) ListenAndServe(
 	mux.HandleFunc("/healthz", base.Handle200)
 	mux.HandleFunc("/readyz", base.Handle200)
 	mux.HandleFunc("/completion", s.handleDefine())
+	mux.HandleFunc("/disease", s.handleDisease())
 
 	srv := &http.Server{
 		Handler:      mux,

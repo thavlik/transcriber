@@ -2,19 +2,25 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
-	"github.com/PullRequestInc/go-gpt3"
-	"github.com/google/uuid"
 	"github.com/pkg/errors"
-	"github.com/thavlik/transcriber/define/pkg/storage"
+	"github.com/thavlik/transcriber/define/pkg/disease"
+	"github.com/thavlik/transcriber/define/pkg/diseasecache"
 	"go.uber.org/zap"
 )
 
-func (s *Server) handleDefine() http.HandlerFunc {
+func IsDiseaseQuery(input string) string {
+	return fmt.Sprintf(
+		"Yes or no, is the term \"%s\" a kind of disease?",
+		input,
+	)
+}
+
+func (s *Server) handleDisease() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		retCode := http.StatusInternalServerError
 		if err := func() error {
@@ -37,43 +43,38 @@ func (s *Server) handleDefine() http.HandlerFunc {
 				return errors.Wrap(err, "unescaping query")
 			}
 			input = strings.TrimSpace(input)
-			n := 1
-			var temp float32 = 0.7
-			var topP float32 = 1.0
-			maxLength := 256
-			timestamp := time.Now()
-			resp, err := s.gpt3.Completion(
+			if isDisease, err := s.diseaseCache.IsDisease(
 				r.Context(),
-				gpt3.CompletionRequest{
-					Prompt:           []string{input},
-					Temperature:      &temp,
-					MaxTokens:        &maxLength,
-					TopP:             &topP,
-					N:                &n,
-					FrequencyPenalty: 0.0,
-					PresencePenalty:  0.0,
-				},
+				input,
+			); err == nil {
+				// use the cached value
+				w.Header().Set("Content-Type", "application/json")
+				return json.NewEncoder(w).Encode(map[string]interface{}{
+					"isDisease": isDisease,
+				})
+			} else if err != diseasecache.ErrNotFound {
+				return errors.Wrap(err, "disease cache failed")
+			}
+			isDisease, err := disease.IsDisease(
+				r.Context(),
+				s.gpt3,
+				input,
 			)
 			if err != nil {
-				return errors.Wrap(err, "gpt3")
+				return errors.Wrap(err, "disease.IsDisease")
 			}
-			output := strings.TrimSpace(resp.Choices[0].Text)
 			s.spawn(func() {
-				if err := s.storage.Insert(
-					s.ctx,
-					&storage.Definition{
-						ID:        uuid.New().String(),
-						Input:     input,
-						Output:    output,
-						Timestamp: timestamp,
-					},
+				if err := s.diseaseCache.Set(
+					r.Context(),
+					input,
+					isDisease,
 				); err != nil {
-					s.log.Error("failed to save definition", zap.Error(err))
+					s.log.Error("failed to set disease cache", zap.Error(err))
 				}
 			})
 			w.Header().Set("Content-Type", "application/json")
 			return json.NewEncoder(w).Encode(map[string]interface{}{
-				"text": output,
+				"isDisease": isDisease,
 			})
 		}(); err != nil {
 			s.log.Error(r.RequestURI, zap.Error(err))

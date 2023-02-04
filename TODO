@@ -1,0 +1,4 @@
+- Provide a Pharmacy/Drug tab for entities with GENERIC_NAME and BRAND_NAME types
+  - Include properties, pharmacology, pharmacokinetics, etc.
+- Pathology tab for DX_NAME
+  - DX_NAME is too general and this may require hand-tuning
