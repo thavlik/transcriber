@@ -8,7 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/thavlik/transcriber/base/pkg/base"
-	"github.com/thavlik/transcriber/imgsearch/pkg/search/adapter"
+	"github.com/thavlik/transcriber/imgsearch/pkg/imgsearch/adapter"
 )
 
 var testSearchArgs struct {

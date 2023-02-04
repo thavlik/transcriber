@@ -8,7 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/transcriber/imgsearch/pkg/cache/data"
-	"github.com/thavlik/transcriber/imgsearch/pkg/search"
+	"github.com/thavlik/transcriber/imgsearch/pkg/imgsearch"
 
 	"go.uber.org/zap"
 )
@@ -17,7 +17,7 @@ func (s *Server) handleImage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		retCode := http.StatusInternalServerError
 		if err := func() (err error) {
-			img := new(search.Image)
+			img := new(imgsearch.Image)
 			switch r.Method {
 			case http.MethodGet:
 				// extract metadata from query parameters

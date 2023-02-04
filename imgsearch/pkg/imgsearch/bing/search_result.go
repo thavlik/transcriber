@@ -1,4 +1,4 @@
-package bing_search
+package bing_imgsearch
 
 type searchResult struct {
 	_            struct{} `type:"structure"`

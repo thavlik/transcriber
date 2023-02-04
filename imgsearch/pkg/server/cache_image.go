@@ -5,14 +5,15 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/transcriber/imgsearch/pkg/search"
+	"github.com/thavlik/transcriber/imgsearch/pkg/imgsearch"
 )
 
 func (s *Server) cacheImage(
 	ctx context.Context,
-	img *search.Image,
+	img *imgsearch.Image,
 	w io.Writer,
 ) error {
 	req, err := http.NewRequestWithContext(
@@ -24,7 +25,9 @@ func (s *Server) cacheImage(
 	if err != nil {
 		return errors.Wrap(err, "newrequest")
 	}
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := (&http.Client{
+		Timeout: 20 * time.Second,
+	}).Do(req)
 	if err != nil {
 		return errors.Wrap(err, "do")
 	}

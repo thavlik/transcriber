@@ -6,10 +6,10 @@ import (
 	"net/http"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/transcriber/imgsearch/pkg/search"
+	"github.com/thavlik/transcriber/imgsearch/pkg/imgsearch"
 )
 
-func extractMeta(r *http.Request, img *search.Image) error {
+func extractMeta(r *http.Request, img *imgsearch.Image) error {
 	input := r.URL.Query().Get("i")
 	if input == "" {
 		return errors.New("missing query parameter 'i'")

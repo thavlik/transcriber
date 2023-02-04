@@ -4,12 +4,12 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/transcriber/imgsearch/pkg/search"
+	"github.com/thavlik/transcriber/imgsearch/pkg/imgsearch"
 )
 
 func (c *mongoMetaCache) Set(
 	ctx context.Context,
-	img *search.Image,
+	img *imgsearch.Image,
 	fileHash string,
 ) error {
 	doc, err := img.AsMap()

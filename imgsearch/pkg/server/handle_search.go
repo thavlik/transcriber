@@ -8,7 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/transcriber/base/pkg/base"
-	"github.com/thavlik/transcriber/imgsearch/pkg/search/adapter"
+	"github.com/thavlik/transcriber/imgsearch/pkg/imgsearch/adapter"
 
 	"go.uber.org/zap"
 )

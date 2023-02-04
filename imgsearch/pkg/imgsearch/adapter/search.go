@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/transcriber/imgsearch/pkg/search"
-	bing_search "github.com/thavlik/transcriber/imgsearch/pkg/search/bing"
+	"github.com/thavlik/transcriber/imgsearch/pkg/imgsearch"
+	bing_imgsearch "github.com/thavlik/transcriber/imgsearch/pkg/imgsearch/bing"
 )
 
 type SearchService string
@@ -22,10 +22,10 @@ func Search(
 	subscriptionKey string,
 	count int,
 	offset int,
-) ([]*search.Image, error) {
+) ([]*imgsearch.Image, error) {
 	switch service {
 	case Bing:
-		return bing_search.Search(
+		return bing_imgsearch.Search(
 			ctx,
 			input,
 			endpoint,

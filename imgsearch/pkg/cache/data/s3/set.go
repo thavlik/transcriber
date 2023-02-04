@@ -9,12 +9,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/pkg/errors"
 
-	"github.com/thavlik/transcriber/imgsearch/pkg/search"
+	"github.com/thavlik/transcriber/imgsearch/pkg/imgsearch"
 )
 
 func (c *s3DataCache) Set(
 	ctx context.Context,
-	img *search.Image,
+	img *imgsearch.Image,
 	r io.Reader,
 ) error {
 	key := aws.String(EncodeHash(img.Hash()))

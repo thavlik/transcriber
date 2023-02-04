@@ -1,4 +1,4 @@
-package search
+package imgsearch
 
 import (
 	"crypto/md5"

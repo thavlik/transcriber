@@ -7,13 +7,13 @@ import (
 	"io"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/transcriber/imgsearch/pkg/search"
+	"github.com/thavlik/transcriber/imgsearch/pkg/imgsearch"
 )
 
 // Set stores the image data in the cache.
 func (c *ImageCache) Set(
 	ctx context.Context,
-	img *search.Image,
+	img *imgsearch.Image,
 	r io.Reader,
 ) error {
 	// calculate the hash of the file as we read it
