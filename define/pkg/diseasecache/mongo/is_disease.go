@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
+	"github.com/thavlik/transcriber/define/pkg/diseasecache"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -18,7 +19,7 @@ func (m *mongoDiseaseCache) IsDisease(
 			"_id": input,
 		},
 	).Decode(&doc); err == mongo.ErrNoDocuments {
-		return false, nil
+		return false, diseasecache.ErrNotFound
 	} else if err != nil {
 		return false, errors.Wrap(err, "mongo")
 	}

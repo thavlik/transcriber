@@ -6,8 +6,10 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
+	"github.com/thavlik/transcriber/base/pkg/base"
 	"github.com/thavlik/transcriber/define/pkg/disease"
 	"github.com/thavlik/transcriber/define/pkg/diseasecache"
 	"go.uber.org/zap"
@@ -42,11 +44,16 @@ func (s *Server) handleDisease() http.HandlerFunc {
 				retCode = http.StatusBadRequest
 				return errors.Wrap(err, "unescaping query")
 			}
+			start := time.Now()
 			input = strings.TrimSpace(input)
 			if isDisease, err := s.diseaseCache.IsDisease(
 				r.Context(),
 				input,
 			); err == nil {
+				s.log.Debug("disease was cached",
+					zap.String("input", input),
+					zap.Bool("isDisease", isDisease),
+					base.Elapsed(start))
 				// use the cached value
 				w.Header().Set("Content-Type", "application/json")
 				return json.NewEncoder(w).Encode(map[string]interface{}{
@@ -55,6 +62,7 @@ func (s *Server) handleDisease() http.HandlerFunc {
 			} else if err != diseasecache.ErrNotFound {
 				return errors.Wrap(err, "disease cache failed")
 			}
+			start = time.Now()
 			isDisease, err := disease.IsDisease(
 				r.Context(),
 				s.gpt3,
@@ -63,9 +71,13 @@ func (s *Server) handleDisease() http.HandlerFunc {
 			if err != nil {
 				return errors.Wrap(err, "disease.IsDisease")
 			}
+			s.log.Debug("queried gpt3 for disease",
+				zap.String("input", input),
+				zap.Bool("isDisease", isDisease),
+				base.Elapsed(start))
 			s.spawn(func() {
 				if err := s.diseaseCache.Set(
-					r.Context(),
+					s.ctx,
 					input,
 					isDisease,
 				); err != nil {

@@ -1,0 +1,7 @@
+#!/bin/bash
+set -euo pipefail
+NAMESPACE=ts
+RELEASE_NAME=ts
+SERVICE=transcribe
+POD_NAME=$(kubectl get pod -n ${NAMESPACE} -l=app=${RELEASE_NAME}-$SERVICE -ojsonpath="{.items[0].metadata.name}")
+kubectl exec -it -n $NAMESPACE $POD_NAME -- $SERVICE $@ 

@@ -12,18 +12,39 @@ func (m *redisDiseaseCache) IsDisease(
 	ctx context.Context,
 	input string,
 ) (bool, error) {
+	inputKey := key(input)
 	result, err := m.redis.Get(
 		ctx,
-		key(input),
+		inputKey,
 	).Result()
 	if err == redis.Nil {
 		if m.underlying != nil {
 			// try and get the value from the underlying storage
-			return m.underlying.IsDisease(ctx, input)
+			isDisease, err := m.underlying.IsDisease(ctx, input)
+			if err != nil {
+				return false, err
+			}
+			// cache the value in redis
+			if _, err := m.redis.Set(
+				ctx,
+				inputKey,
+				encode(isDisease),
+				0,
+			).Result(); err != nil {
+				return false, errors.Wrap(err, "redis")
+			}
+			return isDisease, nil
 		}
 		return false, diseasecache.ErrNotFound
 	} else if err != nil {
 		return false, errors.Wrap(err, "redis")
 	}
-	return result == "1", nil
+	switch result {
+	case "0":
+		return false, nil
+	case "1":
+		return true, nil
+	default:
+		return false, errors.Errorf("invalid value '%s'", result)
+	}
 }

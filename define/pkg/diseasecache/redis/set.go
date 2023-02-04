@@ -32,16 +32,10 @@ func (m *redisDiseaseCache) Set(
 			}
 		}()
 	}
-	var value string
-	if isDisease {
-		value = "1"
-	} else {
-		value = "0"
-	}
 	if _, err := m.redis.Set(
 		ctx,
 		key(input),
-		value,
+		encode(isDisease),
 		0,
 	).Result(); err != nil {
 		if underlyingDone != nil {

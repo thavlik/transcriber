@@ -23,3 +23,10 @@ func NewRedisDiseaseCache(
 func key(input string) string {
 	return "disease:" + input
 }
+
+func encode(isDisease bool) string {
+	if isDisease {
+		return "1"
+	}
+	return "0"
+}
