@@ -3,7 +3,6 @@ package server
 import (
 	"encoding/json"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
@@ -31,19 +30,14 @@ func (s *Server) handleDisease() http.HandlerFunc {
 				retCode = http.StatusLoopDetected
 				return errors.New("missing query")
 			}
-			input, err := url.QueryUnescape(query)
-			if err != nil {
-				retCode = http.StatusInsufficientStorage
-				return errors.Wrap(err, "unescaping query")
-			}
 			start := time.Now()
-			input = strings.TrimSpace(input)
+			query = strings.TrimSpace(query)
 			if isDisease, err := s.diseaseCache.IsDisease(
 				r.Context(),
-				input,
+				query,
 			); err == nil {
 				s.log.Debug("disease was cached",
-					zap.String("input", input),
+					zap.String("query", query),
 					zap.Bool("isDisease", isDisease),
 					base.Elapsed(start))
 				// use the cached value
@@ -58,19 +52,19 @@ func (s *Server) handleDisease() http.HandlerFunc {
 			isDisease, err := disease.IsDisease(
 				r.Context(),
 				s.gpt3,
-				input,
+				query,
 			)
 			if err != nil {
 				return errors.Wrap(err, "disease.IsDisease")
 			}
 			s.log.Debug("queried gpt3 for disease",
-				zap.String("input", input),
+				zap.String("query", query),
 				zap.Bool("isDisease", isDisease),
 				base.Elapsed(start))
 			s.spawn(func() {
 				if err := s.diseaseCache.Set(
 					s.ctx,
-					input,
+					query,
 					isDisease,
 				); err != nil {
 					s.log.Error("failed to set disease cache", zap.Error(err))

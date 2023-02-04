@@ -28,6 +28,8 @@ class MyModel extends Model {
   List<api.SearchImage>? get searchImages => _searchImages;
   List<api.SearchImage>? get radiologySearchImages => _radiologySearchImages;
 
+  void setDefinitionHelpful(bool helpful) {}
+
   Future<void> search(String text) async {
     _searchImages = await api.search(text);
     notifyListeners();

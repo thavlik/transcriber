@@ -354,9 +354,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final showPathologyTab = selectedEntity != null &&
         selectedEntity.type == 'DX_NAME' &&
         model.isDisease(selectedEntity.text) == true;
+    final showPharmacologyTab = selectedEntity?.type == "GENERIC_NAME" ||
+        selectedEntity?.type == "BRAND_NAME";
     int numTabs = 2;
     if (showRadiologyTab) numTabs++;
     if (showPathologyTab) numTabs++;
+    if (showPharmacologyTab) numTabs++;
     return DefaultTabController(
       length: numTabs,
       child: Builder(builder: (context) {
@@ -370,6 +373,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 const Tab(text: 'Images'),
                 if (showRadiologyTab) const Tab(text: 'Radiology'),
                 if (showPathologyTab) const Tab(text: 'Pathology'),
+                if (showPharmacologyTab) const Tab(text: 'Pharma'),
               ],
             ),
             Expanded(
@@ -398,37 +402,95 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                 model.selectedEntity!.text) ??
                                             '',
                                       ),
-                                    )
+                                    ),
+                              const SizedBox(height: 16),
+                              if (model.getDefinition(
+                                      model.selectedEntity!.text) !=
+                                  null)
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        'Was this definition helpful?',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall,
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          TextButton(
+                                            onPressed: () => model
+                                                .setDefinitionHelpful(true),
+                                            child: const Text('Yes'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () => model
+                                                .setDefinitionHelpful(false),
+                                            child: const Text('No'),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
                             ],
                           ),
                     model.searchImages == null
                         ? Container()
                         : SingleChildScrollView(
-                            child: Wrap(
-                              crossAxisAlignment: WrapCrossAlignment.start,
-                              alignment: WrapAlignment.spaceAround,
-                              direction: Axis.horizontal,
-                              children: model.searchImages!
-                                  .map((e) =>
-                                      _buildSearchImage(context, e, model))
-                                  .toList(),
+                            child: Column(
+                              children: [
+                                Wrap(
+                                  crossAxisAlignment: WrapCrossAlignment.start,
+                                  alignment: WrapAlignment.spaceAround,
+                                  direction: Axis.horizontal,
+                                  children: model.searchImages!
+                                      .map((e) =>
+                                          _buildSearchImage(context, e, model))
+                                      .toList(),
+                                ),
+                                TextButton(
+                                    onPressed: () {},
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Text('Load more...'),
+                                    ))
+                              ],
                             ),
                           ),
                     if (showRadiologyTab)
                       model.radiologySearchImages == null
                           ? Container()
                           : SingleChildScrollView(
-                              child: Wrap(
-                                crossAxisAlignment: WrapCrossAlignment.start,
-                                alignment: WrapAlignment.spaceAround,
-                                direction: Axis.horizontal,
-                                children: model.radiologySearchImages!
-                                    .map((e) =>
-                                        _buildSearchImage(context, e, model))
-                                    .toList(),
+                              child: Column(
+                                children: [
+                                  Wrap(
+                                    crossAxisAlignment:
+                                        WrapCrossAlignment.start,
+                                    alignment: WrapAlignment.spaceAround,
+                                    direction: Axis.horizontal,
+                                    children: model.radiologySearchImages!
+                                        .map((e) => _buildSearchImage(
+                                            context, e, model))
+                                        .toList(),
+                                  ),
+                                  TextButton(
+                                      onPressed: () {},
+                                      child: const Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: Text('Load more...'),
+                                      ))
+                                ],
                               ),
                             ),
                     if (showPathologyTab) Container(),
+                    if (showPharmacologyTab) Container(),
                   ],
                 ),
               ),

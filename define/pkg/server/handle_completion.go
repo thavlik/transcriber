@@ -3,7 +3,6 @@ package server
 import (
 	"encoding/json"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
@@ -31,12 +30,7 @@ func (s *Server) handleDefine() http.HandlerFunc {
 				retCode = http.StatusBadRequest
 				return errors.New("missing query")
 			}
-			input, err := url.QueryUnescape(query)
-			if err != nil {
-				retCode = http.StatusBadRequest
-				return errors.Wrap(err, "unescaping query")
-			}
-			input = strings.TrimSpace(input)
+			query = strings.TrimSpace(query)
 			n := 1
 			var temp float32 = 0.7
 			var topP float32 = 1.0
@@ -45,7 +39,7 @@ func (s *Server) handleDefine() http.HandlerFunc {
 			resp, err := s.gpt3.Completion(
 				r.Context(),
 				gpt3.CompletionRequest{
-					Prompt:           []string{input},
+					Prompt:           []string{query},
 					Temperature:      &temp,
 					MaxTokens:        &maxLength,
 					TopP:             &topP,
@@ -63,7 +57,7 @@ func (s *Server) handleDefine() http.HandlerFunc {
 					s.ctx,
 					&storage.Definition{
 						ID:        uuid.New().String(),
-						Input:     input,
+						Input:     query,
 						Output:    output,
 						Timestamp: timestamp,
 					},
