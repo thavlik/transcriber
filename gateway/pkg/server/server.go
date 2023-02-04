@@ -86,6 +86,7 @@ func (s *Server) ListenAndServe(port int) error {
 	mux.HandleFunc("/healthz", base.Handle200)
 	mux.HandleFunc("/readyz", base.Handle200)
 	mux.HandleFunc("/define", s.handleDefine())
+	mux.HandleFunc("/disease", s.handleIsDisease())
 	mux.HandleFunc("/img", s.handleImage())
 	mux.HandleFunc("/img/search", s.handleImageSearch())
 	if s.iam != nil {

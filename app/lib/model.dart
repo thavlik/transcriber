@@ -17,6 +17,8 @@ class MyModel extends Model {
   List<api.SearchImage>? _radiologySearchImages;
   final Map<String, String> _definitions = {};
   final Set<String> _fetchingTerms = {};
+  final Map<String, bool> _diseases = {};
+  final Set<String> _fetchingDiseases = {};
 
   bool get isConnected => _isConnected;
   String get transcript => _transcript;
@@ -29,6 +31,19 @@ class MyModel extends Model {
   Future<void> search(String text) async {
     _searchImages = await api.search(text);
     notifyListeners();
+  }
+
+  bool? isDisease(String term) {
+    final value = _diseases[term];
+    if (value != null) return value;
+    if (_fetchingDiseases.contains(term)) return null;
+    _fetchingDiseases.add(term);
+    api.isDisease(term).then((value) {
+      _diseases[term] = value;
+      _fetchingDiseases.remove(term);
+      notifyListeners();
+    });
+    return null;
   }
 
   Future<void> searchRadiology(String text) async {

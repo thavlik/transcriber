@@ -349,8 +349,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       );
 
   Widget _buildRefTab(BuildContext context, MyModel model) {
+    final selectedEntity = model.selectedEntity;
+    final showRadiologyTab = selectedEntity?.type == 'SYSTEM_ORGAN_SITE';
+    final showPathologyTab = selectedEntity != null &&
+        selectedEntity.type == 'DX_NAME' &&
+        model.isDisease(selectedEntity.text) == true;
+    int numTabs = 2;
+    if (showRadiologyTab) numTabs++;
+    if (showPathologyTab) numTabs++;
     return DefaultTabController(
-      length: model.selectedEntity?.type == 'SYSTEM_ORGAN_SITE' ? 3 : 2,
+      length: numTabs,
       child: Builder(builder: (context) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -360,8 +368,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               tabs: [
                 const Tab(text: 'Definition'),
                 const Tab(text: 'Images'),
-                if (model.selectedEntity?.type == 'SYSTEM_ORGAN_SITE')
-                  const Tab(text: 'Radiology'),
+                if (showRadiologyTab) const Tab(text: 'Radiology'),
+                if (showPathologyTab) const Tab(text: 'Pathology'),
               ],
             ),
             Expanded(
@@ -406,7 +414,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                   .toList(),
                             ),
                           ),
-                    if (model.selectedEntity?.type == 'SYSTEM_ORGAN_SITE')
+                    if (showRadiologyTab)
                       model.radiologySearchImages == null
                           ? Container()
                           : SingleChildScrollView(
@@ -420,6 +428,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                     .toList(),
                               ),
                             ),
+                    if (showPathologyTab) Container(),
                   ],
                 ),
               ),

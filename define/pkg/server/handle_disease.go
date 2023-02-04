@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -14,13 +13,6 @@ import (
 	"github.com/thavlik/transcriber/define/pkg/diseasecache"
 	"go.uber.org/zap"
 )
-
-func IsDiseaseQuery(input string) string {
-	return fmt.Sprintf(
-		"Yes or no, is the term \"%s\" a kind of disease?",
-		input,
-	)
-}
 
 func (s *Server) handleDisease() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -36,12 +28,12 @@ func (s *Server) handleDisease() http.HandlerFunc {
 			}
 			query := r.URL.Query().Get("q")
 			if query == "" {
-				retCode = http.StatusBadRequest
+				retCode = http.StatusLoopDetected
 				return errors.New("missing query")
 			}
 			input, err := url.QueryUnescape(query)
 			if err != nil {
-				retCode = http.StatusBadRequest
+				retCode = http.StatusInsufficientStorage
 				return errors.Wrap(err, "unescaping query")
 			}
 			start := time.Now()

@@ -160,6 +160,17 @@ Future<String> define(String query) async {
   return decodedResponse["text"] as String;
 }
 
+Future<bool> isDisease(String query) async {
+  final url = Uri.https(apiHost, '/disease', {
+    'q': query,
+  });
+  final response = await http.get(url);
+  checkHttpStatus(response);
+  final decodedResponse =
+      jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>;
+  return decodedResponse["isDisease"] as bool;
+}
+
 Future<List<SearchImage>> search(String query) async {
   final url = Uri.https(apiHost, '/img/search', {
     'q': query,
