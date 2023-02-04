@@ -348,70 +348,87 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ),
       );
 
-  Widget _buildRefTab(BuildContext context, MyModel model) =>
-      DefaultTabController(
-        length: 2,
-        child: Builder(builder: (context) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              const TabBar(
-                tabs: [
-                  Tab(text: 'Images'),
-                  Tab(text: 'Definition'),
-                ],
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TabBarView(
-                    children: [
-                      model.searchImages == null
+  Widget _buildRefTab(BuildContext context, MyModel model) {
+    return DefaultTabController(
+      length: model.selectedEntity?.type == 'SYSTEM_ORGAN_SITE' ? 3 : 2,
+      child: Builder(builder: (context) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            TabBar(
+              tabs: [
+                const Tab(text: 'Definition'),
+                const Tab(text: 'Images'),
+                if (model.selectedEntity?.type == 'SYSTEM_ORGAN_SITE')
+                  const Tab(text: 'Radiology'),
+              ],
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TabBarView(
+                  children: [
+                    model.selectedEntity == null ||
+                            DefaultTabController.of(context).index != 0
+                        ? Container()
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Definition of "${model.selectedEntity!.text}":',
+                                style: Theme.of(context).textTheme.labelLarge,
+                              ),
+                              model.termIsFetching(model.selectedEntity!.text)
+                                  ? const Center(
+                                      child: CircularProgressIndicator())
+                                  : Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        model.getDefinition(
+                                                model.selectedEntity!.text) ??
+                                            '',
+                                      ),
+                                    )
+                            ],
+                          ),
+                    model.searchImages == null
+                        ? Container()
+                        : SingleChildScrollView(
+                            child: Wrap(
+                              crossAxisAlignment: WrapCrossAlignment.start,
+                              alignment: WrapAlignment.spaceAround,
+                              direction: Axis.horizontal,
+                              children: model.searchImages!
+                                  .map((e) =>
+                                      _buildSearchImage(context, e, model))
+                                  .toList(),
+                            ),
+                          ),
+                    if (model.selectedEntity?.type == 'SYSTEM_ORGAN_SITE')
+                      model.radiologySearchImages == null
                           ? Container()
                           : SingleChildScrollView(
                               child: Wrap(
                                 crossAxisAlignment: WrapCrossAlignment.start,
                                 alignment: WrapAlignment.spaceAround,
                                 direction: Axis.horizontal,
-                                children: model.searchImages!
+                                children: model.radiologySearchImages!
                                     .map((e) =>
                                         _buildSearchImage(context, e, model))
                                     .toList(),
                               ),
                             ),
-                      model.selectedEntity == null ||
-                              DefaultTabController.of(context).index != 1
-                          ? Container()
-                          : Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Definition of "${model.selectedEntity!.text}":',
-                                  style: Theme.of(context).textTheme.labelLarge,
-                                ),
-                                model.termIsFetching(model.selectedEntity!.text)
-                                    ? const Center(
-                                        child: CircularProgressIndicator())
-                                    : Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: Text(
-                                          model.getDefinition(
-                                                  model.selectedEntity!.text) ??
-                                              '',
-                                        ),
-                                      )
-                              ],
-                            ),
-                    ],
-                  ),
+                  ],
                 ),
               ),
-            ],
-          );
-        }),
-      );
+            ),
+          ],
+        );
+      }),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

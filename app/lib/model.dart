@@ -14,6 +14,7 @@ class MyModel extends Model {
   api.KeyTerms? _keyTerms;
   api.Entity? _selectedEntity;
   List<api.SearchImage>? _searchImages;
+  List<api.SearchImage>? _radiologySearchImages;
   final Map<String, String> _definitions = {};
   final Set<String> _fetchingTerms = {};
 
@@ -23,9 +24,15 @@ class MyModel extends Model {
   api.KeyTerms? get keyTerms => _keyTerms;
   api.Entity? get selectedEntity => _selectedEntity;
   List<api.SearchImage>? get searchImages => _searchImages;
+  List<api.SearchImage>? get radiologySearchImages => _radiologySearchImages;
 
   Future<void> search(String text) async {
     _searchImages = await api.search(text);
+    notifyListeners();
+  }
+
+  Future<void> searchRadiology(String text) async {
+    _radiologySearchImages = await api.search('$text radiology');
     notifyListeners();
   }
 
@@ -33,6 +40,7 @@ class MyModel extends Model {
     _selectedEntity = entity;
     if (entity != null) {
       search(entity.text);
+      if (entity.type == 'SYSTEM_ORGAN_SITE') searchRadiology(entity.text);
     }
     notifyListeners();
   }
