@@ -19,7 +19,7 @@ func Transcribe(
 	ctx context.Context,
 	source source.Source,
 	specialty string,
-	transcripts chan<- *transcribestreamingservice.MedicalTranscript,
+	transcripts chan<- *Transcript,
 	log *zap.Logger,
 ) error {
 	ctx, cancel := context.WithCancel(ctx)

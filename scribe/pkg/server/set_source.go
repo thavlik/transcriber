@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/service/transcribestreamingservice"
 	"github.com/thavlik/transcriber/scribe/pkg/source"
 	"github.com/thavlik/transcriber/scribe/pkg/transcribe"
 
@@ -26,7 +25,7 @@ func (s *Server) setSource(
 		// start a new job, use the source's context
 		// so the transcription is cancelled when the
 		// source is closed
-		transcripts := make(chan *transcribestreamingservice.MedicalTranscript, 16)
+		transcripts := make(chan *transcribe.Transcript, 16)
 		s.job = transcribe.NewTranscriptionJob(
 			src.Context(),
 			src,

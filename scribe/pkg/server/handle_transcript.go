@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/service/transcribestreamingservice"
 	"github.com/thavlik/transcriber/scribe/pkg/transcribe"
 
 	"go.uber.org/zap"
@@ -11,9 +10,9 @@ import (
 
 func (s *Server) handleTranscript(
 	ctx context.Context,
-	transcript *transcribestreamingservice.MedicalTranscript,
+	transcript *transcribe.Transcript,
 ) error {
-	text := transcribe.ConvertTranscript(transcript)
+	text := transcript.Flatten()
 	s.spawn(func() {
 		s.broadcastMessage(
 			ctx,

@@ -11,7 +11,7 @@ import (
 func readTranscription(
 	ctx context.Context,
 	events <-chan transcribestreamingservice.MedicalTranscriptResultStreamEvent,
-	transcripts chan<- *transcribestreamingservice.MedicalTranscript,
+	transcripts chan<- *Transcript,
 	log *zap.Logger,
 ) error {
 	for {
@@ -26,10 +26,11 @@ func readTranscription(
 				if e.Transcript == nil || len(e.Transcript.Results) == 0 {
 					continue
 				}
+				out := convertTranscript(e.Transcript)
 				select {
 				case <-ctx.Done():
 					return ctx.Err()
-				case transcripts <- e.Transcript:
+				case transcripts <- out:
 					continue
 				default:
 					log.Warn("transcript channel full, discarding event")

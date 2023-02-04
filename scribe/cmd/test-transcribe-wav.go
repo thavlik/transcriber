@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/aws/aws-sdk-go/service/transcribestreamingservice"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/thavlik/transcriber/base/pkg/base"
@@ -45,7 +44,7 @@ var testTranscribeWavCmd = &cobra.Command{
 		defer wg.Wait()
 		ctx, cancel := context.WithCancel(cmd.Context())
 		defer cancel()
-		transcripts := make(chan *transcribestreamingservice.MedicalTranscript, 16)
+		transcripts := make(chan *transcribe.Transcript, 16)
 		go func() {
 			defer wg.Done()
 			transcribe.PrintTranscripts(ctx, transcripts)

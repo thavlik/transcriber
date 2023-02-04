@@ -3,7 +3,6 @@ package transcribe
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go/service/transcribestreamingservice"
 	"github.com/thavlik/transcriber/scribe/pkg/source"
 	"go.uber.org/zap"
 )
@@ -13,7 +12,7 @@ type TranscriptionJob struct {
 	cancel      context.CancelFunc
 	source      source.Source
 	specialty   string
-	transcripts chan<- *transcribestreamingservice.MedicalTranscript
+	transcripts chan<- *Transcript
 	log         *zap.Logger
 }
 
@@ -21,7 +20,7 @@ func NewTranscriptionJob(
 	ctx context.Context,
 	source source.Source,
 	specialty string,
-	transcripts chan<- *transcribestreamingservice.MedicalTranscript,
+	transcripts chan<- *Transcript,
 	log *zap.Logger,
 ) *TranscriptionJob {
 	childCtx, cancel := context.WithCancel(ctx)

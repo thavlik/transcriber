@@ -1,30 +1,27 @@
 package transcribe
 
 import (
-	"fmt"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/transcribestreamingservice"
 )
 
-// ConvertTranscript crudely converts a transcript object into a byte slice
-func ConvertTranscript(
-	transcript *transcribestreamingservice.MedicalTranscript,
-) string {
-	s := ""
-	for _, result := range transcript.Results {
-		for _, alt := range result.Alternatives {
-			for _, item := range alt.Items {
-				if aws.StringValue(item.Type) == "punctuation" {
-					continue
-				}
-				if item.Content == nil {
-					continue
-				}
-				s += fmt.Sprintf("%s ", *item.Content)
-			}
-			s += "\n"
+func convertTranscript(
+	input *transcribestreamingservice.MedicalTranscript,
+) *Transcript {
+	results := make([]*TranscriptionResult, len(input.Results))
+	for i, result := range input.Results {
+		alternatives := make([]string, len(result.Alternatives))
+		for i, alt := range result.Alternatives {
+			alternatives[i] = aws.StringValue(alt.Transcript)
+		}
+		results[i] = &TranscriptionResult{
+			StartTime:    aws.Float64Value(result.StartTime),
+			EndTime:      aws.Float64Value(result.EndTime),
+			IsPartial:    aws.BoolValue(result.IsPartial),
+			Alternatives: alternatives,
 		}
 	}
-	return s
+	return &Transcript{
+		Results: results,
+	}
 }
