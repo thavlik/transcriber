@@ -17,9 +17,9 @@ func (s *Server) detectEntities(
 	text string,
 ) ([]*comprehend.Entity, error) {
 	body, err := json.Marshal(map[string]interface{}{
-		"model": model,
-		"text":  text,
-		// "filter": s.filter,
+		"model":  model,
+		"text":   text,
+		"filter": s.filter,
 	})
 	if err != nil {
 		return nil, err
