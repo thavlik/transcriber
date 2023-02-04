@@ -1,0 +1,15 @@
+{{- if .Values.pharmaseer.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-pharmaseer
+  labels:
+    app: {{ .Release.Name }}-pharmaseer
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Release.Name }}-pharmaseer
+  ports:
+  - name: http
+    port: 80
+{{- end }}

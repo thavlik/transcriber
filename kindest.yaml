@@ -18,6 +18,9 @@ env:
         releaseName: ts
         namespace: ts
         values:
+          pharmaseer:
+            enabled: false
+            pdbBucket: pdbcache
           app:
             enabled: true
           gateway:

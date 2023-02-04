@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -14,7 +13,7 @@ import (
 )
 
 var testWebSearchArgs struct {
-	input    string
+	query    string
 	service  string
 	endpoint string
 	apiKey   string
@@ -23,7 +22,7 @@ var testWebSearchArgs struct {
 }
 
 var testWebSearchCmd = &cobra.Command{
-	Use:   "web-search",
+	Use:   "websearch",
 	Short: "test web search with a text string",
 	Args:  cobra.ArbitraryArgs,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
@@ -32,14 +31,13 @@ var testWebSearchCmd = &cobra.Command{
 			return errors.New("BING_API_KEY not set")
 		}
 		base.CheckEnv("BING_ENDPOINT", &testWebSearchArgs.endpoint)
-		base.CheckEnv("INPUT", &testWebSearchArgs.input)
+		base.CheckEnv("QUERY", &testWebSearchArgs.query)
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		text, ok := os.LookupEnv("TEXT")
-		if !ok {
-			text = strings.TrimSpace(strings.Join(args, " "))
-			if len(text) == 0 {
+		if testWebSearchArgs.query == "" {
+			testWebSearchArgs.query = strings.TrimSpace(strings.Join(args, " "))
+			if len(testWebSearchArgs.query) == 0 {
 				return errors.New("no text provided")
 			}
 		}
@@ -47,11 +45,11 @@ var testWebSearchCmd = &cobra.Command{
 		base.DefaultLog.Info(
 			"testing web search",
 			zap.String("service", string(service)),
-			zap.String("text", text))
+			zap.String("query", testWebSearchArgs.query))
 		results, err := adapter.Search(
 			cmd.Context(),
 			service,
-			text,
+			testWebSearchArgs.query,
 			testWebSearchArgs.endpoint,
 			testWebSearchArgs.apiKey,
 			testWebSearchArgs.count,
@@ -79,7 +77,7 @@ func init() {
 		"service name (bing only for now)",
 	)
 	testWebSearchCmd.Flags().StringVarP(
-		&testWebSearchArgs.input,
+		&testWebSearchArgs.query,
 		"input",
 		"i",
 		"",

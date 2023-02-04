@@ -1,0 +1,16 @@
+{{- if and .Values.pharmaseer.enabled .Values.prometheus.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ .Release.Name }}-pharmaseer
+  labels:
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-pharmaseer
+  podMetricsEndpoints:
+  - port: metrics
+{{- end }}
+
+

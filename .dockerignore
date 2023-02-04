@@ -16,3 +16,4 @@ fdk-aac-*
 Dockerfile
 .dockerignore
 out.json
+example.png

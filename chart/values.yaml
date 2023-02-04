@@ -180,6 +180,15 @@ imgsearch:
   resources: {}
   logLevel: debug
 
+pharmaseer:
+  enabled: false
+  pdbBucket: ""
+  image: thavlik/pharmaseer:latest
+  imagePullPolicy: Always
+  replicas: 1
+  resources: {}
+  logLevel: debug
+
 iam:
   # Configure identity & access management for
   # the backend. This feature is optional, both
