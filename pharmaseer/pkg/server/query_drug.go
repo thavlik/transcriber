@@ -11,12 +11,15 @@ const queryDrugScriptPath = "/scripts/query-drug.js"
 func queryDrug(
 	ctx context.Context,
 	drugBankURL string,
-	dest *api.DrugDetails,
-) error {
-	return nodeQuery(
+) (*api.DrugDetails, error) {
+	drug := new(api.DrugDetails)
+	if err := nodeQuery(
 		ctx,
 		queryDrugScriptPath,
 		drugBankURL,
-		dest,
-	)
+		drug,
+	); err != nil {
+		return nil, err
+	}
+	return drug, nil
 }

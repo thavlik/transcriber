@@ -194,13 +194,12 @@ func queryWorker(
 						return errors.Wrap(err, "failed to query drugbank url")
 					}
 					entityLog.Debug("found drugbank entry, querying", zap.String("url", drugBankURL))
-					drug = new(api.DrugDetails)
 					start := time.Now()
-					if err := queryDrug(
+					drug, err := queryDrug(
 						ctx,
 						drugBankURL,
-						drug,
-					); err != nil {
+					)
+					if err != nil {
 						return errors.Wrap(err, "failed to query drug")
 					}
 					entityLog.Debug("queried drugbank", base.Elapsed(start))
@@ -224,14 +223,6 @@ func queryWorker(
 						return errors.Wrap(err, "failed to publish drug topic")
 					}
 				}
-				if err := downloadDrugSVG(
-					ctx,
-					drug.DrugBankAccessionNumber,
-					svgCache,
-					nil,
-				); err != nil {
-					return errors.Wrap(err, "downloadDrugSVG")
-				}
 				// add the pdb url to the scheduler
 				body, err := json.Marshal(&pdbItem{
 					Query:                   e.Query,
@@ -244,6 +235,14 @@ func queryWorker(
 				}
 				if err := pdbSched.Add(string(body)); err != nil {
 					return errors.Wrap(err, "failed to add pdb to scheduler")
+				}
+				if err := downloadDrugSVG(
+					ctx,
+					drug.DrugBankAccessionNumber,
+					svgCache,
+					nil,
+				); err != nil {
+					return errors.Wrap(err, "downloadDrugSVG")
 				}
 			default:
 				panic(base.Unreachable)
