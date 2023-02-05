@@ -47,7 +47,6 @@ func (s *Server) handlePDB() http.HandlerFunc {
 				id,
 				w,
 			); err == pdbcache.ErrNotCached {
-				reqLog.Debug("force downloading pdb")
 				return downloadPDB(
 					r.Context(),
 					drug.DrugBankAccessionNumber,
