@@ -1,0 +1,76 @@
+{{- if .Values.pdbMesh.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-pdbmesh
+spec:
+  replicas: {{ .Values.pdbMesh.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-pdbmesh
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-pdbmesh
+    spec:
+    {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 10 }}
+    {{- end }}
+      containers:
+      - name: server
+        imagePullPolicy: {{ .Values.pdbMesh.imagePullPolicy }}
+        image: {{ .Values.pdbMesh.image }}
+    {{- if .Values.pdbMesh.resources }}
+        resources:
+{{ toYaml .Values.pdbMesh.resources | indent 10 }}
+    {{- end }}
+        command:
+          - pdbmesh
+          - server
+          - --s3-bucket
+          - {{ required "missing pdbMesh.bucket" .Values.pdbMesh.bucket }}
+        {{- if .Values.prometheus.enabled }}
+          - --metrics-port
+          - "2112"
+        {{- end }}
+        ports:
+        - containerPort: 80
+          name: http
+      {{- if .Values.prometheus.enabled }}
+        - containerPort: 2112
+          protocol: TCP
+          name: metrics
+      {{- end }}
+        env:
+        - name: LOG_LEVEL
+          value: {{ .Values.pdbMesh.logLevel }}
+      {{- if .Values.s3.endpoint }}
+        - name: S3_ENDPOINT
+          value: {{ .Values.s3.endpoint }}
+      {{- end }}
+      {{- if .Values.redis.enabled }}
+        - name: REDIS_USERNAME
+{{ tpl (toYaml .Values.redis.username) . | indent 10 }}
+        - name: REDIS_PASSWORD
+{{ tpl (toYaml .Values.redis.password) . | indent 10 }}
+        - name: REDIS_HOST
+{{ tpl (toYaml .Values.redis.host) . | indent 10 }}
+        - name: REDIS_PORT
+{{ tpl (toYaml .Values.redis.port) . | indent 10 }}
+      {{- end }}
+        - name: AWS_REGION
+          value: {{ .Values.s3.region }}
+        - name: AWS_ACCESS_KEY_ID
+{{ tpl (toYaml .Values.s3.accessKeyId) . | indent 10 }}
+        - name: AWS_SECRET_ACCESS_KEY
+{{ tpl (toYaml .Values.s3.secretAccessKey) . | indent 10 }}
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 80
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
+{{- end }}

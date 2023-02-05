@@ -8,7 +8,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *Server) handleStructure() http.HandlerFunc {
+func (s *Server) handleStructureSvg() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		retCode := http.StatusInternalServerError
 		if err := func() error {

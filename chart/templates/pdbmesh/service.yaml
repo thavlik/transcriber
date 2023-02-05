@@ -1,0 +1,15 @@
+{{- if .Values.pdbMesh.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-pdbmesh
+  labels:
+    app: {{ .Release.Name }}-pdbmesh
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Release.Name }}-pdbmesh
+  ports:
+  - name: http
+    port: 80
+{{- end }}

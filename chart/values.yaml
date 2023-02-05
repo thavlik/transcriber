@@ -191,6 +191,21 @@ pharmaseer:
   resources: {}
   logLevel: debug
 
+pdbMesh:
+  enabled: false
+  bucket: ""
+  image: thavlik/pdbmesh:latest
+  imagePullPolicy: Always
+  replicas: 1
+  resources:
+    # It's recommended to reserve resource for
+    # PDB -> STL model conversion, which can
+    # take a fair bit of cpu and memory. 
+    requests:
+      cpu: 500m
+      memory: 256Mi
+  logLevel: debug
+
 iam:
   # Configure identity & access management for
   # the backend. This feature is optional, both

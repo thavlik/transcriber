@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
@@ -93,19 +94,19 @@ class DrugPharmacology {
 class DrugReference {
   final int index;
   final String title;
-  final String link;
+  final String? link;
 
   DrugReference({
     required this.index,
     required this.title,
-    required this.link,
+    this.link,
   });
 
   factory DrugReference.fromJson(Map<String, dynamic> json) {
     return DrugReference(
       index: json['index'] as int,
       title: json['title'] as String,
-      link: json['link'] as String,
+      link: json['link'] as String?,
     );
   }
 }
@@ -220,7 +221,10 @@ class KeyTerms {
   KeyTerms({
     required this.entities,
     this.pruneAfter = const Duration(seconds: 3),
-  });
+  }) {
+    entities.forEach(used);
+    sort();
+  }
 
   void sort() => entities.sort((a, b) => a.text.compareTo(b.text));
 
@@ -388,4 +392,12 @@ Future<void> likeImage(SearchImage img, bool isLiked) async {
         'isLiked': isLiked,
       }));
   checkHttpStatus(response);
+}
+
+Future<Uint8List> downloadBinarySTL(String id) async {
+  //final url = Uri.https('stlcache.nyc3.digitaloceanspaces.com', '/DB00571.stl');
+  final url = Uri.https(apiHost, '/drug/$id/structure.stl');
+  final response = await http.get(url);
+  checkHttpStatus(response);
+  return response.bodyBytes;
 }

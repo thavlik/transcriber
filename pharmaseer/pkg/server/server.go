@@ -77,7 +77,8 @@ func (s *Server) ListenAndServe(port int) error {
 	mux.Handle("/", otoServer)
 	mux.HandleFunc("/healthz", base.HealthHandler)
 	mux.HandleFunc("/readyz", base.ReadyHandler)
-	mux.HandleFunc("/structure", s.handleStructure())
+	mux.HandleFunc("/structure", s.handleStructureSvg())
+	mux.HandleFunc("/pdb", s.handlePDB())
 	s.log.Info("listening forever", zap.Int("port", port))
 	return (&http.Server{
 		Handler:      mux,

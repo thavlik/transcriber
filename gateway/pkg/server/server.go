@@ -26,6 +26,7 @@ type Server struct {
 	define         *base.ServiceOptions
 	pharmaSeerOpts *base.ServiceOptions
 	pharmaSeer     pharmaseer.PharmaSeer
+	pdbMesh        *base.ServiceOptions
 	corsHeader     string
 	wg             *sync.WaitGroup
 	log            *zap.Logger
@@ -38,6 +39,7 @@ func NewServer(
 	define *base.ServiceOptions,
 	pharmaSeerOpts *base.ServiceOptions,
 	pharmaSeer pharmaseer.PharmaSeer,
+	pdbMesh *base.ServiceOptions,
 	corsHeader string,
 	log *zap.Logger,
 ) *Server {
@@ -50,6 +52,7 @@ func NewServer(
 		define,
 		pharmaSeerOpts,
 		pharmaSeer,
+		pdbMesh,
 		corsHeader,
 		new(sync.WaitGroup),
 		log,
@@ -100,7 +103,12 @@ func (s *Server) ListenAndServe(port int) error {
 	if s.pharmaSeer != nil {
 		router.HandleFunc("/drug", s.handleDrug())
 		router.HandleFunc("/drug/{id}/structure.svg", s.handleDrugSvg())
+		router.HandleFunc("/drug/{id}/structure.pdb", s.handleDrugPdb())
+		if s.pdbMesh.Endpoint != "" {
+			router.HandleFunc("/drug/{id}/structure.stl", s.handleDrugStl())
+		}
 	}
+
 	if s.iam != nil {
 		router.HandleFunc("/user/login", s.handleLogin())
 		router.HandleFunc("/user/search", s.handleUserSearch())

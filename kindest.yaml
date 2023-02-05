@@ -3,6 +3,7 @@ dependencies:
   - scribe
   - comprehend
   - imgsearch
+  - pdbmesh
   - define
   - strim
   - broadcaster
@@ -25,6 +26,9 @@ env:
             svgBucket: svgcache
           app:
             enabled: true
+          pdbMesh:
+            enabled: true
+            bucket: stlcache
           gateway:
             enabled: true
           imgsearch:

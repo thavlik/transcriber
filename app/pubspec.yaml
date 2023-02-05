@@ -41,6 +41,8 @@ dependencies:
   web_socket_channel: ^2.3.0
   expandable: ^5.0.1
   flutter_svg: ^2.0.0+1
+  simple_3d_renderer: ^9.0.0
+  model_viewer_plus: ^1.5.0
   
 dev_dependencies:
   flutter_test:

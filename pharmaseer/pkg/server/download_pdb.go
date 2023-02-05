@@ -13,14 +13,17 @@ import (
 
 func downloadPDB(
 	ctx context.Context,
-	pdb *pdbItem,
+	drugBankAccessionNumber string,
+	url string,
+	force bool,
 	pdbCache pdbcache.PDBCache,
+	w io.Writer,
 	log *zap.Logger,
 ) error {
-	if !pdb.Force {
+	if !force {
 		if has, err := pdbCache.Has(
 			ctx,
-			pdb.DrugBankAccessionNumber,
+			drugBankAccessionNumber,
 		); err != nil {
 			return errors.Wrap(err, "cache.Has")
 		} else if has {
@@ -29,11 +32,11 @@ func downloadPDB(
 		}
 	}
 	log.Debug("downloading pdb from drugbank",
-		zap.Bool("force", pdb.Force))
+		zap.Bool("force", force))
 	req, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodGet,
-		pdb.URL,
+		url,
 		nil,
 	)
 	if err != nil {
@@ -54,9 +57,13 @@ func downloadPDB(
 			string(body),
 		)
 	}
+	r := io.Reader(resp.Body)
+	if w != nil {
+		r = io.TeeReader(resp.Body, w)
+	}
 	if err := pdbCache.Set(
-		pdb.DrugBankAccessionNumber,
-		resp.Body,
+		drugBankAccessionNumber,
+		r,
 	); err != nil {
 		return errors.Wrap(err, "set cache")
 	}

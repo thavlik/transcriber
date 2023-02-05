@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/transcriber/pharmaseer/pkg/api"
@@ -23,8 +24,18 @@ func (s *Server) GetDrugDetails(
 	}
 	if !req.Force {
 		// try and use the cache
-		cached, err := s.infoCache.GetDrug(ctx, req.Query)
+		var cached *api.DrugDetails
+		var err error
+		if strings.HasPrefix(req.Query, "DB") && len(req.Query) == 7 {
+			cached, err = s.infoCache.GetDrugByDrugBankAccessionNumber(
+				ctx,
+				req.Query,
+			)
+		} else {
+			cached, err = s.infoCache.GetDrug(ctx, req.Query)
+		}
 		if err == nil {
+			// drug was cached
 			return cached, nil
 		} else if err != infocache.ErrCacheUnavailable {
 			return nil, err

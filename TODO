@@ -4,3 +4,12 @@
 - Pathology tab for DX_NAME
   - DX_NAME is too general and this may require hand-tuning
 - refactor websearch into pkg/base
+- cancer tab
+- Yes or no, is histology used to diagnose schizophrenia?
+- psych
+  - Yes or no, is cancer a psychiatric illness?
+- refactor all imgcache/thumbcach/etc. to use base/pkg/filecache
+- download thumbnail concurrently and add pdb to pdbSched sooner
+- use openai to generate treatment plans
+  - provide a way for the user to give feedback that can be plugged into subsequent queries
+- 

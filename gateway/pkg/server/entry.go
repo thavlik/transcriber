@@ -19,6 +19,7 @@ func Entry(
 	define *base.ServiceOptions,
 	pharmaSeerOpts *base.ServiceOptions,
 	pharmaSeer pharmaseer.PharmaSeer,
+	pdbMesh *base.ServiceOptions,
 	corsHeader string,
 	log *zap.Logger,
 ) error {
@@ -29,6 +30,7 @@ func Entry(
 		define,
 		pharmaSeerOpts,
 		pharmaSeer,
+		pdbMesh,
 		corsHeader,
 		log,
 	)

@@ -11,7 +11,12 @@ class MyModel extends Model {
   WebSocketChannel? _channel;
   String _transcript = "";
   final List<api.ReferenceMaterial> _referenceMaterials = [];
-  api.KeyTerms? _keyTerms;
+  api.KeyTerms? _keyTerms = api.KeyTerms(
+    entities: [
+      api.Entity(score: 1.0, text: "propranolol", type: "GENERIC_NAME"),
+      api.Entity(score: 1.0, text: "prednisone", type: "GENERIC_NAME"),
+    ],
+  );
   api.Entity? _selectedEntity;
   List<api.SearchImage>? _searchImages;
   List<api.SearchImage>? _radiologySearchImages;

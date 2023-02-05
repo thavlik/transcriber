@@ -155,8 +155,11 @@ func downloadWorker(
 			}()
 			if err := downloadPDB(
 				ctx,
-				pdb,
+				pdb.DrugBankAccessionNumber,
+				pdb.URL,
+				false,
 				pdbCache,
+				nil,
 				pdbLog,
 			); err != nil {
 				pdbLog.Error("error downloading pdb", zap.Error(err))

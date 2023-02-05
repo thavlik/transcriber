@@ -1,7 +1,9 @@
 import 'package:demo/api.dart';
+import 'package:demo/structure_view.dart';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'home.dart';
 
@@ -23,6 +25,7 @@ class PharmacyView extends StatefulWidget {
 class _PharmacyViewState extends State<PharmacyView> {
   final ExpandableController _general = ExpandableController();
   final ExpandableController _pharmacology = ExpandableController();
+  final ExpandableController _references = ExpandableController();
 
   DrugDetails get drug => widget.drug;
 
@@ -85,10 +88,91 @@ class _PharmacyViewState extends State<PharmacyView> {
           ),
         ),
       );
-  @override
-  Widget build(BuildContext context) {
+
+  Widget _buildReferences(BuildContext context) => _section(
+      'General',
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (final reference in drug.references.general)
+            InkWell(
+              onTap: () {
+                if (reference.link == null) {
+                  return;
+                }
+                final url = Uri.parse(reference.link!);
+                launchUrl(url);
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 32,
+                      child: Text(
+                        '[${reference.index}]',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        '${reference.title} ${reference.link}',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ));
+
+  Widget _buildStructureView(BuildContext context) {
     final structureUrl =
         'https://ts.beebs.dev/drug/${drug.drugBankAccessionNumber}/structure.svg';
+    return Container(
+      width: 300,
+      height: 300,
+      child: DefaultTabController(
+          length: 2,
+          child: Column(
+            children: [
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.white),
+                  ),
+                  child: TabBarView(
+                    children: [
+                      GestureDetector(
+                        onTap: () => widget.onImageTap(structureUrl),
+                        child: Container(
+                          color: Colors.white,
+                          width: 100,
+                          height: 100,
+                          child: SvgPicture.network(structureUrl),
+                        ),
+                      ),
+                      StructureView(drug),
+                    ],
+                  ),
+                ),
+              ),
+              const TabBar(
+                tabs: [
+                  Tab(text: 'Structure'),
+                  Tab(text: '3D'),
+                ],
+              ),
+            ],
+          )),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -101,15 +185,7 @@ class _PharmacyViewState extends State<PharmacyView> {
               children: [
                 _buildExpandableHeader('General', false),
                 _section('Summary', Text(drug.summary)),
-                GestureDetector(
-                  onTap: () => widget.onImageTap(structureUrl),
-                  child: Container(
-                    color: Colors.white,
-                    width: 100,
-                    height: 100,
-                    child: SvgPicture.network(structureUrl),
-                  ),
-                ),
+                _buildStructureView(context),
                 _section('Brand Names', Text(drug.brandNames.join(', '))),
                 _section('Generic Name', Text(drug.genericName)),
                 _section('Background', Text(drug.background)),
@@ -145,6 +221,18 @@ class _PharmacyViewState extends State<PharmacyView> {
                 _section('Half-life', Text(drug.pharmacology.halfLife)),
                 _section('Clearance', Text(drug.pharmacology.clearance)),
                 _section('Toxicity', Text(drug.pharmacology.toxicity)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          ExpandablePanel(
+            controller: _references,
+            collapsed: _buildExpandableHeader('References', true),
+            expanded: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildExpandableHeader('References', false),
+                _buildReferences(context),
               ],
             ),
           ),
