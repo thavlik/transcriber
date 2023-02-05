@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -94,35 +93,6 @@ func (s *Server) handleDrugSvg() http.HandlerFunc {
 	}
 }
 
-func (s *Server) getPDB(
-	ctx context.Context,
-	id string,
-) (io.ReadCloser, error) {
-	req, err := http.NewRequestWithContext(
-		ctx,
-		http.MethodGet,
-		fmt.Sprintf("%s/pdb?id=%s", s.pharmaSeerOpts.Endpoint, id),
-		nil,
-	)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := (&http.Client{
-		Timeout: s.pharmaSeerOpts.Timeout,
-	}).Do(req)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, errors.Errorf(
-			"failed to download pdb for %s: status code %d",
-			id,
-			resp.StatusCode,
-		)
-	}
-	return resp.Body, nil
-}
-
 func (s *Server) handleDrugPdb() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := func() error {
@@ -168,16 +138,11 @@ func (s *Server) handleDrugStl() http.HandlerFunc {
 			if !ok {
 				return errors.New("missing path parameter 'id'")
 			}
-			pdb, err := s.getPDB(r.Context(), id)
-			if err != nil {
-				return err
-			}
-			defer pdb.Close()
 			req, err := http.NewRequestWithContext(
 				r.Context(),
 				http.MethodPost,
-				fmt.Sprintf("%s/convert", s.pdbMesh.Endpoint),
-				pdb,
+				fmt.Sprintf("%s/convert?id=%s", s.pdbMesh.Endpoint, id),
+				nil,
 			)
 			if err != nil {
 				return err

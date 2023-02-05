@@ -12,6 +12,7 @@ func Entry(
 	ctx context.Context,
 	serverOpts *base.ServerOptions,
 	sched scheduler.Scheduler,
+	pharmaSeer *base.ServiceOptions,
 	log *zap.Logger,
 ) error {
 	ctx, cancel := context.WithCancel(ctx)
@@ -20,6 +21,7 @@ func Entry(
 	s := NewServer(
 		ctx,
 		sched,
+		pharmaSeer,
 		log,
 	)
 	defer s.ShutDown()

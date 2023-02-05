@@ -16,8 +16,9 @@ import (
 
 var serverArgs struct {
 	base.ServerOptions
-	redis    base.RedisOptions
-	s3Bucket string
+	redis      base.RedisOptions
+	pharmaSeer base.ServiceOptions
+	s3Bucket   string
 }
 
 var serverCmd = &cobra.Command{
@@ -25,6 +26,7 @@ var serverCmd = &cobra.Command{
 	Args: cobra.NoArgs,
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		base.ServerEnv(&serverArgs.ServerOptions)
+		base.ServiceEnv("pharmaseer", &serverArgs.pharmaSeer)
 		base.CheckEnv("S3_BUCKET", &serverArgs.s3Bucket)
 		if serverArgs.s3Bucket == "" {
 			return errors.New("missing --s3-bucket")
@@ -38,6 +40,7 @@ var serverCmd = &cobra.Command{
 			cmd.Context(),
 			&serverArgs.ServerOptions,
 			initScheduler(redis, "pdbmesh"),
+			&serverArgs.pharmaSeer,
 			base.DefaultLog,
 		)
 	},
@@ -69,4 +72,5 @@ func init() {
 	base.AddServerFlags(serverCmd, &serverArgs.ServerOptions)
 	serverCmd.Flags().StringVar(&serverArgs.s3Bucket, "s3-bucket", "", "name of the s3 bucket to store image data in")
 	base.AddRedisFlags(serverCmd, &serverArgs.redis)
+	base.AddServiceFlags(serverCmd, "pharmaseer", &serverArgs.pharmaSeer, 15*time.Second)
 }

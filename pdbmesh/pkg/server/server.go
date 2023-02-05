@@ -13,25 +13,28 @@ import (
 )
 
 type Server struct {
-	ctx    context.Context
-	cancel context.CancelFunc
-	sched  scheduler.Scheduler
-	wg     *sync.WaitGroup
-	log    *zap.Logger
+	ctx        context.Context
+	cancel     context.CancelFunc
+	sched      scheduler.Scheduler
+	pharmaSeer *base.ServiceOptions
+	wg         *sync.WaitGroup
+	log        *zap.Logger
 }
 
 func NewServer(
 	ctx context.Context,
 	sched scheduler.Scheduler,
+	pharmaSeer *base.ServiceOptions,
 	log *zap.Logger,
 ) *Server {
 	ctx, cancel := context.WithCancel(ctx)
 	return &Server{
-		ctx:    ctx,
-		cancel: cancel,
-		sched:  sched,
-		wg:     new(sync.WaitGroup),
-		log:    log,
+		ctx:        ctx,
+		cancel:     cancel,
+		sched:      sched,
+		pharmaSeer: pharmaSeer,
+		wg:         new(sync.WaitGroup),
+		log:        log,
 	}
 }
 

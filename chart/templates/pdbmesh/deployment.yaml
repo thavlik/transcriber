@@ -30,6 +30,8 @@ spec:
           - server
           - --s3-bucket
           - {{ required "missing pdbMesh.bucket" .Values.pdbMesh.bucket }}
+          - --pharmaseer-endpoint
+          - "http://{{ .Release.Name }}-pharmaseer:80"
         {{- if .Values.prometheus.enabled }}
           - --metrics-port
           - "2112"

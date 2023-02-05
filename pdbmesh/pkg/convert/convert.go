@@ -38,6 +38,8 @@ func Convert(
 	models, err := pdb.NewReader(r).ReadAll()
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse PDB file")
+	} else if len(models) == 0 {
+		return nil, errors.New("no models found in PDB file")
 	}
 	model := models[0]
 	mesh := ribbon.ModelMesh(model)

@@ -18,9 +18,19 @@ func (s *Server) handleConvert() http.HandlerFunc {
 				retCode = http.StatusMethodNotAllowed
 				return errors.New("method not allowed")
 			}
+			id := r.URL.Query().Get("id")
+			if id == "" {
+				retCode = http.StatusBadRequest
+				return errors.New("missing query parameter 'id'")
+			}
+			pdb, err := s.getPDB(r.Context(), id)
+			if err != nil {
+				return err
+			}
+			defer pdb.Close()
 			model, err := convert.Convert(
 				r.Context(),
-				r.Body,
+				pdb,
 			)
 			if err != nil {
 				return errors.Wrap(err, "failed to convert pdb to mesh")
