@@ -1,8 +1,10 @@
 package bing_imgsearch
 
-import "github.com/thavlik/transcriber/imgsearch/pkg/imgsearch"
+import (
+	"github.com/thavlik/transcriber/imgsearch/pkg/imgsearch"
+)
 
-func convert(result *searchResult) []*imgsearch.Image {
+func convert(result *searchResult) *imgsearch.Result {
 	images := make([]*imgsearch.Image, len(result.Value))
 	for i, v := range result.Value {
 		images[i] = &imgsearch.Image{
@@ -16,5 +18,12 @@ func convert(result *searchResult) []*imgsearch.Image {
 			AccentColor:    v.AccentColor,
 		}
 	}
-	return images
+	queryExpansions := make([]string, len(result.QueryExpansions))
+	for i, v := range result.QueryExpansions {
+		queryExpansions[i] = v.Text
+	}
+	return &imgsearch.Result{
+		Images:          images,
+		QueryExpansions: queryExpansions,
+	}
 }

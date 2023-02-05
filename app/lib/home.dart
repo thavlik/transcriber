@@ -400,8 +400,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 padding: const EdgeInsets.all(8.0),
                 child: TabBarView(
                   children: [
-                    model.selectedEntity == null ||
-                            DefaultTabController.of(context).index != 0
+                    model.selectedEntity == null
                         ? Container()
                         : Column(
                             mainAxisAlignment: MainAxisAlignment.start,

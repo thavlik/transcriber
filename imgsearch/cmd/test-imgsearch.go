@@ -39,7 +39,7 @@ var testImgSearch = &cobra.Command{
 				return errors.New("no text provided")
 			}
 		}
-		images, err := adapter.Search(
+		result, err := adapter.Search(
 			cmd.Context(),
 			adapter.SearchService(testImgSearchArgs.service),
 			testImgSearchArgs.query,
@@ -51,7 +51,7 @@ var testImgSearch = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		body, err := json.MarshalIndent(images, "", "  ")
+		body, err := json.MarshalIndent(result, "", "  ")
 		if err != nil {
 			return err
 		}

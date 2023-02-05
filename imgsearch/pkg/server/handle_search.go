@@ -47,7 +47,7 @@ func (s *Server) handleSearch() http.HandlerFunc {
 			}
 			start := time.Now()
 			service := adapter.Bing
-			images, err := adapter.Search(
+			result, err := adapter.Search(
 				r.Context(),
 				service,
 				req.Query,
@@ -63,10 +63,10 @@ func (s *Server) handleSearch() http.HandlerFunc {
 				"searched for images",
 				base.Elapsed(start),
 				zap.String("service", string(service)),
-				zap.Int("count", len(images)),
+				zap.Int("count", len(result.Images)),
 			)
 			w.Header().Set("Content-Type", "application/json")
-			if err := json.NewEncoder(w).Encode(images); err != nil {
+			if err := json.NewEncoder(w).Encode(result.Images); err != nil {
 				return err
 			}
 			if req.UserID != "" {

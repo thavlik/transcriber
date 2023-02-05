@@ -20,7 +20,7 @@ func Search(
 	subscriptionKey string,
 	count int,
 	offset int,
-) ([]*imgsearch.Image, error) {
+) (*imgsearch.Result, error) {
 	// this was not needed:
 	// https://github.com/Azure/azure-sdk-for-go/tree/main/sdk/resourcemanager/cognitiveservices/armcognitiveservices
 	endpoint += "v7.0/images/search"
@@ -54,5 +54,7 @@ func Search(
 	if err := json.NewDecoder(resp.Body).Decode(result); err != nil {
 		return nil, errors.Wrap(err, "failed to decode response body")
 	}
+	//body, _ := json.MarshalIndent(result, "", "  ")
+	//fmt.Println(string(body))
 	return convert(result), nil
 }

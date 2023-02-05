@@ -22,7 +22,7 @@ func Search(
 	subscriptionKey string,
 	count int,
 	offset int,
-) ([]*imgsearch.Image, error) {
+) (*imgsearch.Result, error) {
 	switch service {
 	case Bing:
 		return bing_imgsearch.Search(
