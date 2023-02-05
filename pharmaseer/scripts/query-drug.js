@@ -216,7 +216,9 @@ const getProperties = async (page) => {
         throw new Error("missing INPUT_URL");
     }
 
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+        args: [`--window-size=1920,1080`],
+    });
     try {
         const page = await browser.newPage();
         await page.goto(url);
@@ -224,19 +226,19 @@ const getProperties = async (page) => {
         const general = await getOverview(page);
 
         // get the pharmacology data
-        //await page.click('#pharmacology-sidebar-header');
-        //const pharmacology = await getPharmacology(page);
+        await page.click('#pharmacology-sidebar-header');
+        const pharmacology = await getPharmacology(page);
 
-        //await page.click('#references-sidebar-header');
-        //const references = await getReferences(page);
+        await page.click('#references-sidebar-header');
+        const references = await getReferences(page);
 
         //await page.click('#properties-sidebar-header');
         //const properties = await parseProperties(page);
 
         console.log(JSON.stringify({
             ...general,
-            //pharmacology,
-            //references,
+            pharmacology,
+            references,
         }, null, 2));
     } finally {
         await browser.close();

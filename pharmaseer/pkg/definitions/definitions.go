@@ -28,18 +28,18 @@ type ExperimentalProperties struct {
 }
 
 type DrugPharmacology struct {
-	Indication           string   `json:"indication"`
-	AssociatedConditions []string `json:"associatedConditions,omitempty"`
-	Pharmacodynamics     string   `json:"pharmacodynamics"`
-	MechanismOfAction    string   `json:"mechanismOfAction"`
-	Absorption           string   `json:"absorption"`
-	VolumeOfDistribution string   `json:"volumeOfDistribution"`
-	ProteinBinding       string   `json:"proteinBinding"`
-	Metabolism           string   `json:"metabolism"`
-	RouteOfElimination   string   `json:"routeOfElimination"`
-	HalfLife             string   `json:"halfLife"`
-	Clearance            string   `json:"clearance"`
-	Toxicity             string   `json:"toxicity"`
+	Indication           string      `json:"indication"`
+	AssociatedConditions []string    `json:"associatedConditions,omitempty"`
+	Pharmacodynamics     string      `json:"pharmacodynamics"`
+	MechanismOfAction    string      `json:"mechanismOfAction"`
+	Absorption           string      `json:"absorption"`
+	VolumeOfDistribution string      `json:"volumeOfDistribution"`
+	ProteinBinding       string      `json:"proteinBinding"`
+	Metabolism           *Metabolism `json:"metabolism"`
+	RouteOfElimination   string      `json:"routeOfElimination"`
+	HalfLife             string      `json:"halfLife"`
+	Clearance            string      `json:"clearance"`
+	Toxicity             string      `json:"toxicity"`
 }
 
 type Reference struct {
@@ -55,6 +55,10 @@ type References struct {
 type Weight struct {
 	Average      string `json:"average"`
 	Monoisotopic string `json:"monoisotopic"`
+}
+
+type Metabolism struct {
+	Description string `json:"description"`
 }
 
 type DrugDetails struct {
