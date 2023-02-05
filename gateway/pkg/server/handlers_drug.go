@@ -126,6 +126,7 @@ func (s *Server) handleDrugPdb() http.HandlerFunc {
 
 func (s *Server) handleDrugStl() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		retCode := http.StatusInternalServerError
 		if err := func() error {
 			w.Header().Set("Access-Control-Allow-Origin", s.corsHeader)
 			if r.Method == http.MethodOptions {
@@ -155,10 +156,11 @@ func (s *Server) handleDrugStl() http.HandlerFunc {
 			}
 			defer resp.Body.Close()
 			if resp.StatusCode != http.StatusOK {
+				body, _ := io.ReadAll(resp.Body)
+				retCode = resp.StatusCode
 				return errors.Errorf(
-					"failed to download svg for %s: status code %d",
-					id,
-					resp.StatusCode,
+					"failed to get stl: %s",
+					string(body),
 				)
 			}
 			w.Header().Set("Content-Type", resp.Header.Get("Content-Type"))
@@ -168,7 +170,7 @@ func (s *Server) handleDrugStl() http.HandlerFunc {
 			return nil
 		}(); err != nil {
 			s.log.Error(r.RequestURI, zap.Error(err))
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), retCode)
 		}
 	}
 }

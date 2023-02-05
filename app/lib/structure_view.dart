@@ -19,6 +19,7 @@ class _StructureViewState extends State<StructureView> {
   Sp3dWorld? world;
   Sp3dCamera? camera;
   bool isLoaded = false;
+  String? _error;
 
   @override
   void initState() {
@@ -26,6 +27,7 @@ class _StructureViewState extends State<StructureView> {
     api
         .downloadBinarySTL(widget.drugDetails.drugBankAccessionNumber)
         .then((stl) {
+      if (!mounted) return;
       setState(() {
         final file = parseSTLData(stl);
         objs = [file.obj];
@@ -33,12 +35,25 @@ class _StructureViewState extends State<StructureView> {
         camera = file.camera;
         isLoaded = true;
       });
+    }).catchError((err) {
+      if (!mounted) return;
+      setState(() => _error = err);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!isLoaded) {
+    if (_error != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            _error!,
+            style: Theme.of(context).textTheme.labelSmall,
+          ),
+        ),
+      );
+    } else if (!isLoaded) {
       return const Center(
         child: CircularProgressIndicator(),
       );

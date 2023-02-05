@@ -417,14 +417,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                   : Padding(
                                       padding: const EdgeInsets.all(8.0),
                                       child: Text(
-                                        model.getDefinition(
+                                        model.define(
                                                 model.selectedEntity!.text) ??
                                             '',
                                       ),
                                     ),
                               const SizedBox(height: 16),
-                              if (model.getDefinition(
-                                      model.selectedEntity!.text) !=
+                              if (model.define(model.selectedEntity!.text) !=
                                   null)
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
@@ -460,85 +459,92 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 ),
                             ],
                           ),
-                    model.searchImages == null
-                        ? const Center(
-                            child: CircularProgressIndicator(),
-                          )
-                        : SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                Wrap(
-                                  crossAxisAlignment: WrapCrossAlignment.start,
-                                  alignment: WrapAlignment.spaceAround,
-                                  direction: Axis.horizontal,
-                                  children: model.searchImages!
-                                      .map((e) =>
-                                          _buildSearchImage(context, e, model))
-                                      .toList(),
+                    model.selectedEntity == null
+                        ? Container()
+                        : model.searchImages == null
+                            ? const Center(
+                                child: CircularProgressIndicator(),
+                              )
+                            : SingleChildScrollView(
+                                child: Column(
+                                  children: [
+                                    Wrap(
+                                      crossAxisAlignment:
+                                          WrapCrossAlignment.start,
+                                      alignment: WrapAlignment.spaceAround,
+                                      direction: Axis.horizontal,
+                                      children: model.searchImages!
+                                          .map((e) => _buildSearchImage(
+                                              context, e, model))
+                                          .toList(),
+                                    ),
+                                    TextButton(
+                                        onPressed: () {},
+                                        child: const Padding(
+                                          padding: EdgeInsets.all(8.0),
+                                          child: Text('Load more...'),
+                                        ))
+                                  ],
                                 ),
-                                TextButton(
-                                    onPressed: () {},
-                                    child: const Padding(
-                                      padding: EdgeInsets.all(8.0),
-                                      child: Text('Load more...'),
-                                    ))
-                              ],
-                            ),
-                          ),
+                              ),
                     if (showRadiologyTab)
-                      model.radiologySearchImages == null
-                          ? const Center(
-                              child: CircularProgressIndicator(),
-                            )
-                          : SingleChildScrollView(
-                              child: Column(
-                                children: [
-                                  Wrap(
-                                    crossAxisAlignment:
-                                        WrapCrossAlignment.start,
-                                    alignment: WrapAlignment.spaceAround,
-                                    direction: Axis.horizontal,
-                                    children: model.radiologySearchImages!
-                                        .map((e) => _buildSearchImage(
-                                            context, e, model))
-                                        .toList(),
+                      model.selectedEntity == null
+                          ? Container()
+                          : model.radiologySearchImages == null
+                              ? const Center(
+                                  child: CircularProgressIndicator(),
+                                )
+                              : SingleChildScrollView(
+                                  child: Column(
+                                    children: [
+                                      Wrap(
+                                        crossAxisAlignment:
+                                            WrapCrossAlignment.start,
+                                        alignment: WrapAlignment.spaceAround,
+                                        direction: Axis.horizontal,
+                                        children: model.radiologySearchImages!
+                                            .map((e) => _buildSearchImage(
+                                                context, e, model))
+                                            .toList(),
+                                      ),
+                                      TextButton(
+                                          onPressed: () {},
+                                          child: const Padding(
+                                            padding: EdgeInsets.all(8.0),
+                                            child: Text('Load more...'),
+                                          ))
+                                    ],
                                   ),
-                                  TextButton(
-                                      onPressed: () {},
-                                      child: const Padding(
-                                        padding: EdgeInsets.all(8.0),
-                                        child: Text('Load more...'),
-                                      ))
-                                ],
-                              ),
-                            ),
+                                ),
                     if (showHistologyTab)
-                      model.histologySearchImages == null
-                          ? const Center(
-                              child: CircularProgressIndicator(),
-                            )
-                          : SingleChildScrollView(
-                              child: Column(
-                                children: [
-                                  Wrap(
-                                    crossAxisAlignment:
-                                        WrapCrossAlignment.start,
-                                    alignment: WrapAlignment.spaceAround,
-                                    direction: Axis.horizontal,
-                                    children: model.histologySearchImages!
-                                        .map((e) => _buildSearchImage(
-                                            context, e, model))
-                                        .toList(),
+                      model.selectedEntity == null
+                          ? Container()
+                          : model.histologySearchImages == null
+                              ? const Center(
+                                  child: CircularProgressIndicator(),
+                                )
+                              : SingleChildScrollView(
+                                  child: Column(
+                                    children: [
+                                      Wrap(
+                                        crossAxisAlignment:
+                                            WrapCrossAlignment.start,
+                                        alignment: WrapAlignment.spaceAround,
+                                        direction: Axis.horizontal,
+                                        children: model.histologySearchImages!
+                                            .map((e) => _buildSearchImage(
+                                                context, e, model))
+                                            .toList(),
+                                      ),
+                                      TextButton(
+                                          onPressed: () {},
+                                          child: const Padding(
+                                            padding: EdgeInsets.all(8.0),
+                                            child: Text('Load more...'),
+                                          ))
+                                    ],
                                   ),
-                                  TextButton(
-                                      onPressed: () {},
-                                      child: const Padding(
-                                        padding: EdgeInsets.all(8.0),
-                                        child: Text('Load more...'),
-                                      ))
-                                ],
-                              ),
-                            ),
+                                ),
                     if (showPharmacologyTab) _pharmacologyTab(context, model),
                   ],
                 ),

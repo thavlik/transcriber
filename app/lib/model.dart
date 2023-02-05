@@ -15,6 +15,10 @@ class MyModel extends Model {
     entities: [
       api.Entity(score: 1.0, text: "propranolol", type: "GENERIC_NAME"),
       api.Entity(score: 1.0, text: "prednisone", type: "GENERIC_NAME"),
+      api.Entity(score: 1.0, text: "cancer", type: "DX_NAME"),
+      api.Entity(score: 1.0, text: "influenza", type: "DX_NAME"),
+      api.Entity(score: 1.0, text: "ativan", type: "BRAND_NAME"),
+      api.Entity(score: 1.0, text: "azithromycin", type: "GENERIC_NAME"),
     ],
   );
   api.Entity? _selectedEntity;
@@ -56,8 +60,8 @@ class MyModel extends Model {
     if (_fetchingDrugDetails.contains(query)) return null;
     _fetchingDrugDetails.add(query);
     api.getDrugDetails(query).then((details) {
-      _fetchingDrugDetails.remove(query);
       _drugDetails[query] = details;
+      _fetchingDrugDetails.remove(query);
       notifyListeners();
     });
     return null;
@@ -87,6 +91,11 @@ class MyModel extends Model {
   }
 
   set selectedEntity(api.Entity? entity) {
+    if (_selectedEntity != entity) {
+      _searchImages = null;
+      _radiologySearchImages = null;
+      _histologySearchImages = null;
+    }
     _selectedEntity = entity;
     if (entity != null) {
       search(entity.text);
@@ -118,21 +127,18 @@ class MyModel extends Model {
     notifyListeners();
   }
 
-  String? getDefinition(String term) {
-    final def = _definitions[term];
-    if (def == null) define(term);
-    return def;
-  }
-
   bool termIsFetching(String term) => _fetchingTerms.contains(term);
 
-  Future<void> define(String term) async {
-    if (_definitions.containsKey(term) || _fetchingTerms.contains(term)) return;
+  String? define(String term) {
+    final value = _definitions[term];
+    if (value != null) return value;
+    if (_fetchingTerms.contains(term)) return null;
     _fetchingTerms.add(term);
-    final def = await api.define(term);
-    _fetchingTerms.remove(term);
-    _definitions[term] = def;
-    notifyListeners();
+    api.define(term).then((value) {
+      _definitions[term] = value;
+      _fetchingTerms.remove(term);
+      notifyListeners();
+    });
   }
 
   void likeImage(api.SearchImage img, bool isLiked) async {

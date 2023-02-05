@@ -40,6 +40,7 @@ func (s *Server) handlePDB() http.HandlerFunc {
 				return err
 			}
 			reqLog.Debug("resolved drugbank accession number",
+				zap.String("genericName", drug.GenericName),
 				zap.String("chemicalFormula", drug.ChemicalFormula))
 			w.Header().Set("Content-Type", "chemical/x-pdb")
 			if err := s.pdbCache.Get(

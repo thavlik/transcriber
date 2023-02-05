@@ -398,6 +398,12 @@ Future<Uint8List> downloadBinarySTL(String id) async {
   //final url = Uri.https('stlcache.nyc3.digitaloceanspaces.com', '/DB00571.stl');
   final url = Uri.https(apiHost, '/drug/$id/structure.stl');
   final response = await http.get(url);
-  checkHttpStatus(response);
+  if (response.statusCode != 200) {
+    final body = response.body;
+    if (body.isEmpty) {
+      throw 'status code ${response.statusCode}';
+    }
+    throw body;
+  }
   return response.bodyBytes;
 }

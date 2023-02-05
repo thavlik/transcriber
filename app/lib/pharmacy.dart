@@ -133,8 +133,10 @@ class _PharmacyViewState extends State<PharmacyView> {
     final structureUrl =
         'https://ts.beebs.dev/drug/${drug.drugBankAccessionNumber}/structure.svg';
     return Container(
-      width: 300,
-      height: 300,
+      constraints: const BoxConstraints(
+        maxHeight: 300,
+        maxWidth: 300,
+      ),
       child: DefaultTabController(
           length: 2,
           child: Column(
