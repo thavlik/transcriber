@@ -62,6 +62,7 @@ func (s *pharmaSeerServer) handleGetDrugDetails(w http.ResponseWriter, r *http.R
 }
 
 type DrugDetails struct {
+	Type                    string            `json:"type"`
 	Summary                 string            `json:"summary"`
 	BrandNames              []string          `json:"brandNames"`
 	GenericName             string            `json:"genericName"`

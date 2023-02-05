@@ -3,8 +3,11 @@ package api
 import (
 	"encoding/json"
 
+	"github.com/pkg/errors"
 	"github.com/thavlik/transcriber/base/pkg/base"
 )
+
+var ErrNotCached = errors.New("not cached")
 
 func NewPharmaSeerClientFromOptions(opts base.ServiceOptions) PharmaSeer {
 	options := NewPharmaSeerClientOptions().SetTimeout(opts.Timeout)

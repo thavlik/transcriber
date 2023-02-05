@@ -32,6 +32,10 @@ spec:
           - "http://{{ .Release.Name }}-imgsearch:80"
           - --define-endpoint
           - "http://{{ .Release.Name }}-define:80"
+        {{- if .Values.pharmaseer.enabled }}
+          - --pharmaseer-endpoint
+          - "http://{{ .Release.Name }}-pharmaseer:80"
+        {{- end }}
         {{- if .Values.iam.driver }}
           - --iam-driver
           - {{ .Values.iam.driver }}

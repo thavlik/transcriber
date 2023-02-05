@@ -19,6 +19,8 @@ import (
 	"github.com/thavlik/transcriber/pharmaseer/pkg/pdbcache"
 	s3_pdbcache "github.com/thavlik/transcriber/pharmaseer/pkg/pdbcache/s3"
 	"github.com/thavlik/transcriber/pharmaseer/pkg/server"
+	"github.com/thavlik/transcriber/pharmaseer/pkg/thumbcache"
+	s3_thumbcache "github.com/thavlik/transcriber/pharmaseer/pkg/thumbcache/s3"
 	"go.uber.org/zap"
 )
 
@@ -28,6 +30,7 @@ var serverArgs struct {
 	db          base.DatabaseOptions
 	pdbBucket   string
 	concurrency int
+	svgBucket   string
 }
 
 var serverCmd = &cobra.Command{
@@ -37,6 +40,7 @@ var serverCmd = &cobra.Command{
 		base.DatabaseEnv(&serverArgs.db, true)
 		base.RedisEnv(&serverArgs.redis, false)
 		base.CheckEnv("PDB_BUCKET", &serverArgs.pdbBucket)
+		base.CheckEnv("SVG_BUCKET", &serverArgs.svgBucket)
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -50,6 +54,7 @@ var serverCmd = &cobra.Command{
 			initScheduler(redis, "pdbsched"),
 			initInfoCache(cmd.Context(), &serverArgs.db),
 			initPDBCache(log),
+			initThumbCache(log),
 			serverArgs.concurrency,
 			base.DefaultLog,
 		)
@@ -98,6 +103,14 @@ func initPDBCache(log *zap.Logger) pdbcache.PDBCache {
 	}
 }
 
+func initThumbCache(log *zap.Logger) thumbcache.ThumbCache {
+	if serverArgs.svgBucket != "" {
+		return s3_thumbcache.NewS3ThumbCache(serverArgs.svgBucket, log)
+	} else {
+		panic(errors.New("missing thumbnail cache source"))
+	}
+}
+
 func initInfoCache(
 	ctx context.Context,
 	opts *base.DatabaseOptions,
@@ -119,5 +132,6 @@ func init() {
 	base.AddDatabaseFlags(serverCmd, &serverArgs.db)
 	serverCmd.PersistentFlags().IntVar(&serverArgs.concurrency, "concurrency", 1, "number of concurrent queries (best set to 1 and increase # replicas)")
 	serverCmd.PersistentFlags().StringVar(&serverArgs.pdbBucket, "pdb-bucket", "", "Protein Data Bank (pdb) file cache bucket name")
+	serverCmd.PersistentFlags().StringVar(&serverArgs.svgBucket, "svg-bucket", "", "Thumbnail cache bucket name")
 	ConfigureCommand(serverCmd)
 }

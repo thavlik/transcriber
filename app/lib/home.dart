@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 
+import 'package:demo/pharmacy.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 import 'model.dart';
@@ -348,6 +350,23 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ),
       );
 
+  Widget _pharmacologyTab(BuildContext context, MyModel model) {
+    if (model.selectedEntity == null) return Container();
+    final has = model.hasDrugDetails(model.selectedEntity!.text);
+    if (has == null) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    } else if (has == false) {
+      return Container();
+    }
+    final details = model.getDrugDetails(model.selectedEntity!.text)!;
+    return PharmacyView(
+      details,
+      onImageTap: (url) => onImageTap(context, url),
+    );
+  }
+
   Widget _buildRefTab(BuildContext context, MyModel model) {
     final selectedEntity = model.selectedEntity;
     final showRadiologyTab = selectedEntity?.type == 'SYSTEM_ORGAN_SITE';
@@ -520,7 +539,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 ],
                               ),
                             ),
-                    if (showPharmacologyTab) Container(),
+                    if (showPharmacologyTab) _pharmacologyTab(context, model),
                   ],
                 ),
               ),
@@ -626,16 +645,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     child: Container(
                       color: Colors.black.withOpacity(0.5),
                       child: Center(
-                        child: FadeInImage(
-                          placeholder: MemoryImage(kTransparentImageBytes),
-                          image: NetworkImage(_viewImage!),
-                          fit: BoxFit.cover,
-                          imageErrorBuilder: (context, error, stackTrace) {
-                            return kTransparentImage;
-                            //return Image.asset('assets/images/error.jpg',
-                            //    fit: BoxFit.fitWidth);
-                          },
-                        ),
+                        child: _viewImage!.contains('.svg')
+                            ? SvgPicture.network(_viewImage!)
+                            : FadeInImage(
+                                placeholder:
+                                    MemoryImage(kTransparentImageBytes),
+                                image: NetworkImage(_viewImage!),
+                                fit: BoxFit.cover,
+                                imageErrorBuilder:
+                                    (context, error, stackTrace) {
+                                  return kTransparentImage;
+                                  //return Image.asset('assets/images/error.jpg',
+                                  //    fit: BoxFit.fitWidth);
+                                },
+                              ),
                       ),
                     ),
                   ),

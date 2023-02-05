@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/thavlik/transcriber/base/pkg/base"
 	"github.com/thavlik/transcriber/base/pkg/iam"
+	pharmaseer "github.com/thavlik/transcriber/pharmaseer/pkg/api"
 	"go.uber.org/zap"
 )
 
@@ -16,6 +17,8 @@ func Entry(
 	iam iam.IAM,
 	imgSearch *base.ServiceOptions,
 	define *base.ServiceOptions,
+	pharmaSeerOpts *base.ServiceOptions,
+	pharmaSeer pharmaseer.PharmaSeer,
 	corsHeader string,
 	log *zap.Logger,
 ) error {
@@ -24,6 +27,8 @@ func Entry(
 		iam,
 		imgSearch,
 		define,
+		pharmaSeerOpts,
+		pharmaSeer,
 		corsHeader,
 		log,
 	)

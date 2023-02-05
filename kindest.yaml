@@ -22,6 +22,7 @@ env:
           pharmaseer:
             enabled: true
             pdbBucket: pdbcache
+            svgBucket: svgcache
           app:
             enabled: true
           gateway:

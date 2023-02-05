@@ -39,7 +39,9 @@ dependencies:
   scoped_model: 2.0.0
   http: 0.13.5
   web_socket_channel: ^2.3.0
-
+  expandable: ^5.0.1
+  flutter_svg: ^2.0.0+1
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter

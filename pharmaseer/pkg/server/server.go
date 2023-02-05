@@ -16,6 +16,7 @@ import (
 	"github.com/thavlik/transcriber/pharmaseer/pkg/api"
 	"github.com/thavlik/transcriber/pharmaseer/pkg/infocache"
 	"github.com/thavlik/transcriber/pharmaseer/pkg/pdbcache"
+	"github.com/thavlik/transcriber/pharmaseer/pkg/thumbcache"
 )
 
 type Server struct {
@@ -27,6 +28,7 @@ type Server struct {
 	pubsub     pubsub.PubSub
 	infoCache  infocache.InfoCache
 	pdbCache   pdbcache.PDBCache
+	svgCache   thumbcache.ThumbCache
 	log        *zap.Logger
 }
 
@@ -37,6 +39,7 @@ func NewServer(
 	pub pubsub.PubSub,
 	infoCache infocache.InfoCache,
 	pdbCache pdbcache.PDBCache,
+	svgCache thumbcache.ThumbCache,
 	log *zap.Logger,
 ) *Server {
 	ctx, cancel := context.WithCancel(ctx)
@@ -49,6 +52,7 @@ func NewServer(
 		pub,
 		infoCache,
 		pdbCache,
+		svgCache,
 		log,
 	}
 }
@@ -73,6 +77,7 @@ func (s *Server) ListenAndServe(port int) error {
 	mux.Handle("/", otoServer)
 	mux.HandleFunc("/healthz", base.HealthHandler)
 	mux.HandleFunc("/readyz", base.ReadyHandler)
+	mux.HandleFunc("/structure", s.handleStructure())
 	s.log.Info("listening forever", zap.Int("port", port))
 	return (&http.Server{
 		Handler:      mux,

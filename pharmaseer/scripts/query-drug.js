@@ -54,6 +54,7 @@ const getArrayElements = async (page, selector) => {
 
 const getOverview = async (page) => {
     const summary = await getTextValue(page, '#summary');
+    const type = await getTextValue(page, '#type');
     const brandNames = (await getTextValue(page, '#brand-names')).split(', ');
     const genericName = await getTextValue(page, '#generic-name');
     const drugbankAccessionNumber = await getTextValue(page, '#drugbank-accession-number');
@@ -70,10 +71,25 @@ const getOverview = async (page) => {
 
     const weight = parseWeight(await getTextValue(page, '#weight'));
     const chemicalFormula = await getTextValue(page, '#chemical-formula');
-    const synonymns = await getArrayElements(page, '#synonyms');
+
+    await page.click('#synonyms a');
+    await page.screenshot({ path: 'example.png' });
+    //const synonyms = await getTextValue(page, '#synonyms');
+    const synonyms = (await page.evaluate(() => {
+        const el = document.querySelector('#synonyms');
+        el.scrollIntoView();
+        const next = el.nextElementSibling;
+        const children = next.querySelectorAll('li');
+        const data = [];
+        for (const child of children) {
+            data.push(child.innerText);
+        }
+        return data;
+    }));
 
     return {
         summary,
+        type,
         brandNames,
         genericName,
         drugbankAccessionNumber,
@@ -81,7 +97,7 @@ const getOverview = async (page) => {
         groups,
         weight,
         chemicalFormula,
-        synonymns,
+        synonyms,
         structure: {
             image: 'https://go.drugbank.com' + structureImage,
             pdb,

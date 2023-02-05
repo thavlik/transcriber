@@ -62,6 +62,7 @@ type Metabolism struct {
 }
 
 type DrugDetails struct {
+	Type                    string            `json:"type"`
 	Summary                 string            `json:"summary"`
 	BrandNames              []string          `json:"brandNames"`
 	GenericName             string            `json:"genericName"`

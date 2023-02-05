@@ -32,6 +32,8 @@ spec:
           - {{ required "missing db.driver" .Values.db.driver }}
           - --pdb-bucket
           - {{ required "missing pharmaseer.pdbBucket" .Values.pharmaseer.pdbBucket }}
+          - --svg-bucket
+          - {{ required "missing pharmaseer.svgBucket" .Values.pharmaseer.svgBucket }}
         {{- if .Values.prometheus.enabled }}
           - --metrics-port
           - "2112"

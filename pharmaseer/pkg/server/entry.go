@@ -9,6 +9,7 @@ import (
 	"github.com/thavlik/transcriber/base/pkg/scheduler"
 	"github.com/thavlik/transcriber/pharmaseer/pkg/infocache"
 	"github.com/thavlik/transcriber/pharmaseer/pkg/pdbcache"
+	"github.com/thavlik/transcriber/pharmaseer/pkg/thumbcache"
 	"go.uber.org/zap"
 )
 
@@ -24,6 +25,7 @@ func Entry(
 	pdbSched scheduler.Scheduler,
 	infoCache infocache.InfoCache,
 	pdbCache pdbcache.PDBCache,
+	svgCache thumbcache.ThumbCache,
 	concurrency int,
 	log *zap.Logger,
 ) error {
@@ -34,6 +36,7 @@ func Entry(
 		pubSub,
 		infoCache,
 		pdbCache,
+		svgCache,
 		log,
 	)
 	defer s.ShutDown()
@@ -54,6 +57,7 @@ func Entry(
 		pubsub.Publisher(pubSub),
 		querySched,
 		pdbSched,
+		svgCache,
 		stopPopQuery,
 		log,
 	)

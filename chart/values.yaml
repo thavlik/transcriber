@@ -184,6 +184,7 @@ imgsearch:
 pharmaseer:
   enabled: false
   pdbBucket: ""
+  svgBucket: ""
   image: thavlik/pharmaseer:latest
   imagePullPolicy: Always
   replicas: 1

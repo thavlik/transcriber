@@ -17,10 +17,12 @@ class MyModel extends Model {
   List<api.SearchImage>? _radiologySearchImages;
   List<api.SearchImage>? _histologySearchImages;
 
+  final Map<String, api.DrugDetails?> _drugDetails = {};
   final Map<String, String> _definitions = {};
   final Set<String> _fetchingTerms = {};
   final Map<String, bool> _diseases = {};
   final Set<String> _fetchingDiseases = {};
+  final Set<String> _fetchingDrugDetails = {};
 
   bool get isConnected => _isConnected;
   String get transcript => _transcript;
@@ -36,6 +38,24 @@ class MyModel extends Model {
   Future<void> search(String text) async {
     _searchImages = await api.search(text);
     notifyListeners();
+  }
+
+  bool? hasDrugDetails(String query) {
+    if (_drugDetails.containsKey(query)) return _drugDetails[query] != null;
+    getDrugDetails(query);
+    return null;
+  }
+
+  api.DrugDetails? getDrugDetails(String query) {
+    if (_drugDetails.containsKey(query)) return _drugDetails[query];
+    if (_fetchingDrugDetails.contains(query)) return null;
+    _fetchingDrugDetails.add(query);
+    api.getDrugDetails(query).then((details) {
+      _fetchingDrugDetails.remove(query);
+      _drugDetails[query] = details;
+      notifyListeners();
+    });
+    return null;
   }
 
   bool? isDisease(String term) {

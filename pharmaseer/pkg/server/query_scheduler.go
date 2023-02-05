@@ -12,6 +12,7 @@ import (
 	"github.com/thavlik/transcriber/base/pkg/scheduler"
 	"github.com/thavlik/transcriber/pharmaseer/pkg/api"
 	"github.com/thavlik/transcriber/pharmaseer/pkg/infocache"
+	"github.com/thavlik/transcriber/pharmaseer/pkg/thumbcache"
 	"go.uber.org/zap"
 )
 
@@ -42,6 +43,7 @@ func initQueryWorkers(
 	pub pubsub.Publisher,
 	querySched scheduler.Scheduler,
 	pdbSched scheduler.Scheduler,
+	svgCache thumbcache.ThumbCache,
 	stop <-chan struct{},
 	log *zap.Logger,
 ) {
@@ -53,6 +55,7 @@ func initQueryWorkers(
 			popQuery,
 			querySched,
 			pdbSched,
+			svgCache,
 			pub,
 			log,
 		)
@@ -100,6 +103,7 @@ func queryWorker(
 	popQuery <-chan string,
 	querySched scheduler.Scheduler,
 	pdbSched scheduler.Scheduler,
+	svgCache thumbcache.ThumbCache,
 	pub pubsub.Publisher,
 	log *zap.Logger,
 ) {
@@ -180,7 +184,13 @@ func queryWorker(
 						"https://api.bing.microsoft.com/",
 						subscriptionKey,
 					)
-					if err != nil {
+					if err == errFailedToFindDrugBankURL {
+						entityLog.Debug("failed to find drugbank url, removing entity")
+						if err := querySched.Remove(rawEnt); err != nil {
+							return errors.Wrap(err, "failed to remove entity from query scheduler, this will result in multiple repeated requests to youtube")
+						}
+						return nil
+					} else if err != nil {
 						return errors.Wrap(err, "failed to query drugbank url")
 					}
 					entityLog.Debug("found drugbank entry, querying", zap.String("url", drugBankURL))
@@ -213,6 +223,14 @@ func queryWorker(
 					); err != nil {
 						return errors.Wrap(err, "failed to publish drug topic")
 					}
+				}
+				if err := downloadDrugSVG(
+					ctx,
+					drug.DrugBankAccessionNumber,
+					svgCache,
+					nil,
+				); err != nil {
+					return errors.Wrap(err, "downloadDrugSVG")
 				}
 				// add the pdb url to the scheduler
 				body, err := json.Marshal(&pdbItem{
