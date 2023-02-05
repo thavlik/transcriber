@@ -51,8 +51,8 @@ func (s *Server) ListenAndServe(
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", base.Handle404(s.log))
-	mux.HandleFunc("/healthz", base.Handle200)
-	mux.HandleFunc("/readyz", base.Handle200)
+	mux.HandleFunc("/healthz", base.HealthHandler)
+	mux.HandleFunc("/readyz", base.ReadyHandler)
 
 	srv := &http.Server{
 		Handler:      mux,

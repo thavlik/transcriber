@@ -33,6 +33,8 @@ func Entry(
 		)
 	})
 
+	base.SignalReady(log)
+
 	return s.ListenAndServe(
 		serverOpts.Port,
 	)

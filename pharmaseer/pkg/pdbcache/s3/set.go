@@ -20,8 +20,8 @@ func (s *s3PDBCache) Set(
 	if _, err := s3manager.NewUploader(s.sess).
 		Upload(&s3manager.UploadInput{
 			Bucket: aws.String(s.bucketName),  // all image uploads go into one bucket
-			Key:    aws.String(key),           // videoID.webm
-			Body:   r,                         // videoID.webm
+			Key:    aws.String(key),           //
+			Body:   r,                         //
 			ACL:    aws.String("public-read"), // "x-amz-acl" https://docs.digitalocean.com/reference/api/spaces-api/
 		}); err != nil {
 		return errors.Wrap(err, "s3")

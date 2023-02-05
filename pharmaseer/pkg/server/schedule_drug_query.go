@@ -8,12 +8,13 @@ import (
 )
 
 func (s *Server) scheduleDrugQuery(
-	id string,
+	query string,
+	force bool,
 ) error {
-	s.log.Debug("asynchronously querying drug details", zap.String("id", id))
 	body, err := json.Marshal(&entity{
-		Type: drug,
-		ID:   id,
+		Type:  drugEntity,
+		Query: query,
+		Force: force,
 	})
 	if err != nil {
 		return errors.Wrap(err, "json")
@@ -21,6 +22,6 @@ func (s *Server) scheduleDrugQuery(
 	if err := s.querySched.Add(string(body)); err != nil {
 		return errors.Wrap(err, "scheduler.Add")
 	}
-	s.log.Debug("added drug query to scheduler", zap.String("id", id))
+	s.log.Debug("added drug query to scheduler", zap.String("query", query))
 	return nil
 }

@@ -44,10 +44,10 @@ var serverCmd = &cobra.Command{
 		redis := initRedis(cmd.Context())
 		return server.Entry(
 			cmd.Context(),
-			serverArgs.Port,
+			&serverArgs.ServerOptions,
 			initPubSub(redis, log),
-			initScheduler(redis, "dlsched"),
-			initScheduler(redis, "qrysched"),
+			initScheduler(redis, "dbqsched"),
+			initScheduler(redis, "pdbsched"),
 			initInfoCache(cmd.Context(), &serverArgs.db),
 			initPDBCache(log),
 			serverArgs.concurrency,
@@ -84,7 +84,7 @@ func initScheduler(
 		return redis_scheduler.NewRedisScheduler(
 			redis,
 			name,
-			25*time.Second,
+			10*time.Second,
 		)
 	}
 	return memory_scheduler.NewMemoryScheduler()

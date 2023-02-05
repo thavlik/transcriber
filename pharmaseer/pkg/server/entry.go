@@ -13,31 +13,38 @@ import (
 )
 
 var (
-	cancelVideoTopic = "cancel_video"
+	cancelDownloadTopic = "cancel_pdb"
 )
 
 func Entry(
 	ctx context.Context,
-	port int,
+	serverOpts *base.ServerOptions,
 	pubSub pubsub.PubSub,
 	querySched scheduler.Scheduler,
-	dlSched scheduler.Scheduler,
+	pdbSched scheduler.Scheduler,
 	infoCache infocache.InfoCache,
 	pdbCache pdbcache.PDBCache,
 	concurrency int,
 	log *zap.Logger,
 ) error {
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
 	s := NewServer(
+		ctx,
 		querySched,
-		dlSched,
+		pdbSched,
 		pubSub,
 		infoCache,
 		pdbCache,
 		log,
 	)
+	defer s.ShutDown()
+
+	s.spawn(func() {
+		base.RunMetrics(
+			s.ctx,
+			serverOpts.MetricsPort,
+			log,
+		)
+	})
 
 	stopPopQuery := make(chan struct{}, 1)
 	defer func() { stopPopQuery <- struct{}{} }()
@@ -46,13 +53,14 @@ func Entry(
 		infoCache,
 		pubsub.Publisher(pubSub),
 		querySched,
+		pdbSched,
 		stopPopQuery,
 		log,
 	)
 
-	cancelVideoDownload, err := pubSub.Subscribe(
-		ctx,
-		cancelVideoTopic,
+	cancelDownload, err := pubSub.Subscribe(
+		s.ctx,
+		cancelDownloadTopic,
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to subscribe to topic")
@@ -61,15 +69,14 @@ func Entry(
 	stopPopDl := make(chan struct{}, 1)
 	defer func() { stopPopDl <- struct{}{} }()
 	initDownloadWorkers(
-		ctx,
+		s.ctx,
 		concurrency,
-		dlSched,
-		cancelVideoDownload.Messages(ctx),
+		pdbSched,
+		cancelDownload.Messages(s.ctx),
 		pdbCache,
 		stopPopDl,
 		log,
 	)
-
 	base.SignalReady(log)
-	return s.ListenAndServe(port)
+	return s.ListenAndServe(serverOpts.Port)
 }

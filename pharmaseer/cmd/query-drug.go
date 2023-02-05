@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 
@@ -13,8 +12,7 @@ import (
 
 var queryDrugArgs struct {
 	base.ServiceOptions
-	force  bool
-	videos bool
+	force bool
 }
 
 var queryDrugCmd = &cobra.Command{
@@ -23,9 +21,10 @@ var queryDrugCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		seer := api.NewPharmaSeerClientFromOptions(queryDrugArgs.ServiceOptions)
 		details, err := seer.GetDrugDetails(
-			context.Background(),
+			cmd.Context(),
 			api.GetDrugDetails{
-				Input: args[0],
+				Query: args[0],
+				Force: queryDrugArgs.force,
 			})
 		if err != nil {
 			return err

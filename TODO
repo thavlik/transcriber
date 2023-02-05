@@ -3,3 +3,4 @@
   - Evaluate DrugBank
 - Pathology tab for DX_NAME
   - DX_NAME is too general and this may require hand-tuning
+- refactor websearch into pkg/base

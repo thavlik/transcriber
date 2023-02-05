@@ -1,6 +1,16 @@
 // Run with:
 // docker run -i --init --cap-add=SYS_ADMIN --rm ghcr.io/puppeteer/puppeteer:latest node -e "$(cat query-drug.js)"
 const puppeteer = require('puppeteer');
+//const {TimeoutError} = require('puppeteer/Errors');
+//try {
+//  await page.waitForSelector(yourSelector, {timeout: 5000});
+//} catch (e) {
+//  if (e instanceof TimeoutError) {
+//      // Do something if this is a timeout.
+//  }
+//}
+
+const TIMEOUT = 5000;
 
 function parseWeight(input) {
     // "Average: 321.158 Monoisotopic: 320.011932988 "
@@ -23,14 +33,14 @@ function parseWeight(input) {
 }
 
 const getTextValue = async (page, id) => {
-    const el = await page.waitForSelector(id);
+    const el = await page.waitForSelector(id, { timeout: TIMEOUT });
     const val = await page.evaluateHandle(el => el.nextElementSibling, el);
     const text = await (await val.getProperty('textContent')).jsonValue();
     return text.trim();
 }
 
 const getArrayElements = async (page, selector) => {
-    const el = await page.waitForSelector(selector);
+    const el = await page.waitForSelector(selector, { timeout: TIMEOUT });
     const items = (await (await page.evaluateHandle(el => {
         const next = el.nextElementSibling;
         const data = [];
@@ -49,18 +59,17 @@ const getOverview = async (page) => {
     const drugbankAccessionNumber = await getTextValue(page, '#drugbank-accession-number');
     const background = await getTextValue(page, '#background');
     const groups = (await getTextValue(page, '#groups')).split(', ');
-
-    const structureImageEl = await page.waitForSelector('.structure a img');
+    const structureImageEl = await page.waitForSelector('.structure a img', { timeout: TIMEOUT });
     const structureImage = await (await page.evaluateHandle(el => el.getAttribute('src'), structureImageEl)).jsonValue();
 
-    const externalIDs = (await getTextValue(page, '#external-ids')).split(', ');
+    const externalIDs = await getArrayElements(page, '#external-ids');
 
     await page.click('#structure-download');
     const [pdbEl] = await page.$x("//a[contains(text(), 'PDB')]");
     const pdb = await (await pdbEl.getProperty('href')).jsonValue();
 
     const weight = parseWeight(await getTextValue(page, '#weight'));
-
+    const chemicalFormula = await getTextValue(page, '#chemical-formula');
     const synonymns = await getArrayElements(page, '#synonyms');
 
     return {
@@ -71,6 +80,7 @@ const getOverview = async (page) => {
         background,
         groups,
         weight,
+        chemicalFormula,
         synonymns,
         structure: {
             image: 'https://go.drugbank.com' + structureImage,
@@ -81,7 +91,7 @@ const getOverview = async (page) => {
 }
 
 const getMetabolism = async (page) => {
-    const el = await page.waitForSelector('#metabolism');
+    const el = await page.waitForSelector('#metabolism', { timeout: TIMEOUT });
     const val = await page.evaluateHandle(el => el.nextElementSibling, el);
     let description = await (await val.getProperty('textContent')).jsonValue();
     let i = description.indexOf('Hover over products below to view reaction partners');
@@ -103,7 +113,7 @@ const getMetabolism = async (page) => {
 };
 
 const getReferences = async (page) => {
-    const el = await page.waitForSelector('#general-references');
+    const el = await page.waitForSelector('#general-references', { timeout: TIMEOUT });
     const val = await page.evaluateHandle(el => el.nextElementSibling, el);
     const general = await (await page.evaluateHandle(el => {
         const tds = Array.from(el.querySelectorAll('ol.cite-this-references > li'))
@@ -133,9 +143,9 @@ const getReferences = async (page) => {
 };
 
 const getPharmacology = async (page) => {
-    const indication = await getTextValue(page, '#summary');
+    const indication = await getTextValue(page, '#indication');
 
-    const associatedConditionsEl = await page.waitForSelector('#associated-conditions');
+    const associatedConditionsEl = await page.waitForSelector('#associated-conditions', { timeout: TIMEOUT });
     const associatedConditions = (await (await page.evaluateHandle(el => {
         const next = el.nextElementSibling;
         const data = [];
@@ -146,15 +156,15 @@ const getPharmacology = async (page) => {
     }, associatedConditionsEl)).jsonValue())[0].split('\n');
 
 
-    const associatedTherapiesEl = await page.waitForSelector('#associated-conditions');
-    const associatedTherapies = (await (await page.evaluateHandle(el => {
-        const next = el.nextElementSibling;
-        const data = [];
-        for (const child of next.children) {
-            data.push(child.innerText);
-        }
-        return data;
-    }, associatedTherapiesEl)).jsonValue())[0].split('\n');
+    //const associatedTherapiesEl = await page.waitForSelector('#associated-therapies');
+    //const associatedTherapies = (await (await page.evaluateHandle(el => {
+    //    const next = el.nextElementSibling;
+    //    const data = [];
+    //    for (const child of next.children) {
+    //        data.push(child.innerText);
+    //    }
+    //    return data;
+    //}, associatedTherapiesEl)).jsonValue())[0].split('\n');
 
     const pharmacodynamics = await getTextValue(page, '#pharmacodynamics');
     const mechanismOfAction = await getTextValue(page, '#mechanism-of-action');
@@ -170,7 +180,7 @@ const getPharmacology = async (page) => {
     return {
         indication,
         associatedConditions,
-        associatedTherapies,
+        //associatedTherapies,
         pharmacodynamics,
         mechanismOfAction,
         absorption,
@@ -185,7 +195,7 @@ const getPharmacology = async (page) => {
 }
 
 const parsePropertyTable = async (page, selector) => {
-    const el = await page.waitForSelector(selector);
+    const el = await page.waitForSelector(selector, { timeout: TIMEOUT });
     const val = await page.evaluateHandle(el => el.nextElementSibling, el);
 };
 
@@ -214,19 +224,19 @@ const getProperties = async (page) => {
         const general = await getOverview(page);
 
         // get the pharmacology data
-        await page.click('#pharmacology-sidebar-header');
-        const pharmacology = await getPharmacology(page);
+        //await page.click('#pharmacology-sidebar-header');
+        //const pharmacology = await getPharmacology(page);
 
-        await page.click('#references-sidebar-header');
-        const references = await getReferences(page);
+        //await page.click('#references-sidebar-header');
+        //const references = await getReferences(page);
 
         //await page.click('#properties-sidebar-header');
         //const properties = await parseProperties(page);
 
         console.log(JSON.stringify({
             ...general,
-            pharmacology,
-            references,
+            //pharmacology,
+            //references,
         }, null, 2));
     } finally {
         await browser.close();

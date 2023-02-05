@@ -4,13 +4,12 @@
 *.exe
 app/
 chart/
-scripts/
 secrets/
 kindest.yaml
 cmd/cmd
 /transcriber/cmd/transcriber
 /imgsearch/cmd/imgsearch
-scripts/
+/scripts/
 test.wav
 fdk-aac-*
 Dockerfile

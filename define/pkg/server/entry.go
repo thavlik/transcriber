@@ -40,6 +40,7 @@ func Entry(
 			log,
 		)
 	})
+	base.SignalReady(log)
 
 	return s.ListenAndServe(
 		serverOpts.Port,

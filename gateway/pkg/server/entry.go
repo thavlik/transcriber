@@ -39,6 +39,7 @@ func Entry(
 	s.spawn(func() { mainErr <- s.ListenAndServe(serverOpts.Port) })
 	adminErr := make(chan error, 1)
 	s.spawn(func() { adminErr <- s.AdminListenAndServe(adminPort) })
+	base.SignalReady(log)
 	select {
 	case <-s.ctx.Done():
 		return s.ctx.Err()

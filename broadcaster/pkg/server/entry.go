@@ -50,6 +50,8 @@ func Entry(
 		s.pumpMessages(msgs)
 	})
 
+	base.SignalReady(log)
+
 	return s.ListenAndServe(
 		serverOpts.Port,
 	)

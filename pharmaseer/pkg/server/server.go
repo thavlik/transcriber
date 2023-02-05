@@ -1,8 +1,10 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	"go.uber.org/zap"
@@ -17,6 +19,9 @@ import (
 )
 
 type Server struct {
+	ctx        context.Context
+	cancel     context.CancelFunc
+	wg         *sync.WaitGroup
 	querySched scheduler.Scheduler
 	dlSched    scheduler.Scheduler
 	pubsub     pubsub.PubSub
@@ -26,6 +31,7 @@ type Server struct {
 }
 
 func NewServer(
+	ctx context.Context,
 	querySched scheduler.Scheduler,
 	dlSched scheduler.Scheduler,
 	pub pubsub.PubSub,
@@ -33,7 +39,11 @@ func NewServer(
 	pdbCache pdbcache.PDBCache,
 	log *zap.Logger,
 ) *Server {
+	ctx, cancel := context.WithCancel(ctx)
 	return &Server{
+		ctx,
+		cancel,
+		new(sync.WaitGroup),
 		querySched,
 		dlSched,
 		pub,
@@ -41,6 +51,19 @@ func NewServer(
 		pdbCache,
 		log,
 	}
+}
+
+func (s *Server) spawn(f func()) {
+	s.wg.Add(1)
+	go func() {
+		defer s.wg.Done()
+		f()
+	}()
+}
+
+func (s *Server) ShutDown() {
+	s.cancel()
+	s.wg.Wait()
 }
 
 func (s *Server) ListenAndServe(port int) error {
@@ -54,6 +77,7 @@ func (s *Server) ListenAndServe(port int) error {
 	return (&http.Server{
 		Handler:      mux,
 		Addr:         fmt.Sprintf("0.0.0.0:%d", port),
-		WriteTimeout: time.Hour,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
 	}).ListenAndServe()
 }

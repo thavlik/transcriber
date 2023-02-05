@@ -12,6 +12,7 @@ var (
 )
 
 type InfoCache interface {
+	HasDrug(ctx context.Context, query string) (bool, error)
 	GetDrug(ctx context.Context, query string) (*api.DrugDetails, error)
 	SetDrug(ctx context.Context, query string, details *api.DrugDetails) error
 }

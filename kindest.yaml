@@ -7,6 +7,7 @@ dependencies:
   - strim
   - broadcaster
   - gateway
+  - pharmaseer
   - keycloak
 env:
   kubernetes:
@@ -19,7 +20,7 @@ env:
         namespace: ts
         values:
           pharmaseer:
-            enabled: false
+            enabled: true
             pdbBucket: pdbcache
           app:
             enabled: true
@@ -27,12 +28,12 @@ env:
             enabled: true
           imgsearch:
             enabled: true
-            bing:
-              apiKey:
-                valueFrom:
-                  secretKeyRef:
-                    name: bing-cred
-                    key: apikey
+          bing:
+            apiKey:
+              valueFrom:
+                secretKeyRef:
+                  name: bing-cred
+                  key: apikey
           strim:
             enabled: true
             streamKey:

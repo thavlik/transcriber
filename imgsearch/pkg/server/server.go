@@ -56,8 +56,8 @@ func (s *Server) ListenAndServe(port int) error {
 	mux := http.NewServeMux()
 	// it's okay if the health and ready checks are publicly accessible
 	mux.HandleFunc("/", base.Handle404(s.log))
-	mux.HandleFunc("/healthz", base.Handle200)
-	mux.HandleFunc("/readyz", base.Handle200)
+	mux.HandleFunc("/healthz", base.HealthHandler)
+	mux.HandleFunc("/readyz", base.ReadyHandler)
 	mux.HandleFunc("/img/search", s.handleSearch())
 	mux.HandleFunc("/img/view", s.handleImage())
 	srv := &http.Server{

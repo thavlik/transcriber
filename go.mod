@@ -6,6 +6,7 @@ require (
 	github.com/Nerzal/gocloak/v12 v12.0.0
 	github.com/PullRequestInc/go-gpt3 v1.1.11
 	github.com/aws/aws-sdk-go v1.44.188
+	github.com/bsm/redislock v0.9.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-audio/audio v1.0.0
 	github.com/go-audio/wav v1.1.0
@@ -29,7 +30,6 @@ require (
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
-	github.com/bsm/redislock v0.9.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.0-20210816181553-5444fa50b93d // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect

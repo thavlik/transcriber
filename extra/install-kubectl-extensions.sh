@@ -10,3 +10,4 @@ install gateway
 install imgsearch
 install scribe
 install comprehend
+install pharmaseer

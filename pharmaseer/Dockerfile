@@ -3,6 +3,7 @@ ARG KINDEST_TAG="latest"
 ARG RUNTIME_BASE_IMAGE="ghcr.io/puppeteer/puppeteer:latest"
 FROM ${KINDEST_REPOSITORY}thavlik/transcriber-base:${KINDEST_TAG} AS builder
 COPY base/pkg base/pkg
+COPY define/pkg/websearch define/pkg/websearch
 COPY pharmaseer pharmaseer
 WORKDIR /go/src/github.com/thavlik/transcriber/pharmaseer/cmd
 RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o pharmaseer

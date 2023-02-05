@@ -5,12 +5,13 @@ type PharmaSeer interface {
 }
 
 type GetDrugDetails struct {
-	Input string `json:"input"`
+	Query string `json:"query"`
 	Force bool   `json:"force"`
 }
 
 type DrugStructure struct {
-	ImageURL string `json:"imageURL"`
+	Image string `json:"image"`
+	PDB   string `json:"pdb"`
 }
 
 type ExperimentalMetric struct {
@@ -27,22 +28,47 @@ type ExperimentalProperties struct {
 }
 
 type DrugPharmacology struct {
-	RouteOfElimination string `json:"routeOfElimination"`
-	HalfLife           string `json:"halfLife"`
-	MechanismOfAction  string `json:"mechanismOfAction"`
+	Indication           string   `json:"indication"`
+	AssociatedConditions []string `json:"associatedConditions,omitempty"`
+	Pharmacodynamics     string   `json:"pharmacodynamics"`
+	MechanismOfAction    string   `json:"mechanismOfAction"`
+	Absorption           string   `json:"absorption"`
+	VolumeOfDistribution string   `json:"volumeOfDistribution"`
+	ProteinBinding       string   `json:"proteinBinding"`
+	Metabolism           string   `json:"metabolism"`
+	RouteOfElimination   string   `json:"routeOfElimination"`
+	HalfLife             string   `json:"halfLife"`
+	Clearance            string   `json:"clearance"`
+	Toxicity             string   `json:"toxicity"`
+}
+
+type Reference struct {
+	Index int    `json:"index"`
+	Title string `json:"title"`
+	Link  string `json:"link"`
+}
+
+type References struct {
+	General []*Reference `json:"general"`
+}
+
+type Weight struct {
+	Average      string `json:"average"`
+	Monoisotopic string `json:"monoisotopic"`
 }
 
 type DrugDetails struct {
-	Summary                string                  `json:"summary"`
-	BrandNames             []string                `json:"brandNames"`
-	GenericName            string                  `json:"genericName"`
-	Type                   string                  `json:"type"`
-	Groups                 []string                `json:"groups"`
-	AverageWeight          float64                 `json:"averageWeight"`
-	MonoisotopicWeight     float64                 `json:"monoisotopicWeight"`
-	ChemicalFormula        string                  `json:"chemicalFormula"`
-	Structure              *DrugStructure          `json:"drugStructure"`
-	Synonyms               []string                `json:"synonyms"`
-	Pharmacology           *DrugPharmacology       `json:"pharmacology"`
-	ExperimentalProperties *ExperimentalProperties `json:"experimentalProperties"`
+	Summary                 string            `json:"summary"`
+	BrandNames              []string          `json:"brandNames"`
+	GenericName             string            `json:"genericName"`
+	DrugBankAccessionNumber string            `json:"drugBankAccessionNumber"`
+	Background              string            `json:"background"`
+	Groups                  []string          `json:"groups"`
+	Structure               *DrugStructure    `json:"drugStructure"`
+	Weight                  *Weight           `json:"weight"`
+	ChemicalFormula         string            `json:"chemicalFormula"`
+	Synonyms                []string          `json:"synonyms"`
+	ExternalIDs             []string          `json:"externalIDs"`
+	Pharmacology            *DrugPharmacology `json:"pharmacology"`
+	References              *References       `json:"references"`
 }

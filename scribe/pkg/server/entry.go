@@ -45,6 +45,8 @@ func Entry(
 
 	s.spawn(s.pumpNewSource)
 
+	base.SignalReady(log)
+
 	return s.ListenAndServe(
 		serverOpts.Port,
 	)

@@ -2,34 +2,41 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/transcriber/base/pkg/base"
 	"github.com/thavlik/transcriber/base/pkg/scheduler"
 	"github.com/thavlik/transcriber/pharmaseer/pkg/pdbcache"
 	"go.uber.org/zap"
 )
 
+type pdbItem struct {
+	Query                   string `json:"q"`
+	DrugBankAccessionNumber string `json:"d"`
+	URL                     string `json:"u"`
+	Force                   bool   `json:"f"`
+}
+
 func initDownloadWorkers(
 	ctx context.Context,
 	concurrency int,
-	dlSched scheduler.Scheduler,
-	cancelVideoDownload <-chan []byte,
+	pdbSched scheduler.Scheduler,
+	cancelDownload <-chan []byte,
 	pdbCache pdbcache.PDBCache,
 	stop <-chan struct{},
 	log *zap.Logger,
 ) {
-	popVideoID := make(chan string)
-	go downloadPopper(popVideoID, dlSched, stop, log)
+	popPDB := make(chan string)
+	go downloadPopper(popPDB, pdbSched, stop, log)
 	cancels := make([]chan []byte, concurrency)
 	for i := 0; i < concurrency; i++ {
 		cancel := make(chan []byte, 8)
 		cancels[i] = cancel
 		go downloadWorker(
-			popVideoID,
+			popPDB,
 			cancel,
-			dlSched,
+			pdbSched,
 			pdbCache,
 			log,
 		)
@@ -39,7 +46,7 @@ func initDownloadWorkers(
 			select {
 			case <-ctx.Done():
 				return
-			case videoID, ok := <-cancelVideoDownload:
+			case pdb, ok := <-cancelDownload:
 				if !ok {
 					return
 				}
@@ -47,7 +54,7 @@ func initDownloadWorkers(
 					select {
 					case <-ctx.Done():
 						return
-					case cancel <- videoID:
+					case cancel <- pdb:
 					}
 				}
 			}
@@ -56,24 +63,24 @@ func initDownloadWorkers(
 }
 
 func downloadPopper(
-	popVideoID chan<- string,
-	dlSched scheduler.Scheduler,
+	popPDB chan<- string,
+	pdbSched scheduler.Scheduler,
 	stop <-chan struct{},
 	log *zap.Logger,
 ) {
-	notification := dlSched.Notify()
-	defer close(popVideoID)
-	delay := 12 * time.Second
+	notification := pdbSched.Notify()
+	defer close(popPDB)
+	delay := 6 * time.Second
 	for {
 		start := time.Now()
-		videoIDs, err := dlSched.List()
+		pdbs, err := pdbSched.List()
 		if err != nil {
 			panic(errors.Wrap(err, "scheduler.List"))
 		}
-		if len(videoIDs) > 0 {
-			log.Debug("checking videos", zap.Int("num", len(videoIDs)))
-			for _, videoID := range videoIDs {
-				popVideoID <- videoID
+		if len(pdbs) > 0 {
+			log.Debug("checking pdbs", zap.Int("num", len(pdbs)))
+			for _, pdb := range pdbs {
+				popPDB <- pdb
 			}
 		}
 		remaining := delay - time.Since(start)
@@ -92,70 +99,72 @@ func downloadPopper(
 }
 
 func downloadWorker(
-	popVideoID <-chan string,
-	cancelVideoDownload <-chan []byte,
-	dlSched scheduler.Scheduler,
+	popPDB <-chan string,
+	cancelDownload <-chan []byte,
+	pdbSched scheduler.Scheduler,
 	pdbCache pdbcache.PDBCache,
 	log *zap.Logger,
 ) {
 	for {
-		videoID, ok := <-popVideoID
+		rawPDB, ok := <-popPDB
 		if !ok {
 			return
 		}
-		videoLog := log.With(zap.String("videoID", videoID))
-		lock, err := dlSched.Lock(videoID)
+		pdb := new(pdbItem)
+		if err := json.Unmarshal([]byte(rawPDB), pdb); err != nil {
+			panic(err)
+		}
+		pdbLog := log.With(
+			zap.String("query", pdb.Query),
+			zap.String("url", pdb.URL))
+		lock, err := pdbSched.Lock(pdb.Query)
 		if err == scheduler.ErrLocked {
 			// go to the next project
-			videoLog.Debug("video already locked")
+			pdbLog.Debug("pdb already locked")
 			continue
 		} else if err != nil {
 			panic(errors.Wrap(err, "scheduler.Lock"))
 		}
-		videoLog.Debug("locked video")
+		pdbLog.Debug("locked pdb")
 		func() {
 			ctx, cancel := context.WithCancel(context.Background())
 			stop := make(chan struct{}, 1)
 			stopped := make(chan struct{})
 			defer func() {
+				cancel()
+				_ = lock.Release()
 				stop <- struct{}{}
 				<-stopped
-				_ = lock.Release()
-				cancel()
 			}()
-			onProgress := make(chan *base.DownloadProgress, 1)
-			defer close(onProgress)
 			go func() {
 				defer func() { stopped <- struct{}{} }()
-				done := ctx.Done()
 				for {
 					select {
-					case cancelID := <-cancelVideoDownload:
-						if string(cancelID) == videoID {
+					case cancelPDB := <-cancelDownload:
+						if string(cancelPDB) == pdb.Query {
 							cancel()
-							videoLog.Debug("download was intentionally cancelled prematurely")
+							pdbLog.Debug("download was intentionally cancelled prematurely")
 							return
 						}
 					case <-stop:
 						return
-					case <-done:
+					case <-ctx.Done():
 						return
-					case progress, ok := <-onProgress:
-						if !ok {
-							return
-						}
-						if err := lock.Extend(); err != nil {
-							videoLog.Warn("failed to extend video download lock", zap.Error(err))
-							cancel()
-							return
-						}
-						if progress != nil {
-							// TODO
-						}
 					}
 				}
 			}()
-			base.ProgressDownload(ctx, onProgress)
+			if err := downloadPDB(
+				ctx,
+				pdb,
+				pdbCache,
+				pdbLog,
+			); err != nil {
+				pdbLog.Error("error downloading pdb", zap.Error(err))
+				return
+			}
+			if err := pdbSched.Remove(rawPDB); err != nil {
+				pdbLog.Warn("failed to remove pdb from download scheduler, this will result in multiple repeated requests to drugbank")
+			}
 		}()
 	}
 }

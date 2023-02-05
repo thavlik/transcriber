@@ -47,6 +47,22 @@ spec:
         env:
         - name: LOG_LEVEL
           value: {{ .Values.pharmaseer.logLevel }}
+      {{- if .Values.s3.endpoint }}
+        - name: S3_ENDPOINT
+          value: {{ .Values.s3.endpoint }}
+      {{- end }}
+        - name: AWS_REGION
+          value: {{ .Values.s3.region }}
+        - name: AWS_ACCESS_KEY_ID
+{{ tpl (toYaml .Values.s3.accessKeyId) . | indent 10 }}
+        - name: AWS_SECRET_ACCESS_KEY
+{{ tpl (toYaml .Values.s3.secretAccessKey) . | indent 10 }}
+        - name: BING_API_KEY
+{{ tpl (toYaml .Values.bing.apiKey) . | indent 10 }}
+        - name: BING_LOCATION
+{{ tpl (toYaml .Values.bing.location) . | indent 10 }}
+        - name: BING_ENDPOINT
+{{ tpl (toYaml .Values.bing.endpoint) . | indent 10 }}
       {{- if .Values.redis.enabled }}
         - name: REDIS_USERNAME
 {{ tpl (toYaml .Values.redis.username) . | indent 10 }}
@@ -57,12 +73,6 @@ spec:
         - name: REDIS_PORT
 {{ tpl (toYaml .Values.redis.port) . | indent 10 }}
       {{- end }}
-        - name: AWS_REGION
-          value: {{ .Values.s3.region }}
-        - name: AWS_ACCESS_KEY_ID
-{{ tpl (toYaml .Values.s3.accessKeyId) . | indent 10 }}
-        - name: AWS_SECRET_ACCESS_KEY
-{{ tpl (toYaml .Values.s3.secretAccessKey) . | indent 10 }}
 {{- if eq .Values.db.driver "postgres" }}
         - name: POSTGRES_DATABASE
 {{ tpl (toYaml .Values.db.postgres.database) . | indent 10 }}

@@ -7,6 +7,14 @@ imagePullSecrets: []
 # value effectively opens an attack surface well known to hackers. 
 corsHeader: "*"
 
+bing:
+  location:
+    value: global
+  endpoint:
+    value: https://api.bing.microsoft.com/
+  apiKey:
+    value: ""
+
 redis:
   enabled: false
   username:
@@ -164,13 +172,6 @@ imgsearch:
   enabled: true
   metaCollectionName: images
   historyCollectionName: history
-  bing:
-    location:
-      value: global
-    endpoint:
-      value: https://api.bing.microsoft.com/
-    apiKey:
-      value: ""
   image: thavlik/imgsearch:latest
   imagePullPolicy: Always
   # If there is a large number of concurrent image
