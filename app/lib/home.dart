@@ -495,12 +495,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                                 .searchImages!.queryExpansions
                                                 .sublist(
                                                     0,
-                                                    min(
-                                                        3,
-                                                        model
-                                                            .searchImages!
-                                                            .queryExpansions
-                                                            .length))
+                                                    model.searchImages!
+                                                        .queryExpansions.length)
                                                 .map((e) => QueryExpansion(
                                                       model,
                                                       model.selectedEntity!,
