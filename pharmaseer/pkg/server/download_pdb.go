@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func downloadPDB(
+func downloadDrugBankPDB(
 	ctx context.Context,
 	drugBankAccessionNumber string,
 	url string,

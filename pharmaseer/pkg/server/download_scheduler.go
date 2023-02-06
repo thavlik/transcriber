@@ -153,7 +153,7 @@ func downloadWorker(
 					}
 				}
 			}()
-			if err := downloadPDB(
+			if err := downloadDrugBankPDB(
 				ctx,
 				pdb.DrugBankAccessionNumber,
 				pdb.URL,

@@ -1,8 +1,8 @@
 - refactor websearch into pkg/base
 - Yes or no, is histology used to diagnose schizophrenia?
   - Button "Histology is not useful for 'schizophrenia'"
-- cancer tab
-- psych
+- cancer tab?
+- psych tab?
   - Yes or no, is cancer a psychiatric illness?
 - refactor all imgcache/thumbcach/etc. to use base/pkg/filecache
 - download thumbnail concurrently and add pdb to pdbSched sooner
@@ -10,3 +10,29 @@
   - provide a way for the user to give feedback that can be plugged into subsequent queries
 - use query expansions to improve image search results
 - cache disease definitions
+- for DX_NAME only
+  - Overview section -> use existing definition
+  - Subtypes section -> "Output the different types of cancer as a json array"
+  - Symptoms section -> "Output the symptoms of cancer as json array"
+  - Causes section -> "Output the causes of parkinson's as a json array"
+  - Diagnosis section -> "Output the ways parkinson's is diagnosed as a json array"
+  - Prevention section -> "Output the ways to prevent parkinson's as a json array"
+  - Treatment section -> "Write a basic treatment plan for cancer"
+- Anatomy tab
+  - full body anatomy visualizations
+  - visualizations for each organ system
+- Neuro tab
+  - neuro-specific visualizations
+  - white matter tracts
+  - fMRI
+  - https://yeatmanlab.github.io/AFQBrowser-demo/?table[prevSort][count]=2&table[prevSort][order]=ascending&table[prevSort][key]=&table[sort][count]=2&table[sort][order]=ascending&table[sort][key]=&table[selectedRows][subject_001]=false&table[selectedRows][subject_002]=false&table[selectedRows][subject_003]=false&table[selectedRows][subject_004]=false&three[cameraPosition][x]=-5.131948215539956&three[cameraPosition][y]=6.58958996310529&three[cameraPosition][z]=2.583151236955409&three[rHOpacity]=0&plots[checkboxes][left-slf]=true&plots[checkboxes][left-arcuate]=true&plots[checkboxes][left-thalamic-radiation]=true&plots[checkboxes][left-ifof]=true&plots[checkboxes][left-corticospinal]=true&plots[checkboxes][right-thalamic-radiation]=true&plots[checkboxes][right-corticospinal]=true&plots[checkboxes][left-cingulum-cingulate]=true&plots[checkboxes][right-cingulum-cingulate]=true&plots[checkboxes][left-cingulum-hippocampus]=true&plots[checkboxes][right-cingulum-hippocampus]=true&plots[checkboxes][callosum-forceps-major]=true&plots[checkboxes][callosum-forceps-minor]=true&plots[checkboxes][right-ifof]=true&plots[checkboxes][left-ilf]=true&plots[checkboxes][right-ilf]=true&plots[checkboxes][right-slf]=true&plots[checkboxes][left-uncinate]=true&plots[checkboxes][right-uncinate]=true&plots[checkboxes][right-arcuate]=true
+- Chem tab
+  - yes or no, is "tyrosine kinase" the name of a protein?
+  - yes or no, is "benzene" the name of a chemical? 
+  - search bing.com for "rcsb.org tyrosine kinase"
+  - download & display pdb from rcsb.org
+  - https://data.rcsb.org/#rest-api
+  - https://data.rcsb.org/redoc/index.html
+  - https://data.rcsb.org/redoc/index.html#tag/Entry-Service/operation/getEntryById
+  - https://files.rcsb.org/download/1AKE.pdb.gz
+  - chemspider (or similar) crawler

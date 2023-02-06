@@ -18,10 +18,15 @@ func (s *Server) handlePDB() http.HandlerFunc {
 				retCode = http.StatusMethodNotAllowed
 				return errors.New("method not allowed")
 			}
-			id := r.URL.Query().Get("id")
+			id := strings.ToUpper(r.URL.Query().Get("id"))
 			if id == "" {
 				retCode = http.StatusBadRequest
 				return errors.New("missing query parameter 'id'")
+			}
+			if len(id) == 4 {
+				// TODO: download pdb from rcsb
+				retCode = http.StatusBadRequest
+				return errors.New("rcsb pdb ids are not yet supported")
 			}
 			reqLog := s.log.With(zap.String("id", id))
 			if len(id) != 7 || !strings.HasPrefix(id, "DB") {
@@ -48,7 +53,7 @@ func (s *Server) handlePDB() http.HandlerFunc {
 				id,
 				w,
 			); err == pdbcache.ErrNotCached {
-				return downloadPDB(
+				return downloadDrugBankPDB(
 					r.Context(),
 					drug.DrugBankAccessionNumber,
 					drug.Structure.PDB,
