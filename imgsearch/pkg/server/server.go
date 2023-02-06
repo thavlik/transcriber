@@ -20,6 +20,7 @@ type Server struct {
 	apiKey     string
 	endpoint   string
 	imageCache *cache.ImageCache
+	define     *base.ServiceOptions
 	wg         *sync.WaitGroup
 	log        *zap.Logger
 }
@@ -30,6 +31,7 @@ func NewServer(
 	apiKey string,
 	endpoint string,
 	imageCache *cache.ImageCache,
+	define *base.ServiceOptions,
 	log *zap.Logger,
 ) *Server {
 	ctx, cancel := context.WithCancel(ctx)
@@ -37,6 +39,7 @@ func NewServer(
 		ctx:        ctx,
 		cancel:     cancel,
 		history:    history,
+		define:     define,
 		apiKey:     apiKey,
 		endpoint:   endpoint,
 		imageCache: imageCache,

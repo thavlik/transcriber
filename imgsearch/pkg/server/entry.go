@@ -16,6 +16,7 @@ func Entry(
 	apiKey string,
 	endpoint string,
 	imageCache *cache.ImageCache,
+	define *base.ServiceOptions,
 	log *zap.Logger,
 ) error {
 	ctx, cancel := context.WithCancel(ctx)
@@ -27,6 +28,7 @@ func Entry(
 		apiKey,
 		endpoint,
 		imageCache,
+		define,
 		log,
 	)
 	defer s.ShutDown()

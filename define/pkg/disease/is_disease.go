@@ -52,7 +52,7 @@ func IsDisease(
 
 func isDiseaseQuery(input string) string {
 	return fmt.Sprintf(
-		"Yes or no, is the term \"%s\" a kind of disease?",
+		"Yes or no, is the term \"%s\" a disease?",
 		input,
 	)
 }

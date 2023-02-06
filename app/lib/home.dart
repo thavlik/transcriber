@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:demo/pharmacy.dart';
@@ -375,7 +376,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         model.isDisease(selectedEntity.text) == true;
     final showPharmacologyTab = selectedEntity?.type == "GENERIC_NAME" ||
         selectedEntity?.type == "BRAND_NAME";
-    int numTabs = 2;
+    int numTabs = 1;
     if (showRadiologyTab) numTabs++;
     if (showHistologyTab) numTabs++;
     if (showPharmacologyTab) numTabs++;
@@ -388,8 +389,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           children: [
             TabBar(
               tabs: [
-                const Tab(text: 'Definition'),
-                const Tab(text: 'Images'),
+                const Tab(text: 'Overview'),
                 if (showRadiologyTab) const Tab(text: 'Radiology'),
                 if (showHistologyTab) const Tab(text: 'Histology'),
                 if (showPharmacologyTab) const Tab(text: 'Pharma'),
@@ -402,28 +402,159 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   children: [
                     model.selectedEntity == null
                         ? Container()
-                        : Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Definition of "${model.selectedEntity!.text}":',
-                                style: Theme.of(context).textTheme.labelLarge,
-                              ),
-                              model.termIsFetching(model.selectedEntity!.text)
-                                  ? const Center(
-                                      child: CircularProgressIndicator())
-                                  : Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Text(
-                                        model.define(
-                                                model.selectedEntity!.text) ??
-                                            '',
+                        : SingleChildScrollView(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Text(
+                                  'Definition of "${model.selectedEntity!.text}":',
+                                  style: Theme.of(context).textTheme.labelLarge,
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: Theme.of(context).dividerColor,
                                       ),
+                                      borderRadius: BorderRadius.circular(8),
                                     ),
-                              const SizedBox(height: 16),
-                              if (model.define(model.selectedEntity!.text) !=
-                                  null)
+                                    child: Padding(
+                                        padding: const EdgeInsets.all(4.0),
+                                        child: model.termIsFetching(
+                                                model.selectedEntity!.text)
+                                            ? const Padding(
+                                                padding: EdgeInsets.all(16.0),
+                                                child: Center(
+                                                    child:
+                                                        CircularProgressIndicator()),
+                                              )
+                                            : Padding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: Text(
+                                                  model.define(model
+                                                          .selectedEntity!
+                                                          .text) ??
+                                                      '',
+                                                ),
+                                              )),
+                                  ),
+                                ),
+                                if (model.define(model.selectedEntity!.text) !=
+                                    null)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          'Was this definition helpful?',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall,
+                                        ),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            TextButton(
+                                              onPressed: () => model
+                                                  .setDefinitionHelpful(true),
+                                              child: const Text('Yes'),
+                                            ),
+                                            TextButton(
+                                              onPressed: () => model
+                                                  .setDefinitionHelpful(false),
+                                              child: const Text('No'),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                const SizedBox(height: 16),
+                                Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    Text(
+                                      'Images of "${model.selectedEntity!.text}":',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelLarge,
+                                    ),
+                                    model.searchImages == null
+                                        ? Container()
+                                        : Wrap(
+                                            children: model
+                                                .searchImages!.queryExpansions
+                                                .sublist(
+                                                    0,
+                                                    min(
+                                                        3,
+                                                        model
+                                                            .searchImages!
+                                                            .queryExpansions
+                                                            .length))
+                                                .map((e) => QueryExpansion(
+                                                      model,
+                                                      model.selectedEntity!,
+                                                      e,
+                                                    ))
+                                                .toList(),
+                                          ),
+                                  ],
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: Theme.of(context).dividerColor,
+                                      ),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: model.searchImages == null
+                                        ? const Padding(
+                                            padding: EdgeInsets.all(16.0),
+                                            child: Center(
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            ),
+                                          )
+                                        : Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.stretch,
+                                            children: [
+                                              Wrap(
+                                                crossAxisAlignment:
+                                                    WrapCrossAlignment.start,
+                                                alignment:
+                                                    WrapAlignment.spaceAround,
+                                                direction: Axis.horizontal,
+                                                children: model
+                                                    .searchImages!.images
+                                                    .map((e) =>
+                                                        _buildSearchImage(
+                                                            context, e, model))
+                                                    .toList(),
+                                              ),
+                                              TextButton(
+                                                  onPressed: () {},
+                                                  child: const Padding(
+                                                    padding:
+                                                        EdgeInsets.all(8.0),
+                                                    child: Text('Load more...'),
+                                                  )),
+                                            ],
+                                          ),
+                                  ),
+                                ),
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 16,
@@ -432,7 +563,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
                                       Text(
-                                        'Was this definition helpful?',
+                                        'Are these images helpful?',
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodySmall,
@@ -456,36 +587,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                     ],
                                   ),
                                 ),
-                            ],
+                              ],
+                            ),
                           ),
-                    model.selectedEntity == null
-                        ? Container()
-                        : model.searchImages == null
-                            ? const Center(
-                                child: CircularProgressIndicator(),
-                              )
-                            : SingleChildScrollView(
-                                child: Column(
-                                  children: [
-                                    Wrap(
-                                      crossAxisAlignment:
-                                          WrapCrossAlignment.start,
-                                      alignment: WrapAlignment.spaceAround,
-                                      direction: Axis.horizontal,
-                                      children: model.searchImages!
-                                          .map((e) => _buildSearchImage(
-                                              context, e, model))
-                                          .toList(),
-                                    ),
-                                    TextButton(
-                                        onPressed: () {},
-                                        child: const Padding(
-                                          padding: EdgeInsets.all(8.0),
-                                          child: Text('Load more...'),
-                                        ))
-                                  ],
-                                ),
-                              ),
                     if (showRadiologyTab)
                       model.selectedEntity == null
                           ? Container()
@@ -501,7 +605,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                             WrapCrossAlignment.start,
                                         alignment: WrapAlignment.spaceAround,
                                         direction: Axis.horizontal,
-                                        children: model.radiologySearchImages!
+                                        children: model
+                                            .radiologySearchImages!.images
                                             .map((e) => _buildSearchImage(
                                                 context, e, model))
                                             .toList(),
@@ -530,7 +635,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                             WrapCrossAlignment.start,
                                         alignment: WrapAlignment.spaceAround,
                                         direction: Axis.horizontal,
-                                        children: model.histologySearchImages!
+                                        children: model
+                                            .histologySearchImages!.images
                                             .map((e) => _buildSearchImage(
                                                 context, e, model))
                                             .toList(),
@@ -540,7 +646,42 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                           child: const Padding(
                                             padding: EdgeInsets.all(8.0),
                                             child: Text('Load more...'),
-                                          ))
+                                          )),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              'Are these images helpful?',
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall,
+                                            ),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.end,
+                                              children: [
+                                                TextButton(
+                                                  onPressed: () => model
+                                                      .setDefinitionHelpful(
+                                                          true),
+                                                  child: const Text('Yes'),
+                                                ),
+                                                TextButton(
+                                                  onPressed: () => model
+                                                      .setDefinitionHelpful(
+                                                          false),
+                                                  child: const Text('No'),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -672,6 +813,61 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
         );
       },
+    );
+  }
+}
+
+class QueryExpansion extends StatelessWidget {
+  final MyModel model;
+  final String query;
+  final Entity parent;
+  final Color? color;
+
+  const QueryExpansion(
+    this.model,
+    this.parent,
+    this.query, {
+    super.key,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 4,
+        vertical: 2,
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: color ?? Colors.purple.shade900,
+          border: Border.all(
+            color: Theme.of(context).dividerColor,
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: InkWell(
+          onTap: () => model.selectedEntity = Entity(
+            score: 1.0,
+            text: query,
+            type: parent.type,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: 4.0,
+              horizontal: 8.0,
+            ),
+            child: Text(
+              query,
+              style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

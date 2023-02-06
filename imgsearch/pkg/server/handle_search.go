@@ -1,9 +1,13 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"net/url"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -12,6 +16,88 @@ import (
 
 	"go.uber.org/zap"
 )
+
+func (s *Server) isDisease(
+	ctx context.Context,
+	query string,
+) (bool, error) {
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		s.define.Endpoint+"/disease?q="+url.QueryEscape(query),
+		nil,
+	)
+	if err != nil {
+		return false, err
+	}
+	resp, err := (&http.Client{
+		Timeout: s.define.Timeout,
+	}).Do(req)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return false, fmt.Errorf("define service status code %d: %s", resp.StatusCode, string(body))
+	}
+	var result struct {
+		IsDisease bool `json:"isDisease"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return false, err
+	}
+	return result.IsDisease, nil
+}
+
+func (s *Server) filterDiseaseQueryExpansion(
+	ctx context.Context,
+	queryExpansion []string,
+) (result []string, err error) {
+	wg := new(sync.WaitGroup)
+	wg.Add(len(queryExpansion))
+	defer wg.Wait()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	dones := make([]chan interface{}, len(queryExpansion))
+	for i, query := range queryExpansion {
+		done := make(chan interface{}, 1)
+		dones[i] = done
+		go func(i int, query string, done chan<- interface{}) {
+			defer wg.Done()
+			isDisease, err := s.isDisease(ctx, query)
+			if err != nil {
+				done <- err
+				return
+			}
+			done <- isDisease
+		}(i, query, done)
+	}
+	for i, done := range dones {
+		select {
+		case <-ctx.Done():
+			cancel()
+			return nil, ctx.Err()
+		case v := <-done:
+			switch v := v.(type) {
+			case error:
+				cancel()
+				return nil, errors.Errorf(
+					"failed to check if '%s' is a disease: %v",
+					queryExpansion[i],
+					v,
+				)
+			case bool:
+				if v {
+					result = append(result, queryExpansion[i])
+				}
+			default:
+				panic(base.Unreachable)
+			}
+		}
+	}
+	return result, nil
+}
 
 func (s *Server) handleSearch() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -45,6 +131,7 @@ func (s *Server) handleSearch() http.HandlerFunc {
 				retCode = http.StatusBadRequest
 				return fmt.Errorf("missing query")
 			}
+			ty := r.URL.Query().Get("t")
 			start := time.Now()
 			service := adapter.Bing
 			result, err := adapter.Search(
@@ -66,7 +153,21 @@ func (s *Server) handleSearch() http.HandlerFunc {
 				zap.Int("count", len(result.Images)),
 			)
 			w.Header().Set("Content-Type", "application/json")
-			if err := json.NewEncoder(w).Encode(result.Images); err != nil {
+			switch ty {
+			case "DX_NAME":
+				// only list query expansion terms that are diseases
+				result.QueryExpansions, err = s.filterDiseaseQueryExpansion(
+					r.Context(),
+					result.QueryExpansions,
+				)
+				if err != nil {
+					return errors.Wrap(err, "failed to filter query expansion")
+				}
+			default:
+				// don't give query expansions
+				result.QueryExpansions = nil
+			}
+			if err := json.NewEncoder(w).Encode(result); err != nil {
 				return err
 			}
 			if req.UserID != "" {

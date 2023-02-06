@@ -1,6 +1,8 @@
 package bing_imgsearch
 
 import (
+	"strings"
+
 	"github.com/thavlik/transcriber/imgsearch/pkg/imgsearch"
 )
 
@@ -20,7 +22,7 @@ func convert(result *searchResult) *imgsearch.Result {
 	}
 	queryExpansions := make([]string, len(result.QueryExpansions))
 	for i, v := range result.QueryExpansions {
-		queryExpansions[i] = v.Text
+		queryExpansions[i] = strings.ToLower(v.Text)
 	}
 	return &imgsearch.Result{
 		Images:          images,

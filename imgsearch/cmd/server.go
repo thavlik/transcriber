@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/thavlik/transcriber/base/pkg/base"
@@ -24,6 +25,7 @@ var serverArgs struct {
 	metaCollectionName    string
 	historyCollectionName string
 	s3Bucket              string
+	define                base.ServiceOptions
 }
 
 var serverCmd = &cobra.Command{
@@ -32,6 +34,7 @@ var serverCmd = &cobra.Command{
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		base.ServerEnv(&serverArgs.ServerOptions)
 		base.DatabaseEnv(&serverArgs.db, true)
+		base.ServiceEnv("define", &serverArgs.define)
 		base.CheckEnv("META_COLLECTION_NAME", &serverArgs.metaCollectionName)
 		if serverArgs.metaCollectionName == "" {
 			return errors.New("missing --meta-collection-name")
@@ -69,6 +72,7 @@ var serverCmd = &cobra.Command{
 				initMetaCache(mongo),
 				initDataCache(),
 			),
+			&serverArgs.define,
 			base.DefaultLog,
 		)
 	},
@@ -94,6 +98,7 @@ func initHistory(db *mongo.Database) history.History {
 
 func init() {
 	rootCmd.AddCommand(serverCmd)
+	base.AddServiceFlags(serverCmd, "define", &serverArgs.define, 15*time.Second)
 	base.AddServerFlags(serverCmd, &serverArgs.ServerOptions)
 	serverCmd.Flags().StringVar(&serverArgs.bingApiKey, "bing-api-key", "", "bing api secret key")
 	serverCmd.Flags().StringVar(&serverArgs.bingEndpoint, "bing-endpoint", defaultBingEndpoint, "bing search endpoint")

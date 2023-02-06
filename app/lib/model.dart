@@ -19,12 +19,15 @@ class MyModel extends Model {
       api.Entity(score: 1.0, text: "influenza", type: "DX_NAME"),
       api.Entity(score: 1.0, text: "ativan", type: "BRAND_NAME"),
       api.Entity(score: 1.0, text: "azithromycin", type: "GENERIC_NAME"),
+      api.Entity(score: 1.0, text: "sumatriptan", type: "GENERIC_NAME"),
+      api.Entity(score: 1.0, text: "parkinson's", type: "DX_NAME"),
+      api.Entity(score: 1.0, text: "eczema", type: "DX_NAME"),
     ],
   );
   api.Entity? _selectedEntity;
-  List<api.SearchImage>? _searchImages;
-  List<api.SearchImage>? _radiologySearchImages;
-  List<api.SearchImage>? _histologySearchImages;
+  api.ImageSearch? _searchImages;
+  api.ImageSearch? _radiologySearchImages;
+  api.ImageSearch? _histologySearchImages;
 
   final Map<String, api.DrugDetails?> _drugDetails = {};
   final Map<String, String> _definitions = {};
@@ -38,14 +41,17 @@ class MyModel extends Model {
   List<api.ReferenceMaterial> get referenceMaterials => _referenceMaterials;
   api.KeyTerms? get keyTerms => _keyTerms;
   api.Entity? get selectedEntity => _selectedEntity;
-  List<api.SearchImage>? get searchImages => _searchImages;
-  List<api.SearchImage>? get radiologySearchImages => _radiologySearchImages;
-  List<api.SearchImage>? get histologySearchImages => _histologySearchImages;
+  api.ImageSearch? get searchImages => _searchImages;
+  api.ImageSearch? get radiologySearchImages => _radiologySearchImages;
+  api.ImageSearch? get histologySearchImages => _histologySearchImages;
 
   void setDefinitionHelpful(bool helpful) {}
 
-  Future<void> search(String text) async {
-    _searchImages = await api.search(text);
+  Future<void> search(api.Entity entity) async {
+    _searchImages = await api.search(
+      entity.text,
+      type: entity.type,
+    );
     notifyListeners();
   }
 
@@ -81,12 +87,16 @@ class MyModel extends Model {
   }
 
   Future<void> searchRadiology(String text) async {
-    _radiologySearchImages = await api.search('$text radiology');
+    _radiologySearchImages = await api.search(
+      '$text radiology',
+    );
     notifyListeners();
   }
 
   Future<void> searchHistology(String text) async {
-    _histologySearchImages = await api.search('$text histology');
+    _histologySearchImages = await api.search(
+      '$text histology',
+    );
     notifyListeners();
   }
 
@@ -98,7 +108,7 @@ class MyModel extends Model {
     }
     _selectedEntity = entity;
     if (entity != null) {
-      search(entity.text);
+      search(entity);
       switch (entity.type) {
         case 'DX_NAME':
           searchHistology(entity.text);
@@ -138,7 +148,10 @@ class MyModel extends Model {
       _definitions[term] = value;
       _fetchingTerms.remove(term);
       notifyListeners();
+    }).catchError((err) {
+      print('error fetching definition for $term: $err');
     });
+    return null;
   }
 
   void likeImage(api.SearchImage img, bool isLiked) async {

@@ -294,6 +294,27 @@ class ReferenceMaterial {
   }
 }
 
+class ImageSearch {
+  final List<SearchImage> images;
+  final List<String> queryExpansions;
+
+  ImageSearch({
+    required this.images,
+    required this.queryExpansions,
+  });
+
+  factory ImageSearch.fromJson(Map<String, dynamic> json) {
+    final queryExpansions = json['queryExpansions'] as List<dynamic>?;
+    return ImageSearch(
+      images: (json['images'] as List<dynamic>)
+          .map((e) => SearchImage.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      queryExpansions:
+          queryExpansions != null ? queryExpansions.cast<String>() : [],
+    );
+  }
+}
+
 class SearchImage {
   final String contentUrl;
   final String contentSize;
@@ -371,15 +392,15 @@ Future<bool> isDisease(String query) async {
   return decodedResponse["isDisease"] as bool;
 }
 
-Future<List<SearchImage>> search(String query) async {
+Future<ImageSearch> search(String query, {String? type}) async {
   final url = Uri.https(apiHost, '/img/search', {
     'q': query,
+    if (type != null) 't': type,
   });
   final response = await http.get(url);
   checkHttpStatus(response);
-  final decodedResponse =
-      jsonDecode(utf8.decode(response.bodyBytes)) as List? ?? [];
-  return decodedResponse.map((e) => SearchImage.fromJson(e)).toList();
+  final decodedResponse = jsonDecode(utf8.decode(response.bodyBytes));
+  return ImageSearch.fromJson(decodedResponse);
 }
 
 Future<void> likeImage(SearchImage img, bool isLiked) async {

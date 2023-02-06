@@ -2,6 +2,7 @@ package amazon_comprehend
 
 import (
 	"context"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/comprehendmedical"
@@ -40,7 +41,7 @@ func convertMedicalEntities(
 ) (result []*comprehend.Entity) {
 	for _, entity := range entities {
 		e := &comprehend.Entity{
-			Text:  aws.StringValue(entity.Text),
+			Text:  strings.ToLower(aws.StringValue(entity.Text)),
 			Type:  aws.StringValue(entity.Type),
 			Score: aws.Float64Value(entity.Score),
 		}

@@ -70,6 +70,7 @@ func (s *Server) handleImageSearch() http.HandlerFunc {
 			body, err := json.Marshal(map[string]interface{}{
 				"query":  query,
 				"userID": userID,
+				"type":   r.URL.Query().Get("t"),
 			})
 			if err != nil {
 				return err

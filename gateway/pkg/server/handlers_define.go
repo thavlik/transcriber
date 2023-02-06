@@ -8,6 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/transcriber/base/pkg/iam"
+	"go.uber.org/zap"
 )
 
 func (s *Server) handleDefine() http.HandlerFunc {
@@ -19,16 +20,13 @@ func (s *Server) handleDefine() http.HandlerFunc {
 			if query == "" {
 				return errors.New("missing query parameter 'q'")
 			}
-			unescaped, err := url.QueryUnescape(query)
-			if err != nil {
-				return err
-			}
 			// create an appropriate completion prompt for ChatGPT
-			query = fmt.Sprintf(`define "%s"`, unescaped)
+			s.log.Debug("defining term", zap.String("query", query))
+			query = url.QueryEscape(fmt.Sprintf(`define "%s"`, query))
 			req, err := http.NewRequestWithContext(
 				r.Context(),
 				http.MethodGet,
-				s.define.Endpoint+"/completion?q="+url.QueryEscape(query),
+				s.define.Endpoint+"/completion?q="+query,
 				nil,
 			)
 			if err != nil {

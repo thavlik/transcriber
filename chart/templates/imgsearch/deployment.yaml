@@ -28,6 +28,8 @@ spec:
         command:
           - imgsearch
           - server
+          - --define-endpoint
+          - "http://{{ .Release.Name }}-define:80"
           - --db-driver
           - {{ required "missing db.driver" .Values.db.driver }}
           - --s3-bucket
