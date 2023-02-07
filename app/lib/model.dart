@@ -22,6 +22,11 @@ class MyModel extends Model {
       api.Entity(score: 1.0, text: "sumatriptan", type: "GENERIC_NAME"),
       api.Entity(score: 1.0, text: "parkinson's", type: "DX_NAME"),
       api.Entity(score: 1.0, text: "eczema", type: "DX_NAME"),
+      api.Entity(score: 1.0, text: "parietal lobe", type: "SYSTEM_ORGAN_SITE"),
+      api.Entity(score: 1.0, text: "kidney", type: "SYSTEM_ORGAN_SITE"),
+      api.Entity(score: 1.0, text: "knee", type: "SYSTEM_ORGAN_SITE"),
+      api.Entity(score: 1.0, text: "left ventricle", type: "SYSTEM_ORGAN_SITE"),
+      api.Entity(score: 1.0, text: "broca's area", type: "SYSTEM_ORGAN_SITE"),
     ],
   );
   api.Entity? _selectedEntity;

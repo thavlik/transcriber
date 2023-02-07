@@ -17,10 +17,6 @@ func (s *Server) handleDefine() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		retCode := http.StatusInternalServerError
 		if err := func() error {
-			// TODO: input should be a UUID to an entity
-			// so only definitions of recognized entities
-			// are possible. Currently, this exposes the
-			// full GPT-3 API to the world.
 			if r.Method != http.MethodGet {
 				retCode = http.StatusMethodNotAllowed
 				return errors.New("method not allowed")
@@ -31,13 +27,25 @@ func (s *Server) handleDefine() http.HandlerFunc {
 				return errors.New("missing query")
 			}
 			query = strings.TrimSpace(query)
+			def, err := s.storage.GetMostRecent(
+				r.Context(),
+				query,
+			)
+			if err == nil {
+				w.Header().Set("Content-Type", "application/json")
+				return json.NewEncoder(w).Encode(map[string]interface{}{
+					"text": def.Output,
+				})
+			} else if err != storage.ErrNotCached {
+				s.log.Error("failed to get definition from storage", zap.Error(err))
+			}
 			n := 1
 			var temp float32 = 0.7
 			var topP float32 = 1.0
 			maxLength := 256
 			timestamp := time.Now()
 			resp, err := s.gpt3.Completion(
-				r.Context(),
+				s.ctx, // use server context to ensure we cache the result
 				gpt3.CompletionRequest{
 					Prompt:           []string{query},
 					Temperature:      &temp,

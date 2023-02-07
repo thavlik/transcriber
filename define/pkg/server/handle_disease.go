@@ -17,10 +17,6 @@ func (s *Server) handleDisease() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		retCode := http.StatusInternalServerError
 		if err := func() error {
-			// TODO: input should be a UUID to an entity
-			// so only definitions of recognized entities
-			// are possible. Currently, this exposes the
-			// full GPT-3 API to the world.
 			if r.Method != http.MethodGet {
 				retCode = http.StatusMethodNotAllowed
 				return errors.New("method not allowed")
