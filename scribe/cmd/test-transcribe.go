@@ -10,16 +10,17 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/thavlik/transcriber/base/pkg/base"
 	"github.com/thavlik/transcriber/scribe/pkg/source"
+	"github.com/thavlik/transcriber/scribe/pkg/source/mp3"
 	"github.com/thavlik/transcriber/scribe/pkg/source/wav"
 	"github.com/thavlik/transcriber/scribe/pkg/transcribe"
 )
 
-var testTranscribeWavArgs struct {
+var testTranscribeArgs struct {
 	specialty string
 }
 
-var testTranscribeWavCmd = &cobra.Command{
-	Use:   "transcribe-wav",
+var testTranscribeCmd = &cobra.Command{
+	Use:   "transcribe",
 	Short: "test Amazon Transcribe with a WAV file",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -35,6 +36,11 @@ var testTranscribeWavCmd = &cobra.Command{
 			src, err = wav.NewWavSource(cmd.Context(), f)
 			if err != nil {
 				return errors.Wrap(err, "wav.NewWavSource")
+			}
+		case ".mp3":
+			src, err = mp3.NewMP3Source(cmd.Context(), f)
+			if err != nil {
+				return errors.Wrap(err, "mp3.NewMP3Source")
 			}
 		default:
 			return errors.New("unsupported file type")
@@ -52,7 +58,7 @@ var testTranscribeWavCmd = &cobra.Command{
 		return transcribe.Transcribe(
 			ctx,
 			src,
-			testTranscribeWavArgs.specialty,
+			testTranscribeArgs.specialty,
 			transcripts,
 			base.DefaultLog,
 		)
@@ -60,12 +66,12 @@ var testTranscribeWavCmd = &cobra.Command{
 }
 
 func init() {
-	testCmd.AddCommand(testTranscribeWavCmd)
-	testTranscribeWavCmd.Flags().StringVarP(
-		&testTranscribeWavArgs.specialty,
+	testCmd.AddCommand(testTranscribeCmd)
+	testTranscribeCmd.Flags().StringVarP(
+		&testTranscribeArgs.specialty,
 		"specialty",
 		"s",
-		defaultSpecialty,
-		"the specialty to use for transcription",
+		"",
+		"if set, the medical model with the given specialty is used for transcription",
 	)
 }

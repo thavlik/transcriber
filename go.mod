@@ -14,6 +14,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.5.0
+	github.com/hajimehoshi/go-mp3 v0.3.4
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/izern/go-fdkaac v0.0.0-20191009124408-238be56e79c0
 	github.com/lestrrat-go/jwx v1.2.25
@@ -29,6 +30,8 @@ require (
 	go.mongodb.org/mongo-driver v1.11.1
 	go.uber.org/zap v1.24.0
 )
+
+replace github.com/hajimehoshi/go-mp3 => ./scribe/go-mp3
 
 require (
 	github.com/beorn7/perks v1.0.1 // indirect

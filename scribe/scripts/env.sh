@@ -3,3 +3,4 @@ export CGO_CPPFLAGS="-I/usr/local/fdk-aac-${FDK_AAC_VERSION}/include/fdk-aac"
 export CGO_LDFLAGS="-L/usr/local/fdk-aac-${FDK_AAC_VERSION}/lib"
 export LD_LIBRARY_PATH="/usr/local/fdk-aac-${FDK_AAC_VERSION}/lib"
 export LOG_LEVEL=debug
+export AWS_REGION=us-east-1
