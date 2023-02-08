@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/thavlik/transcriber/base/pkg/base"
 	"github.com/thavlik/transcriber/scribe/pkg/batch"
+	"go.uber.org/zap"
 )
 
 var batchTranscribeArgs struct {
@@ -17,7 +18,8 @@ var batchTranscribeArgs struct {
 }
 
 var batchTranscribeCmd = &cobra.Command{
-	Use: "batch-transcribe",
+	Use:  "batch-transcribe",
+	Args: cobra.NoArgs,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		sess := base.AWSSession()
 		s3Client := s3.New(sess)
@@ -35,8 +37,26 @@ var batchTranscribeCmd = &cobra.Command{
 			}
 			for _, obj := range resp.Contents {
 				key := aws.StringValue(obj.Key)
-				if filepath.Ext(key) != ".mp3" {
+				ext := filepath.Ext(key)
+				if ext != ".mp3" {
 					continue
+				}
+				outKey := key[:len(key)-len(ext)] + ".json"
+				head, err := s3Client.HeadObjectWithContext(
+					cmd.Context(),
+					&s3.HeadObjectInput{
+						Bucket: &batchTranscribeArgs.outputBucket,
+						Key:    aws.String(outKey),
+					},
+				)
+				if err == nil {
+					if head.LastModified.After(*obj.LastModified) {
+						// output file is newer than input file, skip
+						base.DefaultLog.Info(
+							"transcript already exists, skipping",
+							zap.String("key", outKey))
+						continue
+					}
 				}
 				if err := batch.TranscribeBatchDefault(
 					cmd.Context(),
