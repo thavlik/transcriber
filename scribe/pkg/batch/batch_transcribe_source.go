@@ -6,8 +6,8 @@ import (
 )
 
 type BatchTranscribeSource struct {
-	Bucket string
-	Key    string
+	Bucket string `json:"bucket" yaml:"bucket"`
+	Key    string `json:"key" yaml:"key"`
 }
 
 // Format returns the file extension of the source file.

@@ -13,8 +13,11 @@ import (
 )
 
 var batchTranscribeArgs struct {
-	inputBucket  string
-	outputBucket string
+	inputBucket      string
+	outputBucket     string
+	maxSpeakerLabels int64
+	limit            int64
+	follow           bool
 }
 
 var batchTranscribeCmd = &cobra.Command{
@@ -24,6 +27,7 @@ var batchTranscribeCmd = &cobra.Command{
 		sess := base.AWSSession()
 		s3Client := s3.New(sess)
 		var nextToken *string
+		var transcribedCount int64
 		for {
 			resp, err := s3Client.ListObjectsWithContext(
 				cmd.Context(),
@@ -49,25 +53,36 @@ var batchTranscribeCmd = &cobra.Command{
 						Key:    aws.String(outKey),
 					},
 				)
-				if err == nil {
-					if head.LastModified.After(*obj.LastModified) {
-						// output file is newer than input file, skip
-						base.DefaultLog.Info(
-							"transcript already exists, skipping",
-							zap.String("key", outKey))
-						continue
-					}
+				if err == nil &&
+					aws.Int64Value(head.ContentLength) > 0 &&
+					head.LastModified.After(*obj.LastModified) {
+					base.DefaultLog.Info(
+						"transcript already exists, skipping",
+						zap.String("bucket", batchTranscribeArgs.outputBucket),
+						zap.String("key", outKey))
+					continue
 				}
 				if err := batch.TranscribeBatchDefault(
 					cmd.Context(),
-					&batch.BatchTranscribeSource{
-						Bucket: batchTranscribeArgs.inputBucket,
-						Key:    key,
+					&batch.Config{
+						Source: &batch.BatchTranscribeSource{
+							Bucket: batchTranscribeArgs.inputBucket,
+							Key:    key,
+						},
+						OutputBucket:     batchTranscribeArgs.outputBucket,
+						MaxSpeakerLabels: batchTranscribeArgs.maxSpeakerLabels,
 					},
-					batchTranscribeArgs.outputBucket,
+					batchTranscribeArgs.follow,
 					base.DefaultLog,
 				); err != nil {
 					return errors.Wrap(err, "transcribe.TranscribeBatchDefault")
+				}
+				transcribedCount++
+				if batchTranscribeArgs.limit > 0 && transcribedCount >= batchTranscribeArgs.limit {
+					base.DefaultLog.Info(
+						"limit reached, exiting",
+						zap.Int64("limit", batchTranscribeArgs.limit))
+					return nil
 				}
 			}
 			if resp.NextMarker == nil {
@@ -92,7 +107,28 @@ func init() {
 		&batchTranscribeArgs.outputBucket,
 		"output-bucket",
 		"o",
-		"judyscripts",
+		"judyscripts-v2",
 		"output s3 bucket",
+	)
+	batchTranscribeCmd.Flags().Int64VarP(
+		&batchTranscribeArgs.maxSpeakerLabels,
+		"max-speaker-labels",
+		"m",
+		10,
+		"maximum number of speaker labels",
+	)
+	batchTranscribeCmd.Flags().Int64VarP(
+		&batchTranscribeArgs.limit,
+		"limit",
+		"l",
+		0,
+		"limit number of files to transcribe (0 = no limit)",
+	)
+	batchTranscribeCmd.Flags().BoolVarP(
+		&batchTranscribeArgs.follow,
+		"follow",
+		"f",
+		false,
+		"follow each transcription job until it completes",
 	)
 }
