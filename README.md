@@ -7,6 +7,27 @@ It is meant to enhance the e-Shadowing experience by streamlining the process of
 
 This project serves more as an archive for an idea that I envisioned, rather than a sincere effort at producing a commercially viable product. This tool does exactly what I designed it to do, and I still strongly believe it has merit as a concept.
 
+## Features
+- Automatic recognition of key terms
+    - Diagnoses
+    - Anatomy
+    - Organ systems
+    - Medications (both generic and brand name)
+- Context-sensitive image search results
+    - Images are curated for relevance
+    - Show only radiology images (anatomy)
+    - Show only histology images (diagnoses)
+- Automatic retrieval of drug data
+    - Scrapes [DrugBank](https://go.drugbank.com/) with a [headless web browser](https://pptr.dev/)
+    - Interactive 3D visualization of chemical structure
+- Accurate transcription of medical language
+    - Made possible with [Amazon Transcribe Medical](https://docs.aws.amazon.com/transcribe/latest/dg/transcribe-medical.html)
+    - English only
+- Simple and versatile architecture
+    - Audio source is an [RTMP](https://en.wikipedia.org/wiki/Real-Time_Messaging_Protocol) stream
+    - Developed to support [OBS](https://obsproject.com/)
+    - [kubernetes](https://kubernetes.io/) backend scales to thousands of concurrent users
+
 ## Design
 The application is packaged as a [Flutter](https://flutter.dev/) front-end and a [helm](https://helm.sh/) chart backend for kubernetes. The application should scale horizontally to accomodate hundreds (or even thousands) of concurrent users, without any further optimization.
 
