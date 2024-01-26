@@ -1,11 +1,11 @@
 # e-Shadowing Transcriber
 ![Example Screenshot](app/captures/cap_00.jpg)
 
-This is a tool that transcribes an audio stream, detects the transcript's medical keywords, and automatically fetches supplementary content (definitions, pictures, drug data, etc.) when the user taps/clicks on a keyword.
+This is a prototype tool that transcribes an audio stream, detects the transcript's medical keywords, and automatically fetches supplementary content (definitions, pictures, drug data) when the user taps/clicks on a keyword.
 
-It is meant to enhance the e-Shadowing experience by streamlining the process of finding good reference material without diverting one's attention from what the physician is doing. When e-shadowing, I sometimes find myself searching Google for anatomy cartoons to refresh my memory, which is relatively cumbersome when compared to this tool.
+It is meant to enhance the e-Shadowing experience by streamlining the process of finding good reference material without diverting one's attention away from the physician. When e-shadowing, I sometimes find myself searching Google for anatomy cartoons to refresh my memory, which is relatively cumbersome when compared to this tool.
 
-This project serves more as an archive for an idea that I envisioned, rather than a sincere effort at producing a commercially viable product. It does exactly what I designed it to do, and I still strongly believe the concept has merit. I love medical education and seek to further our understanding of how technology may assist students and professors alike.
+This project serves more as an archive for an idea that I envisioned, rather than a sincere effort at producing a commercially viable product. It does exactly what I intended it to do, and I still strongly believe the concept has merit. I love medical education and seek to further our understanding of how technology may assist students and professors alike.
 
 ## Features
 - Automatic recognition of key terms
