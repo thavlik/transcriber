@@ -1,7 +1,7 @@
 ![Example Screenshot](app/captures/cap_00.jpg)
 
 # e-Shadowing Transcriber
-[<img src="https://img.shields.io/badge/maintenance%20status-as%20is-brightgreen">](https://github.com/thavlik/transcriber)
+[<img src="https://img.shields.io/badge/maintenance%20status-as%20is-yellow">](https://github.com/thavlik/transcriber)
 [<img src="https://img.shields.io/badge/License-Apache_2.0-orange.svg">](./LICENSE)
 [<img src="https://img.shields.io/badge/License-MIT-lightblue.svg">](./LICENSE-MIT)
 [<img src="https://img.shields.io/badge/Language-golang-blue.svg">](https://go.dev/)
