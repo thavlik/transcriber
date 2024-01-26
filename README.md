@@ -5,7 +5,7 @@ This is a tool that transcribes an audio stream, detects the transcript's medica
 
 It is meant to enhance the e-Shadowing experience by streamlining the process of finding good reference material without diverting one's attention from what the physician is doing. When e-shadowing, I sometimes find myself searching Google for anatomy cartoons to refresh my memory, which is relatively cumbersome when compared to this tool.
 
-This project serves more as an archive for an idea that I envisioned, rather than a sincere effort at producing a commercially viable product. This tool does exactly what I designed it to do, and I still strongly believe it has merit as a concept.
+This project serves more as an archive for an idea that I envisioned, rather than a sincere effort at producing a commercially viable product. It does exactly what I designed it to do, and I still strongly believe the concept has merit. I love medical education and seek to further our understanding of how technology may assist students and professors alike.
 
 ## Features
 - Automatic recognition of key terms
