@@ -7,7 +7,10 @@ It is meant to enhance the e-Shadowing experience by streamlining the process of
 
 This project serves more as an archive for an idea that I envisioned, rather than a sincere effort at producing a commercially viable product. It does exactly what I intended it to do, and I still strongly believe the concept has merit. I love medical education and seek to further our understanding of how technology may assist students and professors alike.
 
-## Features
+## Design
+The application is packaged as a [Flutter](https://flutter.dev/) front-end and a [helm](https://helm.sh/) chart backend for kubernetes. The application should scale horizontally to accomodate hundreds (or even thousands) of concurrent users, without any further optimization.
+
+### Features
 - Automatic recognition of key terms
     - Diagnoses
     - Anatomy
@@ -37,9 +40,6 @@ This project serves more as an archive for an idea that I envisioned, rather tha
 | iOS           | :heavy_check_mark: |
 | Android       | :heavy_check_mark: |
 | Chrome        | :heavy_check_mark: |
-
-## Design
-The application is packaged as a [Flutter](https://flutter.dev/) front-end and a [helm](https://helm.sh/) chart backend for kubernetes. The application should scale horizontally to accomodate hundreds (or even thousands) of concurrent users, without any further optimization.
 
 ## Cost Warning
 Running this tool can be financially expensive. If you leave it running for an hour, don't be surprised if your AWS bill is in the hundreds of dollars. For this reason, I'm apprehensive to believe such a tool has any commercial viability at all.
