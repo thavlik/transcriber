@@ -184,7 +184,7 @@ class MyModel extends Model {
   }
 
   MyModel() {
-    //connectWebSock();
+    connectWebSock();
     _selectedEntity =
         _keyTerms?.entities.firstWhere((e) => e.text == "glenoid");
     _searchImages = mockImageSearch();
