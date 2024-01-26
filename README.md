@@ -1,5 +1,6 @@
 # e-Shadowing Transcriber
 ![Example Screenshot](app/captures/cap_00.jpg)
+[<img src="https://img.shields.io/badge/maintenance%20status-as%20is-brightgreen">](https://github.com/thavlik/transcriber)
 
 This is a prototype tool that transcribes an audio stream, detects the transcript's medical keywords, and automatically fetches supplementary content (definitions, pictures, drug data) when the user taps/clicks on a keyword.
 
