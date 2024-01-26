@@ -11,15 +11,15 @@ This project serves more as an archive for an idea that I envisioned, rather tha
 The application is packaged as a [Flutter](https://flutter.dev/) front-end and a [helm](https://helm.sh/) chart backend for kubernetes. The application should scale horizontally to accomodate hundreds (or even thousands) of concurrent users, without any further optimization.
 
 ### Features
-- Automatic recognition of key terms
+- Automatic recognition of keywords
     - Diagnoses
     - Anatomy
     - Organ systems
     - Medications (both generic and brand name)
 - Context-sensitive image search results
     - Images are curated for relevance
-    - Show only radiology images (anatomy)
-    - Show only histology images (diagnoses)
+    - Anatomical cartoons for anatomy
+    - Histology images for diseases
 - Automatic retrieval of drug data
     - Scrapes [DrugBank](https://go.drugbank.com/) with a [headless web browser](https://pptr.dev/)
     - Interactive 3D visualization of chemical structure
