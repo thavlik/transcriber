@@ -26,7 +26,7 @@ This project serves more as an archive for an idea that I envisioned, rather tha
 - Simple and versatile architecture
     - Audio source is an [RTMP](https://en.wikipedia.org/wiki/Real-Time_Messaging_Protocol) stream
     - Developed to support [OBS](https://obsproject.com/)
-    - [kubernetes](https://kubernetes.io/) backend scales to thousands of concurrent users
+    - Highly scalable [kubernetes](https://kubernetes.io/) backend
 
 ## Design
 The application is packaged as a [Flutter](https://flutter.dev/) front-end and a [helm](https://helm.sh/) chart backend for kubernetes. The application should scale horizontally to accomodate hundreds (or even thousands) of concurrent users, without any further optimization.
