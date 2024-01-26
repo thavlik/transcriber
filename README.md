@@ -31,7 +31,7 @@ This project serves more as an archive for an idea that I envisioned, rather tha
 ### Platform support
 | Platform      | Supported          |
 | ------------- | ------------------ |
-| Windows 10/11 | :heavy_check_mark: |
+| Windows 10/11 | :x: |
 | MacOS         | :heavy_check_mark: |
 | Linux         | :heavy_check_mark: |
 | iOS           | :heavy_check_mark: |
