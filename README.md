@@ -28,6 +28,16 @@ This project serves more as an archive for an idea that I envisioned, rather tha
     - Developed to support [OBS](https://obsproject.com/)
     - Highly scalable [kubernetes](https://kubernetes.io/) backend
 
+### Platform support
+| Platform      | Supported |
+| ------------- | --------- |
+| Windows 10/11 | [x]       |
+| MacOS         | [x]       |
+| Linux         | [x]       |
+| iOS           | [x]       |
+| Android       | [x]       |
+| Chrome        | [x]       |
+
 ## Design
 The application is packaged as a [Flutter](https://flutter.dev/) front-end and a [helm](https://helm.sh/) chart backend for kubernetes. The application should scale horizontally to accomodate hundreds (or even thousands) of concurrent users, without any further optimization.
 
