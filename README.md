@@ -33,6 +33,7 @@ The application is packaged as a [Flutter](https://flutter.dev/) front-end and a
 
 ### Core technologies
 - [Amazon Medical Transcribe](https://docs.aws.amazon.com/transcribe/latest/dg/transcribe-medical.html)
+- [Amazon Comprehend Medical](https://docs.aws.amazon.com/comprehend-medical/latest/dev/textanalysis-entities.html)
 - [Bing Web Search](https://www.microsoft.com/en-us/bing/apis/bing-web-search-api)
 - [Bing Image Search](https://www.microsoft.com/en-us/bing/apis/bing-image-search-api)
 - [ChatGPT](https://chat.openai.com/) (OpenAI)
