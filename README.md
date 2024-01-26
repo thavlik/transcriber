@@ -31,6 +31,12 @@ The application is packaged as a [Flutter](https://flutter.dev/) front-end and a
     - Developed to support [OBS](https://obsproject.com/)
     - Highly scalable [kubernetes](https://kubernetes.io/) backend
 
+### Core technologies
+- [Amazon Medical Transcribe](https://docs.aws.amazon.com/transcribe/latest/dg/transcribe-medical.html)
+- [Bing Web Search](https://www.microsoft.com/en-us/bing/apis/bing-web-search-api)
+- [Bing Image Search](https://www.microsoft.com/en-us/bing/apis/bing-image-search-api)
+- [ChatGPT](https://chat.openai.com/) (OpenAI)
+
 ### Platform support
 | Platform      | Supported          |
 | ------------- | ------------------ |
