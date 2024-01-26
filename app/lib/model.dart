@@ -6,27 +6,80 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'api.dart' as api;
 
+const exampleTranscript =
+    "You want to aggressively attack the osteophytes to the reduce the diameter of the humeral head. All of that will give you a better understanding of the true anatomy as well as give you better glenoid exposure, which is the key in all these shoulder replacements - it's getting better access to the glenoid. So this crown is what we call a crown or ring of osteophytes,";
+
+const exampleDefinition =
+    'The glenoid is the shallow, concave cavity or socket found in the shoulder blade (scapula). It is part of the glenohumeral joint, where it articulates with the head of the humerus, forming the shoulder joint. The glenoid provides a surface for the articulation of the humerus, allowing for the wide range of motion in the shoulder. The stability and function of the shoulder joint are influenced by the shape and structure of the glenoid.';
+
+api.ImageSearch mockImageSearch() {
+  return api.ImageSearch(
+    images: [
+      "fixtures/glenoid_00.jpg",
+      "fixtures/glenoid_01.jpg",
+      "fixtures/glenoid_09.jpg",
+      "fixtures/glenoid_11.jpg",
+      "fixtures/glenoid_04.jpg",
+      "fixtures/glenoid_14.jpg",
+      "fixtures/glenoid_05.jpg",
+      "fixtures/glenoid_12.jpg",
+    ]
+        .map((url) => api.SearchImage(
+              contentUrl: url,
+              contentSize: "",
+              accentColor: "111111",
+              encodingFormat: "jpg",
+              height: 100,
+              width: 100,
+              hostPageUrl: "",
+              thumbnailUrl: url,
+              isLiked: false,
+            ))
+        .toList(),
+    queryExpansions: [],
+  );
+}
+
 class MyModel extends Model {
   bool _isConnected = false;
   WebSocketChannel? _channel;
-  String _transcript = "";
+  String _transcript = exampleTranscript;
   final List<api.ReferenceMaterial> _referenceMaterials = [];
   api.KeyTerms? _keyTerms = api.KeyTerms(
     entities: [
-      api.Entity(score: 1.0, text: "propranolol", type: "GENERIC_NAME"),
-      api.Entity(score: 1.0, text: "prednisone", type: "GENERIC_NAME"),
-      api.Entity(score: 1.0, text: "cancer", type: "DX_NAME"),
-      api.Entity(score: 1.0, text: "influenza", type: "DX_NAME"),
-      api.Entity(score: 1.0, text: "ativan", type: "BRAND_NAME"),
-      api.Entity(score: 1.0, text: "azithromycin", type: "GENERIC_NAME"),
-      api.Entity(score: 1.0, text: "sumatriptan", type: "GENERIC_NAME"),
-      api.Entity(score: 1.0, text: "parkinson's", type: "DX_NAME"),
-      api.Entity(score: 1.0, text: "eczema", type: "DX_NAME"),
-      api.Entity(score: 1.0, text: "parietal lobe", type: "SYSTEM_ORGAN_SITE"),
-      api.Entity(score: 1.0, text: "kidney", type: "SYSTEM_ORGAN_SITE"),
-      api.Entity(score: 1.0, text: "knee", type: "SYSTEM_ORGAN_SITE"),
-      api.Entity(score: 1.0, text: "left ventricle", type: "SYSTEM_ORGAN_SITE"),
-      api.Entity(score: 1.0, text: "broca's area", type: "SYSTEM_ORGAN_SITE"),
+      //api.Entity(score: 1.0, text: "propranolol", type: "GENERIC_NAME"),
+      //api.Entity(score: 1.0, text: "prednisone", type: "GENERIC_NAME"),
+      //api.Entity(score: 1.0, text: "cancer", type: "DX_NAME"),
+      //api.Entity(score: 1.0, text: "influenza", type: "DX_NAME"),
+      //api.Entity(score: 1.0, text: "ativan", type: "BRAND_NAME"),
+      //api.Entity(score: 1.0, text: "azithromycin", type: "GENERIC_NAME"),
+      //api.Entity(score: 1.0, text: "sumatriptan", type: "GENERIC_NAME"),
+      //api.Entity(score: 1.0, text: "parkinson's", type: "DX_NAME"),
+      //api.Entity(score: 1.0, text: "eczema", type: "DX_NAME"),
+      //api.Entity(score: 1.0, text: "parietal lobe", type: "SYSTEM_ORGAN_SITE"),
+      //api.Entity(score: 1.0, text: "kidney", type: "SYSTEM_ORGAN_SITE"),
+      //api.Entity(score: 1.0, text: "knee", type: "SYSTEM_ORGAN_SITE"),
+      //api.Entity(score: 1.0, text: "left ventricle", type: "SYSTEM_ORGAN_SITE"),
+      //api.Entity(score: 1.0, text: "broca's area", type: "SYSTEM_ORGAN_SITE"),
+      api.Entity(score: 1.0, text: "glenoid", type: "SYSTEM_ORGAN_SITE"),
+      api.Entity(score: 1.0, text: "humoral head", type: "SYSTEM_ORGAN_SITE"),
+      api.Entity(score: 0.9, text: "osteophyte", type: "SYSTEM_ORGAN_SITE"),
+      api.Entity(
+          score: 1.0, text: "osteophyte crown", type: "SYSTEM_ORGAN_SITE"),
+      api.Entity(score: 1.0, text: "humoral canal", type: "SYSTEM_ORGAN_SITE"),
+      api.Entity(
+          score: 1.0,
+          text: "inferior glenoid capsule",
+          type: "SYSTEM_ORGAN_SITE"),
+      api.Entity(score: 1.0, text: "triceps tendon", type: "SYSTEM_ORGAN_SITE"),
+      api.Entity(score: 0.9, text: "degenerative arthritis", type: "DX_NAME"),
+      api.Entity(score: 0.8, text: "arthritis", type: "DX_NAME"),
+      api.Entity(score: 0.7, text: "labral tear", type: "DX_NAME"),
+      api.Entity(
+          score: 1.0,
+          text: "intra articular biceps tendon",
+          type: "SYSTEM_ORGAN_SITE"),
+      api.Entity(score: 0.65, text: "azithromycin", type: "GENERIC_NAME"),
     ],
   );
   api.Entity? _selectedEntity;
@@ -35,7 +88,9 @@ class MyModel extends Model {
   api.ImageSearch? _histologySearchImages;
 
   final Map<String, api.DrugDetails?> _drugDetails = {};
-  final Map<String, String> _definitions = {};
+  final Map<String, String> _definitions = {
+    "glenoid": exampleDefinition,
+  };
   final Set<String> _fetchingTerms = {};
   final Map<String, bool> _diseases = {};
   final Set<String> _fetchingDiseases = {};
@@ -129,7 +184,10 @@ class MyModel extends Model {
   }
 
   MyModel() {
-    connectWebSock();
+    //connectWebSock();
+    _selectedEntity =
+        _keyTerms?.entities.firstWhere((e) => e.text == "glenoid");
+    _searchImages = mockImageSearch();
   }
 
   void onConnect() {

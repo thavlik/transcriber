@@ -5,6 +5,8 @@ It is meant to enhance the e-Shadowing experience by streamlining the process of
 
 This project serves more as an archive for an idea that I envisioned, rather than a sincere effort at producing a commercially viable product. This tool does exactly what I designed it to do, and I still strongly believe it has merit as a concept.
 
+![captures/cap_00.jpg](Example Screenshot)
+
 ## Design
 The application is packaged as a [Flutter](https://flutter.dev/) front-end and a [helm](https://helm.sh/) chart backend for kubernetes. The application should scale horizontally to accomodate hundreds (or even thousands) of concurrent users, without any further optimization.
 

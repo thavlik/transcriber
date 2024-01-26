@@ -303,16 +303,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     children: [
                       AspectRatio(
                         aspectRatio: img.width / img.height,
-                        child: FadeInImage(
-                          placeholder: MemoryImage(kTransparentImageBytes),
-                          image: NetworkImage(img.thumbnailUrl),
-                          fit: BoxFit.cover,
-                          imageErrorBuilder: (context, error, stackTrace) {
-                            return kTransparentImage;
-                            //return Image.asset('assets/images/error.jpg',
-                            //    fit: BoxFit.fitWidth);
-                          },
+                        child: Image(
+                          image: AssetImage(img.thumbnailUrl),
+                          width: img.width.toDouble(),
                         ),
+                        //child: FadeInImage(
+                        //  placeholder: MemoryImage(kTransparentImageBytes),
+                        //  image: NetworkImage(img.thumbnailUrl),
+                        //  //image: Image.network(img.thumbnailUrl).image,
+                        //  fit: BoxFit.cover,
+                        //  imageErrorBuilder: (context, error, stackTrace) {
+                        //    return kTransparentImage;
+                        //    //return Image.asset('assets/images/error.jpg',
+                        //    //    fit: BoxFit.fitWidth);
+                        //  },
+                        //),
                       ),
                       Positioned(
                         top: 3,
@@ -711,7 +716,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         return Scaffold(
           appBar: AppBar(
             title: Text(
-              model.isConnected ? 'Connected' : 'Not Connected',
+              model.isConnected || true ? 'Connected' : 'Not Connected',
             ),
           ),
           body: Stack(
