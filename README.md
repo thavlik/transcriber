@@ -19,11 +19,10 @@ The application is packaged as a [Flutter](https://flutter.dev/) front-end and a
 - Automatic recognition of keywords
     - Diagnoses
     - Anatomy
-    - Organ systems
     - Medications (both generic and brand name)
 - Context-sensitive image search results
     - Images are curated for relevance
-    - Anatomical cartoons for anatomy
+    - Anatomical cartoons & radiographs for anatomy
     - Histology images for diseases
 - Automatic retrieval of drug data
     - Scrapes [DrugBank](https://go.drugbank.com/) with a [headless web browser](https://pptr.dev/)
