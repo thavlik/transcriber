@@ -36,7 +36,7 @@ The application is packaged as a [Flutter](https://flutter.dev/) front-end and a
     - Highly scalable [kubernetes](https://kubernetes.io/) backend
 
 ### Core technologies
-- [Amazon Medical Transcribe](https://docs.aws.amazon.com/transcribe/latest/dg/transcribe-medical.html)
+- [Amazon Transcribe Medical](https://docs.aws.amazon.com/transcribe/latest/dg/transcribe-medical.html)
 - [Amazon Comprehend Medical](https://docs.aws.amazon.com/comprehend-medical/)
 - [Bing Web Search](https://www.microsoft.com/en-us/bing/apis/bing-web-search-api)
 - [Bing Image Search](https://www.microsoft.com/en-us/bing/apis/bing-image-search-api)
