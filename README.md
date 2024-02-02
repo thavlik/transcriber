@@ -56,7 +56,7 @@ The application is packaged as a [Flutter](https://flutter.dev/) front-end and a
 Running this tool can be financially expensive. If you leave it running for an hour, don't be surprised if your AWS bill is in the hundreds of dollars. For this reason, I'm apprehensive to believe such a tool has any commercial viability at all.
 
 ## Related projects
-- [Neurosurgery Video Dataset](https://github.com/thavlik/neurosurgery-video-dataset): brain & spine surgery videos curated with the intent of enhancing neurosurgical e-Shadowing.
+- [Neurosurgery Video Dataset](https://github.com/thavlik/neurosurgery-video-dataset): brain & spine surgery videos curated with the intent of enhancing neurosurgical e-Shadowing. This dataset was to enrich *e-Shadowing Transcriber* by giving students the ability to click on the pixels of a live video stream to identify anatomical structures underneath the cursor.
 - [thavlik portfolio](https://github.com/thavlik/machine-learning-portfolio): my portfolio of medical software projects, of which this repository is a part
 
 ## License
