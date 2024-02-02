@@ -57,7 +57,7 @@ Running this tool can be financially expensive. If you leave it running for an h
 
 ## Related projects
 - [Neurosurgery Video Dataset](https://github.com/thavlik/neurosurgery-video-dataset): brain & spine surgery videos curated with the intent of enhancing neurosurgical e-Shadowing. This dataset was to enrich *e-Shadowing Transcriber* by giving students the ability to click on the pixels of a live video stream to identify anatomical structures underneath the cursor.
-- [thavlik portfolio](https://github.com/thavlik/machine-learning-portfolio): my portfolio of medical software projects, of which this repository is a part
+- [thavlik portfolio](https://github.com/thavlik/machine-learning-portfolio): my showcase of medical software projects, of which this repository is a part
 
 ## License
 All code in this repository is released under [MIT](LICENSE-MIT) / [Apache 2.0](LICENSE-Apache) dual license, which is extremely permissive. Please open an issue if somehow these terms are insufficient.
