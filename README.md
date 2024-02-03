@@ -13,7 +13,7 @@ It is meant to enhance the e-Shadowing experience by streamlining the process of
 This project serves more as an archive for an idea that I envisioned, rather than a sincere effort at producing a commercially viable product. It does exactly what I intended it to do, and I still strongly believe the concept has merit. I love medical education and seek to further our understanding of how technology may assist students and professors alike.
 
 ## Design
-The application is packaged as a [Flutter](https://flutter.dev/) front-end and a [helm](https://helm.sh/) chart backend for kubernetes. The application should scale horizontally to accomodate hundreds (or even thousands) of concurrent users, without any further optimization.
+The application is packaged as a [Flutter](https://flutter.dev/) front-end and a [helm](https://helm.sh/) chart backend for [kubernetes](https://kubernetes.io/). The application should scale horizontally to accomodate hundreds (or even thousands) of concurrent users, without any further optimization.
 
 ### Features
 - Automatic recognition of keywords
@@ -33,7 +33,7 @@ The application is packaged as a [Flutter](https://flutter.dev/) front-end and a
 - Simple and versatile architecture
     - Audio source is an [RTMP](https://en.wikipedia.org/wiki/Real-Time_Messaging_Protocol) stream
     - Developed to support [OBS](https://obsproject.com/)
-    - Highly scalable [kubernetes](https://kubernetes.io/) backend
+    - Highly scalable kubernetes backend
 
 ### Core technologies
 - [Amazon Transcribe Medical](https://docs.aws.amazon.com/transcribe/latest/dg/transcribe-medical.html)
