@@ -6,7 +6,7 @@
 [<img src="https://img.shields.io/badge/License-Apache_2.0-orange.svg">](./LICENSE)
 [<img src="https://img.shields.io/badge/License-MIT-lightblue.svg">](./LICENSE-MIT)
 
-This is a prototype tool that transcribes an audio stream, detects the transcript's medical keywords, and automatically fetches supplementary content (definitions, pictures, drug data) when the user taps/clicks on a keyword.
+This is a proof-of-concept application that transcribes an audio stream, detects the transcript's medical keywords, and automatically fetches supplementary content (definitions, pictures, drug data) when the user taps/clicks on a keyword.
 
 It is meant to enhance the e-Shadowing experience by streamlining the process of finding good reference material without diverting one's attention away from the physician. When e-shadowing, I sometimes find myself searching Google for anatomy cartoons to refresh my memory, which is relatively cumbersome when compared to this tool.
 
