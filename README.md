@@ -2,9 +2,9 @@
 
 # e-Shadowing Transcriber
 [<img src="https://img.shields.io/badge/maintenance%20status-as%20is-yellow">](https://github.com/thavlik/transcriber)
+[<img src="https://img.shields.io/badge/Language-golang-blue.svg">](https://go.dev/)
 [<img src="https://img.shields.io/badge/License-Apache_2.0-orange.svg">](./LICENSE)
 [<img src="https://img.shields.io/badge/License-MIT-lightblue.svg">](./LICENSE-MIT)
-[<img src="https://img.shields.io/badge/Language-golang-blue.svg">](https://go.dev/)
 
 This is a prototype tool that transcribes an audio stream, detects the transcript's medical keywords, and automatically fetches supplementary content (definitions, pictures, drug data) when the user taps/clicks on a keyword.
 
